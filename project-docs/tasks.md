@@ -2,16 +2,16 @@
 
 ## 📊 Progress Summary
 
-**Overall Progress**: 14/377 tasks (4%)
+**Overall Progress**: 14/405 tasks (3%)
 
 ```
 Planning & Documentation  █████████░ 93% (14/15)
 Phase 1: Foundation       ░░░░░░░░░░  0% (0/25)
 Phase 2: Kubernetes       ░░░░░░░░░░  0% (0/18)
-Phase 3: Core Features    ░░░░░░░░░░  0% (0/48)
+Phase 3: Core Features    ░░░░░░░░░░  0% (0/76)
 Phase 4: CI/CD            ░░░░░░░░░░  0% (0/24)
 Phase 5: Monitoring       ░░░░░░░░░░  0% (0/37)
-Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/38)
+Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/44)
 Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/48)
 Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 ```
@@ -50,7 +50,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 - [ ] Install AWS CLI and configure credentials
 
 ### Basic FastAPI Application
-- [ ] Create project structure (api/, tests/, docs/)
+- [ ] Create project structure (api/, tests/, project-docs/)
 - [ ] Set up dependencies (requirements.txt or pyproject.toml)
 - [ ] Implement health check endpoints
 - [ ] Create basic API routes (documents, query)
@@ -137,9 +137,34 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 - [ ] Implement response generation with Nova 2
 - [ ] Add error handling and retries
 
+### Domain-Specific Features
+- [ ] **Metadata Tagging System**
+  - [ ] Define metadata schema (domain, department, doc_type, tags)
+  - [ ] Implement auto-tagging during document upload
+  - [ ] Store metadata in vector DB
+  - [ ] Create metadata validation
+- [ ] **Domain Filtering**
+  - [ ] Implement domain filter in query API
+  - [ ] Add domain-based vector DB filtering
+  - [ ] Create multi-domain query support
+  - [ ] Test filtering accuracy
+- [ ] **Domain-Aware Prompts**
+  - [ ] Create prompt templates per domain (Legal, HR, Marketing, Engineering)
+  - [ ] Implement prompt selection logic
+  - [ ] Test domain-specific response quality
+- [ ] **Access Control (Optional)**
+  - [ ] Implement role-based domain access
+  - [ ] Add domain permissions to user model
+  - [ ] Test access restrictions
+- [ ] **Analytics**
+  - [ ] Track queries by domain
+  - [ ] Measure accuracy by domain
+  - [ ] Create domain usage dashboard
+
 ### Simple Frontend
 - [ ] Create document upload UI
 - [ ] Create query interface
+- [ ] **Add domain filter dropdown**
 - [ ] Display responses with sources
 - [ ] Add loading states and error handling
 
@@ -252,6 +277,10 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 - [ ] Implement query complexity analysis
 - [ ] Route simple queries to Nova 2 Lite
 - [ ] Route complex queries to Nova 2 Pro
+- [ ] **Add domain-based routing logic**
+  - [ ] Route by domain + complexity
+  - [ ] Legal + complex → Nova 2 Pro
+  - [ ] HR + simple → Nova 2 Lite
 - [ ] Track cost savings from routing
 - [ ] A/B test routing strategies
 

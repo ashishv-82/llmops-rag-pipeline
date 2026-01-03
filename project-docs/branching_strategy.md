@@ -15,7 +15,7 @@ This project uses **GitHub Flow** - a simple, PR-based branching strategy that i
 - `feature/*` - New features (e.g., `feature/add-caching`)
 - `bugfix/*` - Bug fixes (e.g., `bugfix/fix-embeddings`)
 - `hotfix/*` - Critical fixes (e.g., `hotfix/security-patch`)
-- `docs/*` - Documentation/data changes (e.g., `docs/add-policies`)
+- `data/*` - Document uploads (e.g., `data/add-policies`)
 
 ---
 
@@ -108,13 +108,13 @@ Documents added to `data/documents/` follow the same PR-based workflow:
 
 ```bash
 # Create branch for document upload
-git checkout -b docs/add-q1-reports
+git checkout -b data/add-q1-reports
 
 # Add documents
 git add data/documents/q1-sales.pdf
 git add data/documents/q1-marketing.pdf
 git commit -m "Add Q1 2026 reports"
-git push origin docs/add-q1-reports
+git push origin data/add-q1-reports
 
 # Create PR → Review → Merge
 ```
@@ -267,10 +267,10 @@ git push origin feature/intelligent-routing
 
 ```bash
 # Admin adds company policies
-git checkout -b docs/add-hr-policies
+git checkout -b data/add-hr-policies
 git add data/documents/hr-policy-2026.pdf
 git commit -m "Add 2026 HR policies"
-git push origin docs/add-hr-policies
+git push origin data/add-hr-policies
 # Create PR → Quick review → Merge → Auto-processed
 ```
 
