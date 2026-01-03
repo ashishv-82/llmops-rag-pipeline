@@ -2,8 +2,6 @@
 
 ## Decision: Namespace-Based Multi-Environment
 
-**Date**: 2026-01-03
-
 ---
 
 ## Overview
