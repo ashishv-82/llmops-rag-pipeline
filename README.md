@@ -224,10 +224,6 @@ This project provides hands-on experience with:
 
 MIT License - see [LICENSE](./LICENSE) file for details
 
-## 👤 Author
-
-Built as a learning project to demonstrate MLOps/LLMOps expertise and cloud-native architecture skills.
-
 ---
 
-**Note**: This is an active learning project. The architecture and implementation are designed to showcase production-grade practices while maintaining cost efficiency.
+**Note**: This is an active project. The architecture and implementation are designed to showcase production-grade practices while maintaining cost efficiency.
