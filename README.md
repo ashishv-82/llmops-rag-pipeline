@@ -42,7 +42,7 @@ This project showcases:
 
 ### **Hybrid Approach: Custom Pipeline + Latest AWS Services**
 
-This project combines self-managed components (for deeper learning) with cutting-edge AWS managed services (for enterprise features).
+This project combines self-managed components (for maximum control and flexibility) with cutting-edge AWS managed services (for enterprise features).
 
 ---
 
@@ -50,7 +50,7 @@ This project combines self-managed components (for deeper learning) with cutting
 
 | Component | Choice | Alternative Considered | Why This Choice |
 |-----------|--------|----------------------|-----------------|
-| **Compute** | Amazon EKS | ECS Fargate | ✅ Deeper Kubernetes learning<br>✅ Industry-standard orchestration<br>✅ Better for pause/resume architecture |
+| **Compute** | Amazon EKS | ECS Fargate | ✅ Industry-standard Kubernetes<br>✅ Full orchestration control<br>✅ Optimal for pause/resume architecture |
 | **IaC** | Terraform | CloudFormation | ✅ Cloud-agnostic skills<br>✅ Industry standard<br>✅ Better state management |
 | **Container Registry** | Amazon ECR | Docker Hub | ✅ AWS-native integration<br>✅ Persists during pause/resume<br>✅ Private and secure |
 | **Storage** | Amazon S3 | EBS/EFS | ✅ Serverless (no compute costs when paused)<br>✅ Lifecycle policies for cost optimization<br>✅ Durability and versioning |
@@ -63,7 +63,7 @@ This project combines self-managed components (for deeper learning) with cutting
 |-----------|--------|----------------------|-----------------|
 | **LLM** | Amazon Nova 2 (Lite/Pro) | Claude 3 / GPT-4 | ✅ Latest 2026 model family<br>✅ Faster and cheaper<br>✅ AWS-native (lower latency)<br>✅ Bedrock Guardrails integration |
 | **Embeddings** | Titan Embeddings V2 | Sentence Transformers | ✅ Normalized vectors (better accuracy)<br>✅ AWS-native (no external API)<br>✅ Optimized for hybrid search<br>✅ Cost-effective |
-| **Orchestration** | Custom LangChain Pipeline | Bedrock Knowledge Bases | ✅ Full control over RAG logic<br>✅ Deeper MLOps learning<br>✅ Custom optimization opportunities<br>❌ More complex (trade-off for learning) |
+| **Orchestration** | Custom LangChain Pipeline | Bedrock Knowledge Bases | ✅ Full control over RAG logic<br>✅ Advanced MLOps capabilities<br>✅ Custom optimization opportunities<br>❌ More complex (trade-off for flexibility) |
 
 ---
 
@@ -71,12 +71,12 @@ This project combines self-managed components (for deeper learning) with cutting
 
 | Component | Choice | Alternative Considered | Why This Choice |
 |-----------|--------|----------------------|-----------------|
-| **Vector DB** | ChromaDB/Weaviate on K8s | OpenSearch Managed | ✅ Self-managed = deeper learning<br>✅ Pause/resume friendly (no ongoing costs)<br>✅ Full control over hybrid search implementation<br>✅ Can implement custom optimizations<br>❌ More operational overhead (intentional for learning) |
+| **Vector DB** | ChromaDB/Weaviate on K8s | OpenSearch Managed | ✅ Self-managed = maximum control<br>✅ Pause/resume friendly (no ongoing costs)<br>✅ Full control over hybrid search implementation<br>✅ Custom optimization capabilities<br>❌ More operational overhead (intentional trade-off) |
 
 **Decision:** Self-managed vector DB on Kubernetes
-- **Learning value**: High - understand vector operations, indexing, retrieval
+- **Technical depth**: Full understanding of vector operations, indexing, and retrieval
 - **Cost optimization**: Fits pause/resume architecture perfectly
-- **Flexibility**: Can implement hybrid search, custom ranking, A/B testing
+- **Flexibility**: Enables hybrid search, custom ranking, and A/B testing
 
 ---
 
@@ -208,9 +208,9 @@ See [`project_proposal.md`](./project_proposal.md) for detailed project plan and
 - [`project_proposal.md`](./project_proposal.md) - Detailed project proposal and architecture
 - More documentation coming as project develops
 
-## 🎓 Learning Outcomes
+## 🎯 Technical Capabilities
 
-This project provides hands-on experience with:
+This project demonstrates hands-on experience with:
 
 - ✅ AWS services (EKS, S3, IAM, CloudWatch, Bedrock)
 - ✅ Terraform for infrastructure management
