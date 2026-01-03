@@ -1,0 +1,390 @@
+# LLMOps RAG Pipeline - Project Tasks
+
+## 📊 Progress Summary
+
+**Overall Progress**: 11/370 tasks (3%)
+
+```
+Planning & Documentation  ████████░░ 85% (11/13)
+Phase 1: Foundation       ░░░░░░░░░░  0% (0/25)
+Phase 2: Kubernetes       ░░░░░░░░░░  0% (0/18)
+Phase 3: Core Features    ░░░░░░░░░░  0% (0/48)
+Phase 4: CI/CD            ░░░░░░░░░░  0% (0/24)
+Phase 5: Monitoring       ░░░░░░░░░░  0% (0/37)
+Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/38)
+Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/48)
+Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
+```
+
+**Current Focus**: 🚀 Ready to start Phase 1 - Foundation  
+**Last Updated**: 2026-01-03
+
+---
+
+## Planning & Documentation
+- [x] Define project concept and architecture
+- [x] Determine cost optimization strategy (pause/resume)
+- [x] Choose hybrid architecture approach
+- [x] Finalize technology stack (Nova 2, Titan V2, Guardrails)
+- [x] Update project proposal with all decisions
+- [x] Create comprehensive README
+- [x] Document architectural decisions
+- [ ] Create detailed Phase 1 implementation plan
+- [ ] Set up initial project structure
+- [x] Create .gitignore and configuration files
+
+---
+
+## Phase 1: Foundation (Weeks 1-2)
+
+### Local Development Environment
+- [ ] Install Docker and Docker Compose
+- [ ] Install minikube or kind for local K8s
+- [ ] Install kubectl and helm
+- [ ] Install Terraform
+- [ ] Set up Python 3.11+ virtual environment
+- [ ] Install AWS CLI and configure credentials
+
+### Basic FastAPI Application
+- [ ] Create project structure (api/, tests/, docs/)
+- [ ] Set up dependencies (requirements.txt or pyproject.toml)
+- [ ] Implement health check endpoints
+- [ ] Create basic API routes (documents, query)
+- [ ] Write Dockerfile for application
+- [ ] Test locally with Docker
+
+### AWS Prerequisites
+- [ ] Configure AWS CLI with credentials
+- [ ] Create S3 bucket for Terraform state
+- [ ] Set up IAM user/role for Terraform
+- [ ] Test AWS connectivity
+
+### Terraform Initialization
+- [ ] Set up Terraform backend configuration (S3 state)
+- [ ] Create VPC module
+- [ ] Create S3 buckets module (documents, embeddings)
+- [ ] Set up basic security groups
+- [ ] Initialize and validate Terraform
+
+---
+
+## Phase 2: Kubernetes Setup (Weeks 2-3)
+
+### Local Kubernetes
+- [ ] Set up local K8s cluster (minikube or kind)
+- [ ] Create K8s manifests for API service
+  - [ ] Deployment
+  - [ ] Service
+  - [ ] ConfigMap
+  - [ ] Secrets (placeholder)
+- [ ] Deploy to local cluster
+- [ ] Test API endpoints locally
+- [ ] Verify health checks and readiness probes
+
+### Terraform EKS Preparation
+- [ ] Create EKS cluster Terraform module (don't apply yet)
+- [ ] Configure node groups
+- [ ] Set up IAM roles for service accounts
+- [ ] Document EKS deployment plan for Phase 7
+- [ ] Set up kubectl context management
+
+---
+
+## Phase 3: Core Application Features (Weeks 3-4)
+
+### AWS Bedrock Integration
+- [ ] Set up AWS Bedrock access (IAM permissions)
+- [ ] Integrate Amazon Nova 2 Lite for LLM
+- [ ] Integrate Titan Embeddings V2 for embeddings
+- [ ] Configure Bedrock Guardrails
+  - [ ] PII masking (SSN, emails, phone numbers)
+  - [ ] Content filtering
+  - [ ] Topic boundaries
+- [ ] Test LLM and embedding generation
+
+### Document Processing (Dual Path)
+- [ ] **Path 1: Web UI Upload**
+  - [ ] Implement file upload endpoint (FastAPI)
+  - [ ] Validate file types (PDF, TXT, DOCX)
+  - [ ] Upload to S3
+  - [ ] Trigger embedding generation
+- [ ] **Path 2: GitHub Actions Sync**
+  - [ ] Create sample_documents/ folder in repo
+  - [ ] Create GitHub Actions workflow for data sync
+  - [ ] Auto-upload to S3 on commit
+  - [ ] Auto-generate embeddings
+- [ ] Implement document parsing (PDF, TXT)
+- [ ] Implement document chunking strategy
+
+### Vector Database
+- [ ] Choose vector DB (ChromaDB or Weaviate)
+- [ ] Deploy vector DB on local K8s
+- [ ] Implement embedding storage
+- [ ] Implement vector retrieval
+- [ ] **Implement hybrid search (vector + keyword/BM25)**
+  - [ ] Vector similarity search
+  - [ ] Keyword matching (BM25)
+  - [ ] Combine scores with weights
+
+### RAG Pipeline (LangChain)
+- [ ] Implement query processing
+- [ ] Implement context retrieval from vector DB
+- [ ] Implement prompt construction
+- [ ] Implement response generation with Nova 2
+- [ ] Add error handling and retries
+
+### Simple Frontend
+- [ ] Create document upload UI
+- [ ] Create query interface
+- [ ] Display responses with sources
+- [ ] Add loading states and error handling
+
+---
+
+## Phase 4: CI/CD Pipeline (Weeks 4-5)
+
+### GitHub Actions - CI (Code)
+- [ ] Set up linting (pylint, black, mypy)
+- [ ] Set up unit tests (pytest)
+- [ ] Configure Docker build
+- [ ] Push Docker images to ECR
+- [ ] Add security scanning (Trivy)
+- [ ] Run on pull requests
+
+### GitHub Actions - Data Sync
+- [ ] Create workflow triggered by document changes
+- [ ] Upload new documents to S3
+- [ ] Generate embeddings for new documents
+- [ ] Update vector database
+- [ ] Add validation and error handling
+
+### GitHub Actions - CD
+- [ ] Create staging deployment workflow
+  - [ ] Deploy to staging namespace in K8s
+  - [ ] Run integration tests
+  - [ ] Health check validation
+- [ ] Create production deployment workflow
+  - [ ] Manual approval gate
+  - [ ] Blue-green or canary deployment
+  - [ ] Automated rollback on failure
+
+---
+
+## Phase 5: Monitoring & Observability (Weeks 5-6)
+
+### Prometheus & Grafana
+- [ ] Deploy Prometheus on K8s
+- [ ] Deploy Grafana on K8s
+- [ ] Configure Prometheus scraping
+
+### Application Instrumentation
+- [ ] Add request latency metrics
+- [ ] Add LLM token usage tracking (per request)
+- [ ] Add cost per query calculation
+- [ ] Add error rate metrics
+- [ ] Add model performance metrics (response quality)
+
+### Cost Tracking Dashboard (Grafana)
+- [ ] Create cost per query visualization
+- [ ] Create cost per service breakdown
+- [ ] Create daily/weekly/monthly cost trends
+- [ ] Create LLM token usage tracking
+- [ ] Create cost breakdown by model (Nova 2 Lite vs Pro)
+
+### CloudWatch Integration
+- [ ] Set up CloudWatch log aggregation
+- [ ] Create custom CloudWatch metrics
+- [ ] Configure log retention policies
+
+### Alerting
+- [ ] Set up cost anomaly detection alerts
+- [ ] Set up budget threshold alerts
+- [ ] Set up error rate alerts
+- [ ] Set up performance degradation alerts
+- [ ] Configure notification channels (SNS/email)
+
+### Distributed Tracing
+- [ ] Add Jaeger or AWS X-Ray
+- [ ] Instrument API calls
+- [ ] Trace LLM requests
+
+---
+
+## Phase 6: MLOps/LLMOps Features (Weeks 6-7)
+
+### Semantic Caching (Redis)
+- [ ] Deploy Redis on K8s
+- [ ] Implement embedding caching
+- [ ] Implement LLM response caching
+- [ ] Implement similarity-based cache lookup
+- [ ] Configure TTL and cache invalidation
+- [ ] Track cache hit rate metrics
+
+### Intelligent LLM Routing
+- [ ] Implement query complexity analysis
+- [ ] Route simple queries to Nova 2 Lite
+- [ ] Route complex queries to Nova 2 Pro
+- [ ] Track cost savings from routing
+- [ ] A/B test routing strategies
+
+### Prompt Versioning
+- [ ] Implement prompt version control
+- [ ] Track token usage per prompt version
+- [ ] A/B test different prompt strategies
+- [ ] Measure quality vs. cost trade-offs
+
+### MLflow Setup
+- [ ] Deploy MLflow on K8s or use managed service
+- [ ] Configure experiment tracking
+- [ ] Set up model registry
+- [ ] Track prompt versions
+
+### Model Evaluation Pipeline
+- [ ] Create automated response testing
+- [ ] Implement quality metrics (relevance, accuracy, coherence)
+- [ ] Track cost per evaluation run
+- [ ] Measure latency
+- [ ] Create evaluation reports
+
+### A/B Testing Framework
+- [ ] Implement framework for comparing models
+- [ ] Implement framework for comparing prompts
+- [ ] Measure quality vs. cost trade-offs
+- [ ] Create A/B test reports
+
+### Data Drift Detection
+- [ ] Monitor query patterns over time
+- [ ] Detect distribution shifts
+- [ ] Alert on significant drift
+
+---
+
+## Phase 7: EKS Deployment & Infrastructure Optimization (Weeks 7-8)
+
+### EKS Deployment
+- [ ] Apply Terraform configuration for EKS
+- [ ] Deploy all Kubernetes resources to EKS
+- [ ] Configure ingress and load balancers
+- [ ] Verify all services are running
+- [ ] Test end-to-end functionality
+
+### S3 Lifecycle Policies
+- [ ] Implement 30-day transition to Standard-IA
+- [ ] Implement 90-day transition to Glacier
+- [ ] Document cost savings
+- [ ] Monitor storage costs
+
+### Time-Based Auto-Scaling
+- [ ] Implement off-hours scaling (scale down at night)
+- [ ] Configure cost-aware HPA policies
+- [ ] Document scaling behavior
+- [ ] Test scaling triggers
+
+### Resource Tagging
+- [ ] Implement cost allocation tags (Project, Environment, CostCenter)
+- [ ] Add ownership and management tags
+- [ ] Enable cost attribution in AWS Cost Explorer
+- [ ] Verify tags in AWS console
+
+### **Pause/Resume Validation (CRITICAL)**
+- [ ] Test `terraform destroy` (full teardown)
+- [ ] Verify data persistence (S3, ECR, Secrets Manager)
+- [ ] Test `terraform apply` (full restoration)
+- [ ] Document recovery time (~20 minutes)
+- [ ] Verify application functionality after restore
+- [ ] Test multiple destroy/apply cycles
+- [ ] Document any issues and fixes
+
+### Security & Authentication
+- [ ] Add rate limiting
+- [ ] Implement authentication (API keys or OAuth)
+- [ ] Configure network policies in K8s
+- [ ] Implement pod security policies
+- [ ] Validate IAM least-privilege access
+- [ ] Test secrets rotation
+
+### Backup & Disaster Recovery
+- [ ] Validate S3 versioning
+- [ ] Test ECR image backup
+- [ ] Create RDS snapshots (if using)
+- [ ] Document recovery procedures
+- [ ] Test restore procedures
+
+---
+
+## Phase 8: Documentation & Portfolio Polish (Week 8)
+
+### README
+- [ ] Write project overview and features
+- [ ] Document architecture decisions with rationale
+- [ ] Create quick start guide
+- [ ] List technology stack
+- [ ] Add badges (build status, license, etc.)
+
+### Architecture Diagrams
+- [ ] Create high-level system architecture diagram
+- [ ] Create data flow diagram
+- [ ] Create cost optimization flow diagram
+- [ ] Create pause/resume workflow diagram
+- [ ] Add diagrams to documentation
+
+### **Cost Optimization Report (CRITICAL)**
+- [ ] Document baseline costs (naive implementation)
+- [ ] Document optimized costs (with all strategies)
+- [ ] Create breakdown of savings by strategy:
+  - [ ] Semantic caching: X% reduction
+  - [ ] Intelligent routing: Y% reduction
+  - [ ] Pause/resume: Z% reduction
+  - [ ] S3 lifecycle: W% reduction
+- [ ] Create ROI analysis with graphs
+- [ ] Create before/after cost comparison
+- [ ] Add real metrics from CloudWatch/Cost Explorer
+
+### Pause/Resume Documentation
+- [ ] Write step-by-step guide (destroy/apply)
+- [ ] Document cost implications
+- [ ] Document recovery procedures
+- [ ] Create troubleshooting guide
+- [ ] Add screenshots or recordings
+
+### Architecture Decision Records (ADRs)
+- [ ] Document why hybrid approach
+- [ ] Document technology choices (self-managed vs managed)
+- [ ] Document trade-offs and rationale
+- [ ] Create ADR template for future decisions
+
+### Deployment Procedures
+- [ ] Document local development setup
+- [ ] Document AWS deployment steps
+- [ ] Document environment configuration
+- [ ] Create deployment checklist
+
+### Runbooks
+- [ ] Create scaling procedures runbook
+- [ ] Create incident response runbook
+- [ ] Create cost monitoring runbook
+- [ ] Create backup/restore runbook
+
+### Demo Materials
+- [ ] Record demo video
+  - [ ] System walkthrough
+  - [ ] Cost optimization demonstration
+  - [ ] Pause/resume in action
+- [ ] Create slide deck (optional)
+- [ ] Prepare talking points for interviews
+
+### Blog Post (Optional)
+- [ ] Write technical deep-dive
+- [ ] Explain cost optimization strategies
+- [ ] Share lessons learned
+- [ ] Publish on Medium/Dev.to
+
+---
+
+## Ongoing Tasks
+- [ ] Track costs daily in AWS Cost Explorer
+- [ ] Update documentation as features are added
+- [ ] Refactor and optimize code regularly
+- [ ] Apply security updates
+- [ ] Monitor system performance
+- [ ] Review and update cost optimization strategies
