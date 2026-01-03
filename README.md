@@ -20,10 +20,11 @@ An intelligent document Q&A platform built with a focus on **production-grade ML
 
 This project showcases:
 
-1. **Cost Optimization as a Feature** - Demonstrates 60%+ cost reduction through intelligent architecture
-2. **Pause/Resume Infrastructure** - `terraform destroy` → $0/day, `terraform apply` → everything back in 20 minutes
-3. **Production-Ready Patterns** - Stateless design, GitOps, comprehensive monitoring
-4. **Real-World MLOps** - Not just ML models, but the complete operational infrastructure
+1. **Production-Ready MLOps/LLMOps** - Complete operational infrastructure for LLM applications
+2. **Modern Cloud-Native Architecture** - Kubernetes, Terraform, GitOps, comprehensive monitoring
+3. **Hybrid Approach** - Self-managed components + AWS managed services for optimal control
+4. **Cost Optimization as a Feature** - Demonstrates 60%+ cost reduction through intelligent architecture
+5. **Pause/Resume Infrastructure** - `terraform destroy` → $0/day, `terraform apply` → everything back in 20 minutes
 
 ## 🏗️ Architecture
 
