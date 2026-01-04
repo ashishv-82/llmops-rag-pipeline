@@ -76,13 +76,13 @@ kubernetes/
 
 ---
 
-## 💡 Interview Readiness: The "Why"
+## 💡 Architectural Rationale & Design Principles
 
 > [!IMPORTANT]
-> **Talking Point:** "I chose a namespace-based strategy because it demonstrates **Pragmatic Engineering.** 
-> - **Cost Awareness:** Saves 70% in cloud overhead while maintaining environment parity.
-> - **K8s Mastery:** Proves competence in Namespace isolation, Resource Quotas, and Kustomize overlays.
-> - **Growth Path:** The Terraform structure is designed for 'Lazy Scaling'—we can move to separate clusters in the future just by applying our existing staging/prod modules.
+> **Key Architectural Advantages:** Our chosen strategy prioritizes **Pragmatic Engineering** and cost-efficiency without compromising production-grade standards:
+> - **Cost-Efficiency:** Reduces cloud overhead by ~70% through shared control planes while maintaining environment parity.
+> - **Platform Mastery:** Demonstrates advanced Kubernetes orchestration using Namespace isolation, Resource Quotas, and Kustomize overlays.
+> - **Scalability Path:** The modular Terraform design allows for "Lazy Scaling"—facilitating a seamless transition to separate clusters if future load or compliance requirements dictate.
 
 ---
 
