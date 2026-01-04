@@ -47,7 +47,9 @@ Phase 3 is the **System Integration** phase where independent components come to
 - [5.2 Analytics Service](#52-analytics-service)
 - [5.3 Frontend UI Deployment](#53-frontend-ui-deployment)
 
-**[Part 6: Verification Checklist](#part-6-verification-checklist)**
+**[Part 6: Verification](#part-6-verification)**
+- [6.1 Manual Verification Steps](#61-manual-verification-steps)
+- [6.2 Verification Checklist](#62-verification-checklist)
 
 ---
 
