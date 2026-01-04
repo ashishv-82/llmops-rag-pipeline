@@ -201,6 +201,12 @@ aws-cli/2.15.0 Python/3.11.x Darwin/xx.x.x
 
 ## Part 2: AWS Account Setup
 
+> **Note:** Steps 2.4 and 2.5 include **optional** manual Console walkthroughs for learning purposes. If you're already familiar with AWS Console or want to skip directly to Terraform, you can:
+> - **Skip to Part 3** (Terraform Setup) and let Terraform create all resources
+> - **Come back later** if you want to understand Console → Terraform mapping
+> 
+> The Terraform code in Part 3 will create all necessary resources regardless of whether you do the manual steps.
+
 ### Step 2.1: Create AWS Account (If Needed)
 
 **If you don't have an AWS account:**
@@ -304,6 +310,10 @@ aws sts get-caller-identity
 
 **Why:** Store Terraform state remotely for team collaboration and safety
 
+> **💡 Optional Learning Step:** This walkthrough shows you how to create S3 buckets in the Console. If you prefer, you can **skip this** and let Terraform create the bucket in Part 3. However, doing it manually first helps you understand what Terraform is doing behind the scenes.
+>
+> **To skip:** Jump to [Part 3: Terraform Setup](#part-3-terraform-setup)
+
 **Console Steps:**
 
 1. **Navigate to S3**
@@ -339,12 +349,19 @@ aws sts get-caller-identity
 
 **Why:** Store uploaded documents
 
+> **💡 Optional Learning Step:** This is for learning how Console settings map to Terraform code. If you've already done this in other projects or want to skip ahead, you can **skip this** and go directly to Part 3 where Terraform will create the production bucket.
+>
+> **To skip:** Jump to [Part 3: Terraform Setup](#part-3-terraform-setup)
+
+**Important:** We'll add `-manual` suffix to distinguish from Terraform-managed resources.
+
 **Console Steps:**
 
 1. **Create Bucket**
    - Click "Create bucket"
-   - Bucket name: `llmops-rag-documents-dev-<your-initials>`
-     - Example: `llmops-rag-documents-dev-av`
+   - Bucket name: `llmops-rag-documents-dev-<your-initials>-manual`
+     - Example: `llmops-rag-documents-dev-av-manual`
+     - **Note the `-manual` suffix** - for learning/comparison only
    - Region: `us-east-1`
    - **Block Public Access:** Keep all checkboxes CHECKED
    - **Bucket Versioning:** Enable
@@ -352,6 +369,7 @@ aws sts get-caller-identity
    - **Tags:**
      - Key: `Project`, Value: `LLMOps`
      - Key: `Environment`, Value: `dev`
+     - Key: `Purpose`, Value: `Learning-Manual`
    - Click "Create bucket"
 
 2. **Configure Lifecycle Policy** (Cost Optimization)
@@ -643,19 +661,77 @@ documents_bucket_name = "llmops-rag-documents-dev-av"
 **Console Verification:**
 
 1. Go to AWS Console → S3
-2. Find bucket: `llmops-rag-documents-dev-av`
-3. Verify:
-   - Versioning: Enabled ✅
-   - Encryption: Enabled ✅
-   - Public access: Blocked ✅
-   - Lifecycle rule: Active ✅
+2. Check what buckets exist:
 
-**Compare:**
-- Manual bucket (created earlier)
-- Terraform bucket (just created)
-- They should have identical settings!
+**If you did the manual steps (Step 2.5):**
+- You should see **TWO** buckets:
+  - `llmops-rag-documents-dev-av-manual` (created manually)
+  - `llmops-rag-documents-dev-av` (created by Terraform)
+- **Compare both** to see how Console settings map to Terraform code
+- Proceed to Step 3.7 for cleanup
 
-**Learning Point:** This is how Console actions map to Terraform code.
+**If you skipped the manual steps:**
+- You should see **ONE** bucket:
+  - `llmops-rag-documents-dev-av` (created by Terraform)
+- Verify it has all the features:
+  - Versioning: Enabled ✅
+  - Encryption: Enabled ✅
+  - Public access: Blocked ✅
+  - Lifecycle rule: Active ✅
+- **Skip Step 3.7** (no manual resources to clean up)
+
+**Learning Point:** 
+- If you did manual steps: See how Console actions → Terraform code
+- If you skipped: Terraform created everything automatically from code
+
+---
+
+### Step 3.7: Clean Up Manual Resources (If Applicable)
+
+> **Note:** Only do this if you created manual resources in Step 2.5. If you skipped the manual steps, skip this section too.
+
+**Why:** Keep only Terraform-managed resources to avoid:
+- Duplicate costs
+- Confusion about which is production
+- Manual drift (changes not tracked in code)
+
+**Delete Manual Bucket:**
+
+**Option 1: AWS Console**
+1. Go to AWS Console → S3
+2. Find bucket: `llmops-rag-documents-dev-av-manual`
+3. Select the bucket (checkbox)
+4. Click "Delete"
+5. Type the bucket name to confirm
+6. Click "Delete bucket"
+
+**Option 2: AWS CLI**
+```bash
+# Delete manual bucket
+aws s3 rb s3://llmops-rag-documents-dev-av-manual --force
+
+# Verify it's gone
+aws s3 ls | grep manual
+# Should return nothing
+```
+
+**Verify Cleanup:**
+```bash
+# List remaining buckets
+aws s3 ls
+
+# Should see:
+# - llmops-terraform-state-av-2026 (Terraform state)
+# - llmops-rag-documents-dev-av (Terraform-managed)
+# Should NOT see: -manual bucket
+```
+
+**What to Keep:**
+- ✅ `llmops-terraform-state-*` (Terraform state bucket)
+- ✅ `llmops-rag-documents-dev-*` (Terraform-managed, no -manual suffix)
+
+**What to Delete:**
+- ❌ `llmops-rag-documents-dev-*-manual` (Console-created)
 
 ---
 
@@ -976,8 +1052,8 @@ docker rm rag-api
 - [ ] IAM user created (`llmops-admin`)
 - [ ] Access keys generated and configured
 - [ ] S3 bucket for Terraform state created
-- [ ] S3 bucket for documents created (manual)
-- [ ] Lifecycle policies configured
+- [ ] *(Optional)* S3 bucket for documents created manually
+- [ ] *(Optional)* Lifecycle policies configured manually
 
 ### ✅ Terraform
 
@@ -986,7 +1062,9 @@ docker rm rag-api
 - [ ] Dev environment configured
 - [ ] `terraform apply` successful
 - [ ] Resources visible in AWS Console
-- [ ] Manual vs Terraform buckets compared
+- [ ] *(If manual steps done)* Manual vs Terraform buckets compared
+- [ ] *(If manual steps done)* Manual resources deleted (cleanup complete)
+- [ ] Only Terraform-managed resources remain
 
 ### ✅ FastAPI Application
 
