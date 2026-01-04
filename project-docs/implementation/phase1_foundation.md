@@ -832,7 +832,76 @@ project_name = "llmops-rag"
 
 **This is a one-time setup step.**
 
-#### **Create S3 Bucket for Terraform State**
+#### **Option 1: Automated Script (Recommended)**
+
+```bash
+# Run the bootstrap script
+./scripts/bootstrap-backend.sh
+```
+
+**What the script does:**
+- ✅ Creates S3 bucket: `llmops-rag-terraform-state`
+- ✅ Enables versioning, encryption, and blocks public access
+- ✅ Creates DynamoDB table: `llmops-rag-terraform-state-lock`
+- ✅ Waits for resources to be ready
+- ✅ Verifies everything is configured correctly
+- ✅ Handles errors and checks if resources already exist
+
+**Expected Output:**
+```
+=========================================
+Terraform Backend Bootstrap
+=========================================
+
+This script will create:
+  - S3 bucket: llmops-rag-terraform-state
+  - DynamoDB table: llmops-rag-terraform-state-lock
+  - Region: ap-southeast-2
+
+Continue? (y/n) y
+
+Step 1: Creating S3 bucket for Terraform state...
+==================================================
+✅ S3 bucket created: llmops-rag-terraform-state
+Enabling versioning...
+✅ Versioning enabled
+Enabling encryption...
+✅ Encryption enabled
+Blocking public access...
+✅ Public access blocked
+
+Step 2: Creating DynamoDB table for state locking...
+=====================================================
+✅ DynamoDB table created: llmops-rag-terraform-state-lock
+Waiting for table to become active...
+✅ DynamoDB table is active
+
+Step 3: Verifying resources...
+===============================
+S3 bucket: ✅ llmops-rag-terraform-state
+Versioning: ✅ Enabled
+DynamoDB table: ✅ llmops-rag-terraform-state-lock (ACTIVE)
+
+=========================================
+✅ Bootstrap Complete!
+=========================================
+
+Backend resources are ready:
+  - S3 bucket: llmops-rag-terraform-state
+  - DynamoDB table: llmops-rag-terraform-state-lock
+
+You can now run:
+  cd terraform/environments/dev
+  terraform init
+  terraform apply
+```
+
+---
+
+#### **Option 2: Manual Commands (If Script Fails)**
+
+<details>
+<summary>Click to expand manual commands</summary>
 
 ```bash
 # Create the bucket
@@ -937,6 +1006,8 @@ aws dynamodb describe-table \
 - Can't create them with Terraform (chicken-and-egg problem)
 - One-time manual setup, then Terraform manages everything else
 - These resources persist even after `terraform destroy` (perfect for pause/resume)
+
+</details>
 
 ---
 
