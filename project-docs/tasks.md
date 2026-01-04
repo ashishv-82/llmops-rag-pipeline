@@ -2,20 +2,20 @@
 
 ## 📊 Progress Summary
 
-**Overall Progress**: 34/296 tasks (11%)
-
-```
-Planning & Documentation  ██████████ 100% (14/14)
-Phase 1: Foundation       ██████████ 100% (20/20)
-Phase 2: Kubernetes       ░░░░░░░░░░  0% (0/16)
-Phase 3: Core Features    ░░░░░░░░░░  0% (0/60)
-Phase 4: CI/CD            ░░░░░░░░░░  0% (0/39)
-Phase 5: Monitoring       ░░░░░░░░░░  0% (0/24)
-Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/35)
-Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/35)
-Phase 8: Documentation    ░░░░░░░░░░  0% (0/47)
-Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
-```
+**Overall Progress**: 34/299 tasks (11%)
+ 
+ ```
+ Planning & Documentation  ██████████ 100% (14/14)
+ Phase 1: Foundation       ██████████ 100% (20/20)
+ Phase 2: Kubernetes       ░░░░░░░░░░  0% (0/16)
+ Phase 3: Core Features    ░░░░░░░░░░  0% (0/60)
+ Phase 4: CI/CD            ░░░░░░░░░░  0% (0/39)
+ Phase 5: Monitoring       ░░░░░░░░░░  0% (0/24)
+ Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/35)
+ Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/38)
+ Phase 8: Documentation    ░░░░░░░░░░  0% (0/47)
+ Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
+ ```
 
 **Current Focus**: 🏗️ Phase 2: Kubernetes Setup (Documentation Gold Standard Met)
 **Last Updated**: 04 January, 2026
@@ -355,6 +355,10 @@ Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
 - [ ] Document any issues and fixes
 
 ### Security & Authentication
+- [ ] **Infrastructure Secrets**
+  - [ ] Create `rag-api-secrets` in AWS Secrets Manager (Console)
+  - [ ] Install External Secrets Operator (ESO) on EKS
+  - [ ] Create `SecretStore` and `ExternalSecret` manifests
 - [ ] Add rate limiting
 - [ ] Implement authentication (API keys or OAuth)
 - [ ] Configure network policies in K8s
