@@ -1556,7 +1556,7 @@ lsof -ti:8000 | xargs kill -9
 - ✅ Created S3 buckets (Console + Terraform)
 - ✅ Learned Console → Terraform mapping
 - ✅ Built basic FastAPI application
-- ✅ Containerized with Docker
+- ✅ Optimized exclusion rules for Git and Docker
 - ✅ Verified everything works
 
 **What We Learned:**
@@ -1565,5 +1565,6 @@ lsof -ti:8000 | xargs kill -9
 - FastAPI application structure
 - Docker containerization
 - Infrastructure as Code principles
+- Ignore file strategy (.gitignore vs .dockerignore)
 
 **Ready for Phase 2!** 🚀
