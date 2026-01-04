@@ -30,7 +30,7 @@ graph TD
 ## 🎯 The "Big 3" Value Pillars
 
 ### 1. Hybrid Implementation Strategy
-Combines the learning depth of **custom orchestration** with the scale of **enterprise cloud**.
+Combines the **architectural control** of **custom orchestration** with the scale of **enterprise cloud**.
 - **Build**: Custom LangChain pipeline & K8s orchestration.
 - **Use**: Amazon Nova 2 (LLM), Titan V2 (Embeddings), and Bedrock Guardrails.
 
