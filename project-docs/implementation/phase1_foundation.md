@@ -251,14 +251,14 @@ Terraform v1.7.0
 # Navigate to project directory
 cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
 
-# Create virtual environment
-python3.11 -m venv .venv
+# Create virtual environment with Python 3.12
+python -m venv .venv
 
 # Activate virtual environment
 source .venv/bin/activate
 
 # Verify Python version
-python --version  # Should show Python 3.11+
+python --version  # Should show Python 3.12.3
 
 # Upgrade pip
 pip install --upgrade pip
