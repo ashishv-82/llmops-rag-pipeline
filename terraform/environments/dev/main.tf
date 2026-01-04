@@ -7,7 +7,7 @@ terraform {
 module "documents_bucket" {
   source = "../../modules/s3"
 
-  bucket_name      = "llmops-rag-documents-dev-av" # Replace with your bucket name
+  bucket_name      = "llmops-rag-documents-dev" # Replace with your bucket name
   environment      = "dev"
   enable_lifecycle = true
 }
