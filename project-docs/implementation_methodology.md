@@ -58,7 +58,7 @@ This project follows a **hybrid implementation approach** to ensure deep underst
 1. AWS Console → S3 → Create bucket
 2. Configure:
    - Name: llmops-rag-documents-dev
-   - Region: us-east-1
+   - Region: ap-southeast-2
    - Versioning: Enabled (why: rollback capability)
    - Encryption: AES-256 (why: security)
    - Lifecycle: 30d → Standard-IA (why: cost optimization)

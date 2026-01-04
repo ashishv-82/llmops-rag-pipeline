@@ -429,7 +429,7 @@ aws configure
 # Enter when prompted:
 # AWS Access Key ID: <your-access-key-id>
 # AWS Secret Access Key: <your-secret-access-key>
-# Default region name: us-east-1
+# Default region name: ap-southeast-2
 # Default output format: json
 ```
 
@@ -486,7 +486,7 @@ aws bedrock list-foundation-models --region ap-southeast-2 --query 'modelSummari
 - ✅ `amazon.titan-embed-text-v2:0` (text embeddings)
 
 **If models are NOT available in your region:**
-- Option 1: Use `us-east-1` (most Bedrock models available)
+- Option 1: Use `us-east-1` (if models not available in your region)
 - Option 2: Check [AWS Bedrock regions](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html)
 - Option 3: Use a different region where models are available
 
@@ -520,7 +520,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
    - Bucket name: `llmops-terraform-state-<your-initials>-<random>`
      - Example: `llmops-terraform-state-av-2026`
      - Must be globally unique
-   - Region: `us-east-1`
+   - Region: `ap-southeast-2`
    - **Block Public Access:** Keep all checkboxes CHECKED (block all public access)
    - **Bucket Versioning:** Enable
    - **Encryption:** Enable (Server-side encryption with Amazon S3 managed keys)
@@ -557,7 +557,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
    - Bucket name: `llmops-rag-documents-dev-<your-initials>-manual`
      - Example: `llmops-rag-documents-dev-av-manual`
      - **Note the `-manual` suffix** - for learning/comparison only
-   - Region: `us-east-1`
+   - Region: `ap-southeast-2`
    - **Block Public Access:** Keep all checkboxes CHECKED
    - **Bucket Versioning:** Enable
    - **Encryption:** Enable
@@ -623,7 +623,7 @@ terraform {
   backend "s3" {
     bucket         = "llmops-terraform-state-av-2026"  # Replace with your bucket name
     key            = "llmops-rag/terraform.tfstate"
-    region         = "us-east-1"
+    region         = "ap-southeast-2"
     encrypt        = true
     dynamodb_table = "terraform-state-lock"  # We'll create this later
   }
@@ -639,7 +639,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "ap-southeast-2"
   
   default_tags {
     tags = {
@@ -789,7 +789,7 @@ output "documents_bucket_name" {
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-east-1"
+  default     = "ap-southeast-2"
 }
 
 variable "project_name" {
@@ -804,7 +804,7 @@ variable "project_name" {
 ```hcl
 # terraform/environments/dev/terraform.tfvars
 
-aws_region   = "us-east-1"
+aws_region   = "ap-southeast-2"
 project_name = "llmops-rag"
 ```
 
@@ -998,7 +998,7 @@ class Settings(BaseSettings):
     debug: bool = True
     
     # AWS
-    aws_region: str = "us-east-1"
+    aws_region: str = "ap-southeast-2"
     documents_bucket: str = "llmops-rag-documents-dev-av"  # Replace with your bucket
     
     class Config:
