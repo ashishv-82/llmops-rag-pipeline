@@ -27,6 +27,23 @@ graph TD
 
 ---
 
+## 💡 Key Concepts
+Quick primer on the core technologies driving this pipeline.
+
+| Concept | Simple Explanation |
+| :--- | :--- |
+| **RAG** | **Retrieval-Augmented Generation**. Giving the LLM a "textbook" (your data) to look up answers instead of relying only on its training memory. |
+| **Embeddings** | Translating text into lists of numbers (vectors) that capture *meaning*. "King" and "Queen" will have similar numbers. |
+| **Vectors** | The list of numbers itself (e.g., `[0.1, 0.9, -0.5]`). This is how computers "read" the meaning of text. |
+| **Semantic Search** | Searching by *meaning* rather than exact keywords. "Device not working" finds "Broken screen". |
+| **Vector DB** | A specialized database (like ChromaDB) designed to store and search these vectors instantly. |
+| **Chunking** | Splitting large documents into smaller, meaningful pieces so the LLM can process them easily. |
+| **LLM** | **Large Language Model** (e.g., Nova 2). The "brain" that reads the retrieved chunks and answers your question. |
+| **Context** | The limited memory space (prompt) where we paste the retrieved chunks for the LLM to read. |
+| **Hybrid Search** | Combining **Semantic Search** (meaning) with **Keyword Search** (exact match) for best results. |
+
+---
+
 ## 🎯 The "Big 3" Value Pillars
 
 ### 1. Hybrid Implementation Strategy
