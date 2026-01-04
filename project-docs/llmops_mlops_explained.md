@@ -15,6 +15,11 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 
 **LLMOps (Large Language Model Operations)** focuses on the unique challenges of deploying and operating systems that use large language models. It extends MLOps with LLM-specific concerns like prompt engineering, token optimization, and guardrails.
 
+### LLMOps Flow:
+```
+Prompt Design → LLM Selection → Context Optimization → Guardrails → Deploy → Monitor → Iterate
+```
+
 ### Key Differences from Traditional MLOps:
 - Models are pre-trained (not trained by us)
 - Focus on prompt engineering rather than model training
@@ -28,6 +33,16 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 ## What is MLOps?
 
 **MLOps (Machine Learning Operations)** is about operationalizing ML systems - not just training models, but deploying, monitoring, and continuously improving them in production.
+
+### Traditional MLOps Flow:
+```
+Data → Train Model → Evaluate → Deploy → Monitor → Retrain
+```
+
+### RAG System MLOps Flow (This Project):
+```
+Documents → Embed → Store → Retrieve → Generate → Monitor → Optimize
+```
 
 ### Core Principles:
 - Experiment tracking and versioning
@@ -64,6 +79,18 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 
 **What:** Dynamically selecting the right model based on query complexity and domain
 
+**Flow:**
+```
+Query → Analyze Complexity → Check Domain
+                ↓                    ↓
+         Simple + HR          Complex + Legal
+                ↓                    ↓
+         Nova 2 Lite           Nova 2 Pro
+         (Low Cost)          (High Quality)
+                ↓                    ↓
+              Response ← ← ← ← Response
+```
+
 **How We Implement:**
 - Query complexity analysis
 - Route simple queries to Nova 2 Lite (cheaper)
@@ -82,6 +109,22 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 ### 3. Semantic Caching
 
 **What:** Cache LLM responses based on semantic similarity, not exact matches
+
+**Flow:**
+```
+Query → Generate Embedding → Check Redis Cache
+                                    ↓
+                            Similar Query Found?
+                            ↙              ↘
+                         Yes                No
+                          ↓                  ↓
+                   Return Cached      Call LLM API
+                     Response              ↓
+                         ↓            Cache Response
+                         ↓                  ↓
+                    User ← ← ← ← ← ← ← ← User
+                  (Fast, Free)        (Slower, Costs)
+```
 
 **How We Implement:**
 - Redis for cache storage
@@ -139,6 +182,29 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 ### 6. Context Management
 
 **What:** Optimize what context is sent to the LLM
+
+**Complete RAG Pipeline Flow:**
+```
+User Query
+    ↓
+Generate Query Embedding (Titan V2)
+    ↓
+Hybrid Search (Vector + Keyword)
+    ↓
+Filter by Domain (HR/Legal/etc)
+    ↓
+Retrieve Top-K Documents
+    ↓
+Rerank by Relevance
+    ↓
+Build Context + Prompt
+    ↓
+Send to LLM (Nova 2)
+    ↓
+Apply Guardrails
+    ↓
+Return Response to User
+```
 
 **How We Implement:**
 - Hybrid search (vector + keyword)
@@ -276,6 +342,33 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 
 **What:** Automated testing and deployment with quality gates
 
+**CI/CD Flow:**
+```
+Code Change → PR Created → CI Tests Run
+                              ↓
+                    Lint + Unit Tests + Build
+                              ↓
+                    Quality Evaluation Tests
+                              ↓
+                    Quality Score ≥ 0.8?
+                    ↙              ↘
+                 Yes                No
+                  ↓                  ↓
+            Merge to Main      Block Deployment
+                  ↓
+         Deploy to Dev Namespace
+                  ↓
+         Manual Trigger → Deploy to Staging
+                              ↓
+                    Integration Tests Pass?
+                    ↙              ↘
+                 Yes                No
+                  ↓                  ↓
+         Manual Approval      Auto Rollback
+                  ↓
+         Deploy to Production
+```
+
 **How We Implement:**
 - Run evaluation tests on every PR
 - Quality threshold checks before deployment
@@ -288,6 +381,40 @@ This project demonstrates a **hybrid LLMOps/MLOps approach** to building and ope
 - Faster iteration
 - Reduced manual errors
 - Confidence in changes
+
+---
+
+---
+
+## Document Ingestion Flow (Dual-Path)
+
+**Path 1: Web UI Upload (End Users)**
+```
+User → Upload via Web UI → Validate File
+                              ↓
+                        Upload to S3
+                              ↓
+                    Generate Embeddings (Titan V2)
+                              ↓
+                    Store in Vector DB
+                              ↓
+                    Document Searchable
+```
+
+**Path 2: GitHub Repository (Admins)**
+```
+Admin → Commit to data/documents/ → Push to GitHub
+                                        ↓
+                              GitHub Actions Triggered
+                                        ↓
+                              Upload to S3
+                                        ↓
+                        Generate Embeddings (Titan V2)
+                                        ↓
+                        Store in Vector DB
+                                        ↓
+                        Document Searchable
+```
 
 ---
 
