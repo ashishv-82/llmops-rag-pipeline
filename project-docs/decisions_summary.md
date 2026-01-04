@@ -33,7 +33,7 @@ graph LR
 
 ### **1. Major Decision: The Hybrid Approach**
 **Decision**: Combine self-managed Kubernetes components with cutting-edge AWS managed services.
-- **Learning Value**: Deep-dive into core RAG internals and Kubernetes orchestration.
+- **Architectural Depth**: Deep-dive into core RAG internals and Kubernetes orchestration.
 - **Enterprise Scale**: Leveraging the latest 2026 AWS tech (Nova 2, Titan V2, Guardrails).
 - **Cost Optimization**: Utilizing a "Pause/Resume" architecture to minimize cloud overhead.
 
@@ -41,7 +41,7 @@ graph LR
 
 ## 🛠️ Technology Stack Finalization
 
-### **Self-Managed (The Learning Core)**
+### **Core Engineering (First-Principles Implementation)**
 - ✅ **Vector Database**: ChromaDB/Weaviate on Kubernetes (Full control over indexing/retrieval).
 - ✅ **RAG Pipeline**: Custom LangChain orchestration (Internal optimization mastery).
 - ✅ **Infrastructure**: Terraform + EKS (Cloud-agnostic automation skills).
@@ -62,7 +62,7 @@ graph LR
 | **Security** | Basic IAM | **Bedrock Guardrails** | Enterprise PII Masking & Safety |
 | **Search** | Vector Similarity | **Hybrid (Vector + BM25)** | Higher Accuracy for Technical Data |
 | **Ingestion** | Web UI only | **Dual-Path (UI + CI/CD)** | Developer & User Flexibility |
-| **Learning** | High | **Expert-Level** | Demonstrates Dual Mastery (AI + K8s) |
+| **Architectural Depth** | Balanced | **First-Principles Mastery** | Demonstrates proficiency in both AI & Infrastructure |
 
 ---
 
@@ -110,8 +110,8 @@ This project demonstrates proficiency across the modern AI and DevOps landscape:
 <details>
 <summary>▶️ <b>Architectural Response Logic (Click to expand)</b></summary>
 
-- **Why self-managed vector DB?** Maximum learning depth and operational control over indexing costs.
-- **Why not Bedrock Knowledge Bases?** To prioritize a deep understanding of the RAG pipeline mechanics.
+- **Why self-managed vector DB?** Maximum architectural depth and operational control over indexing costs.
+- **Why not Bedrock Knowledge Bases?** To prioritize a first-principles understanding of the RAG pipeline mechanics.
 - **Why automated data-sync?** To demonstrate MLOps maturity by treating "Data-as-Code" via CI/CD.
 </details>
 

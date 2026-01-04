@@ -31,7 +31,7 @@ This project follows a **hybrid implementation approach** to ensure deep underst
 
 ## Benefits
 
-### AWS Console Proficiency
+### Operational Proficiency
 - ✅ Navigate AWS services confidently
 - ✅ Debug issues using Console tools
 - ✅ Understand what Terraform is doing behind the scenes
@@ -110,7 +110,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "documents" {
 
 ---
 
-## Services We'll Learn Both Ways
+## Technical Competencies Developed
 
 ### Phase 1: Foundation
 - **S3** - Buckets, versioning, lifecycle, encryption
@@ -131,7 +131,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "documents" {
 ## When to Use Each Approach
 
 ### Use AWS Console For:
-- Initial exploration and learning
+- Initial exploration and resource discovery
 - Debugging (logs, metrics, resource inspection)
 - Verifying Terraform changes
 - One-off investigations
@@ -149,7 +149,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "documents" {
 ### Use Both For:
 - Understanding AWS services deeply
 - Troubleshooting complex issues
-- Learning best practices
+- Infrastructure-as-Code best practices
 - Technical certification prep
 
 ---
@@ -198,7 +198,7 @@ Common issues and how to debug using Console
 
 ---
 
-## Learning Outcomes
+## Professional Proficiency Outcomes
 
 By following this approach, you will:
 
@@ -212,10 +212,10 @@ By following this approach, you will:
 
 ## Commitment
 
-This project prioritizes **understanding over speed**. We'll take time to:
+This project prioritizes **technical depth over speed**. We'll take time to:
 - Explore Console UIs
 - Understand each setting's purpose
 - Learn why configurations matter
-- Build deep AWS knowledge
+- Build deep AWS domain knowledge
 
-The goal is not just a working project, but **mastery of AWS and IaC practices**.
+The goal is not just a working project, but **comprehensive mastery of AWS and IaC practices**.
