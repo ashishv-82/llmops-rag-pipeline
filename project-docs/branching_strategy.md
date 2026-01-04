@@ -1,318 +1,108 @@
 # Branching and Workflow Strategy
 
-## Overview
-
-This project uses **GitHub Flow** - a simple, PR-based branching strategy that is industry-standard and emphasizes continuous deployment.
+This project uses **GitHub Flow** - a streamlined, PR-based branching strategy emphasized for continuous integration and deployment (CI/CD).
 
 ---
 
-## Branching Model
+## 🗺️ Deployment Lifecycle (At a Glance)
 
-### **Single Long-Lived Branch:**
-- `main` - Production-ready code, protected, always deployable
-
-### **Short-Lived Feature Branches:**
-- `feature/*` - New features (e.g., `feature/add-caching`)
-- `bugfix/*` - Bug fixes (e.g., `bugfix/fix-embeddings`)
-- `hotfix/*` - Critical fixes (e.g., `hotfix/security-patch`)
-- `data/*` - Document uploads (e.g., `data/add-policies`)
-
----
-
-## Workflow
-
-### **1. Create Feature Branch**
-
-```bash
-# Start from latest main
-git checkout main
-git pull origin main
-
-# Create feature branch
-git checkout -b feature/add-semantic-caching
-
-# Make changes
-git add .
-git commit -m "Add Redis semantic caching layer"
-git push origin feature/add-semantic-caching
-```
-
-### **2. Create Pull Request**
-
-- **From**: `feature/add-semantic-caching`
-- **To**: `main`
-- **Triggers**: CI workflow (build, test, security scan)
-- **Requires**: Code review + 1 approval
-
-### **3. CI Runs on PR**
-
-```yaml
-# .github/workflows/ci.yml
-on:
-  pull_request:
-    branches: [main]
-
-jobs:
-  - Lint code (pylint, black, mypy)
-  - Run unit tests (pytest)
-  - Build Docker image
-  - Security scan (Trivy)
-  - Post results to PR
-```
-
-### **4. Review and Merge**
-
-- Reviewer checks code quality
-- CI must pass (green checkmark)
-- Approve and merge to `main`
-
-### **5. Auto-Deploy to Dev**
-
-```yaml
-# .github/workflows/cd-dev.yml
-on:
-  push:
-    branches: [main]
-
-jobs:
-  - Deploy to dev namespace in K8s
-  - Run smoke tests
-  - Verify health checks
-```
-
-### **6. Manual Promotion to Staging**
-
-```bash
-# Via GitHub Actions UI
-# Workflow: cd-staging.yml
-# Input: Commit SHA or tag
-# Action: Deploy to staging namespace
-```
-
-### **7. Manual Promotion to Production**
-
-```bash
-# Via GitHub Actions UI
-# Workflow: cd-production.yml
-# Requires: Manual approval
-# Action: Deploy to prod namespace
+```mermaid
+graph TD
+    A[Feature/Bugfix Branch] -->|Pull Request| B{CI Pipeline}
+    B -->|Pass| C[Code Review]
+    C -->|Approve| D[Merge to main]
+    D -->|Auto-Deploy| E[Namespace: dev]
+    E -->|Manual Trigger| F[Namespace: staging]
+    F -->|Manual Trigger + Approval| G[Namespace: prod]
+    
+    style D fill:#f9f,stroke:#333,stroke-width:2px
+    style G fill:#00ff00,stroke:#333,stroke-width:2px
 ```
 
 ---
 
-## Document Upload Workflow
+## 🌲 Branching Model
 
-### **Same PR Process**
-
-Documents added to `data/documents/` follow the same PR-based workflow:
-
-```bash
-# Create branch for document upload
-git checkout -b data/add-q1-reports
-
-# Add documents
-git add data/documents/q1-sales.pdf
-git add data/documents/q1-marketing.pdf
-git commit -m "Add Q1 2026 reports"
-git push origin data/add-q1-reports
-
-# Create PR → Review → Merge
-```
-
-### **After Merge to Main**
-
-```yaml
-# .github/workflows/data-sync.yml
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'data/documents/**'
-
-jobs:
-  - Upload documents to S3
-  - Generate embeddings (Titan V2)
-  - Update vector database
-  - Notify completion
-```
+| Branch Type | Name Pattern | Purpose |
+| :--- | :--- | :--- |
+| **Production** | `main` | Production-ready, always deployable. |
+| **Features** | `feature/*` | New functional changes. |
+| **Bugs** | `bugfix/*` | Non-critical repairs. |
+| **Critical** | `hotfix/*` | Immediate production patches. |
+| **Data** | `data/*` | Document ingestion (**Data-as-Code**). |
 
 ---
 
-## Deployment Flow
+## 🌐 Environment & Namespace Mapping
 
-```
-Feature Branch
-    ↓
-  Pull Request (CI runs)
-    ↓
-  Code Review + Approval
-    ↓
-  Merge to main
-    ↓
-  Auto-deploy to dev namespace
-    ↓
-  Manual trigger → staging namespace
-    ↓
-  Manual trigger + approval → prod namespace
-```
+| Environment | Git Trigger | K8s Namespace | AWS Resource Tags |
+| :--- | :--- | :--- | :--- |
+| **Development** | Merge to `main` | `dev` | `Env: dev` |
+| **Staging** | Manual Dispatch | `staging` | `Env: staging` |
+| **Production** | Manual + Approval | `prod` | `Env: prod` |
 
 ---
 
-## Branch Protection Rules
+## 📝 Pull Request Standards
 
-### **`main` Branch Protection:**
+To ensure production-grade quality, every PR should use a standard template.
 
-```yaml
-Settings → Branches → Branch protection rules → main
+> [!TIP]
+> **Recommended Template Location:** `.github/pull_request_template.md`
 
-Required:
-  ✅ Require pull request before merging
-  ✅ Require approvals: 1
-  ✅ Dismiss stale reviews when new commits are pushed
-  ✅ Require status checks to pass before merging
-     - ci.yml (build and test)
-  ✅ Require conversation resolution before merging
-  ✅ Do not allow bypassing the above settings
-
-Optional:
-  ⬜ Require signed commits
-  ⬜ Require linear history
-```
+### **PR Checklist:**
+- [ ] **What:** Brief description of changes.
+- [ ] **Why:** The problem being solved or feature added.
+- [ ] **How:** High-level implementation details.
+- [ ] **Verification:** Screenshots, logs, or command output showing it works.
 
 ---
 
-## Workflow Triggers
+## 📑 Workflow Walkthroughs
 
-### **CI Workflow (`ci.yml`)**
+<details>
+<summary>▶️ <b>Scenario 1: Adding a New Feature (Code)</b></summary>
 
-**Triggers:**
-- Pull requests to `main`
-- Pushes to `main` (for verification)
+1. **Local Setup:**
+   ```bash
+   git checkout -b feature/intelligent-routing
+   ```
+2. **Develop & Commit:** Use descriptive messages.
+3. **Push & PR:** Create PR to `main`.
+4. **CI/CD:** Wait for green checks, get approval, and merge.
+</details>
 
-**Actions:**
-- Lint, test, build, scan
-- Post results to PR
+<details>
+<summary>▶️ <b>Scenario 2: Data-as-Code (Document Upload)</b></summary>
 
-### **CD-Dev Workflow (`cd-dev.yml`)**
+Documents are treated like code. Adding a PDF requires a PR.
+1. **Branch:** `git checkout -b data/q1-reports`
+2. **Add:** Place documents in `data/documents/`.
+3. **Sync:** Merge to `main` triggers the `data-sync.yml` workflow, which handles S3 upload and Embedding generation.
+</details>
 
-**Triggers:**
-- Push to `main` (after PR merge)
+<details>
+<summary>▶️ <b>Scenario 3: Emergency Hotfix</b></summary>
 
-**Actions:**
-- Deploy to dev namespace
-- Run smoke tests
-
-### **CD-Staging Workflow (`cd-staging.yml`)**
-
-**Triggers:**
-- Manual (`workflow_dispatch`)
-
-**Actions:**
-- Deploy to staging namespace
-- Run integration tests
-
-### **CD-Production Workflow (`cd-production.yml`)**
-
-**Triggers:**
-- Manual (`workflow_dispatch`)
-- Requires approval via GitHub Environments
-
-**Actions:**
-- Deploy to prod namespace
-- Monitor for errors
-- Auto-rollback if issues
-
-### **Data Sync Workflow (`data-sync.yml`)**
-
-**Triggers:**
-- Push to `main` with changes in `data/documents/**`
-
-**Actions:**
-- Upload to S3
-- Generate embeddings
-- Update vector DB
-
-### **Infrastructure Workflow (`infrastructure.yml`)**
-
-**Triggers:**
-- Push to `main` with changes in `terraform/**`
-- Manual (`workflow_dispatch`)
-
-**Actions:**
-- Terraform plan
-- Terraform apply (with approval)
+1. **Branch:** `git checkout -b hotfix/revert-bad-cache`
+2. **Deploy:** Merge to `main`, then manually promote through environments at high speed.
+</details>
 
 ---
 
-## Example Scenarios
+## ⚙️ Workflow Triggers (GitHub Actions)
 
-### **Scenario 1: Add New Feature**
-
-```bash
-# Day 1: Start feature
-git checkout -b feature/intelligent-routing
-# Code changes
-git push origin feature/intelligent-routing
-# Create PR
-
-# Day 2: Address review comments
-git commit -m "Address review feedback"
-git push origin feature/intelligent-routing
-
-# Day 3: Merge
-# PR approved → Merge to main → Auto-deploy to dev
-```
-
-### **Scenario 2: Add Documents**
-
-```bash
-# Admin adds company policies
-git checkout -b data/add-hr-policies
-git add data/documents/hr-policy-2026.pdf
-git commit -m "Add 2026 HR policies"
-git push origin data/add-hr-policies
-# Create PR → Quick review → Merge → Auto-processed
-```
-
-### **Scenario 3: Hotfix**
-
-```bash
-# Critical bug found in production
-git checkout -b hotfix/fix-cache-bug
-# Fix bug
-git commit -m "Fix Redis cache invalidation bug"
-git push origin hotfix/fix-cache-bug
-# Create PR → Expedited review → Merge → Deploy to dev → staging → prod
-```
+| Workflow | Trigger | Action |
+| :--- | :--- | :--- |
+| `ci.yml` | `pull_request` to `main` | Lint, Test, Scan, Build. |
+| `cd-dev.yml` | `push` to `main` | Deploy to `dev` namespace. |
+| `data-sync.yml` | `push` to `data/` path | S3 Upload + Embedding. |
+| `infra.yml` | `push` to `terraform/` | Terraform Plan/Apply. |
 
 ---
 
-## Benefits of This Approach
-
-✅ **Simple** - Only one long-lived branch  
-✅ **Safe** - All changes reviewed via PR  
-✅ **Consistent** - Same process for code and data  
-✅ **Industry Standard** - GitHub Flow (used by GitHub, Shopify, etc.)  
-✅ **Fast** - No waiting for release cycles  
-✅ **Auditable** - Full Git history of all changes  
-✅ **Reversible** - Easy to revert bad changes  
-
----
-
-## Best Practices
-
-1. **Keep branches short-lived** - Merge within 1-3 days
-2. **Small, focused PRs** - Easier to review
-3. **Descriptive branch names** - `feature/add-redis-caching` not `fix-stuff`
-4. **Meaningful commit messages** - Explain why, not just what
-5. **Delete merged branches** - Keep repo clean
-6. **Test locally first** - Don't rely on CI to catch basic errors
-7. **Review your own PR** - Check the diff before requesting review
-
----
-
-## References
-
-- [GitHub Flow Guide](https://guides.github.com/introduction/flow/)
-- [Branch Protection Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches)
-- [GitHub Actions Workflows](https://docs.github.com/en/actions/using-workflows)
+## 🎯 Best Practices
+1. **Short-Lived Branches:** Merge within 2-3 days to avoid "Merge Hell".
+2. **Descriptive Names:** `feature/add-redis` > `fix-1`.
+3. **Test Locally First:** Never let CI be the first time your code runs.
+4. **Delete Merged Branches:** Keep the remote repository clean.
