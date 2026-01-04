@@ -115,6 +115,19 @@ api/
 - Set up non-root user
 - Run with uvicorn
 
+**Design Rationale:**
+- **Microservices Pattern:** The Dockerfile is placed inside the `api/` folder to keep the service self-contained. Each service in the project (api, frontend, etc.) manages its own build instructions.
+- **Build Efficiency:** Keeping the Dockerfile close to the code allows for a cleaner separation of concerns.
+- **Portability:** The `api/` folder can be moved or reused in other projects as a complete, buildable unit.
+
+**Usage:**
+To build the image correctly while allowing Python to see the package structure, run the build from the **project root**:
+```bash
+docker build -t llmops-api -f api/Dockerfile .
+```
+> [!NOTE]
+> We use the `-f` flag to point to the Dockerfile inside the `api/` folder, but use the root directory (`.`) as the build context so that the `COPY` commands can access the `api/` directory structure correctly.
+
 ---
 
 #### `requirements.txt` - Python Dependencies

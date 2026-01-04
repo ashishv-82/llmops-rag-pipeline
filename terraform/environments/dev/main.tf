@@ -11,3 +11,12 @@ module "documents_bucket" {
   environment      = "dev"
   enable_lifecycle = true
 }
+
+module "embeddings_bucket" {
+  source = "../../modules/s3"
+
+  bucket_name      = "llmops-rag-embeddings-dev"
+  environment      = "dev"
+  enable_lifecycle = false # No lifecycle needed for short-lived feature store
+}
+

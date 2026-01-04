@@ -1383,13 +1383,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY requirements.txt .
+COPY api/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY api/ api/
 
 # Expose port
 EXPOSE 8000
@@ -1445,41 +1445,41 @@ docker rm rag-api
 
 ### ✅ Local Environment
 
-- [ ] Docker installed and running
-- [ ] minikube cluster running
-- [ ] kubectl configured
-- [ ] Terraform installed
-- [ ] Python 3.11+ virtual environment created
-- [ ] AWS CLI installed and configured
+- [x] Docker installed and running
+- [x] minikube cluster running
+- [x] kubectl configured
+- [x] Terraform installed
+- [x] Python 3.11+ virtual environment created
+- [x] AWS CLI installed and configured
 
 ### ✅ AWS Setup
 
-- [ ] IAM user created (`llmops-admin`)
-- [ ] Access keys generated and configured
-- [ ] S3 bucket for Terraform state created
-- [ ] *(Optional)* S3 bucket for documents created manually
-- [ ] *(Optional)* Lifecycle policies configured manually
+- [x] IAM user created (`llmops-admin`)
+- [x] Access keys generated and configured
+- [x] S3 bucket for Terraform state created
+- [x] *(Optional)* S3 bucket for documents created manually
+- [x] *(Optional)* Lifecycle policies configured manually
 
 ### ✅ Terraform
 
-- [ ] Terraform initialized
-- [ ] S3 module created
-- [ ] Dev environment configured
-- [ ] `terraform apply` successful
-- [ ] Resources visible in AWS Console
-- [ ] *(If manual steps done)* Manual vs Terraform buckets compared
-- [ ] *(If manual steps done)* Manual resources deleted (cleanup complete)
-- [ ] Only Terraform-managed resources remain
+- [x] Terraform initialized
+- [x] S3 module created
+- [x] Dev environment configured
+- [x] `terraform apply` successful
+- [x] Resources visible in AWS Console
+- [x] *(If manual steps done)* Manual vs Terraform buckets compared
+- [x] *(If manual steps done)* Manual resources deleted (cleanup complete)
+- [x] Only Terraform-managed resources remain
 
 ### ✅ FastAPI Application
 
-- [ ] API structure created
-- [ ] Dependencies installed
-- [ ] Health check endpoints working
-- [ ] Application runs locally
-- [ ] Interactive docs accessible
-- [ ] Docker image builds successfully
-- [ ] Container runs successfully
+- [x] API structure created
+- [x] Dependencies installed
+- [x] Health check endpoints working
+- [x] Application runs locally
+- [x] Interactive docs accessible
+- [x] Docker image builds successfully
+- [x] Container runs successfully
 
 ---
 
