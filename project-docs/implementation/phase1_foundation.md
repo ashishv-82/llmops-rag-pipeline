@@ -23,6 +23,52 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 
 ---
 
+## Table of Contents
+
+**[Prerequisites](#prerequisites)**
+
+**[Part 1: Local Development Environment](#part-1-local-development-environment)**
+- [1.1 Install Docker and Docker Compose](#step-11-install-docker-and-docker-compose)
+- [1.2 Install Kubernetes Tools (minikube)](#step-12-install-kubernetes-tools-minikube)
+  - [1.2.1 Understanding minikube Lifecycle](#step-121-understanding-minikube-lifecycle--data-persistence)
+- [1.3 Install Terraform](#step-13-install-terraform)
+- [1.4 Set Up Python Virtual Environment](#step-14-set-up-python-virtual-environment)
+- [1.5 Install AWS CLI](#step-15-install-aws-cli)
+
+**[Part 2: AWS Account Setup](#part-2-aws-account-setup)**
+- [2.1 Create AWS Account](#step-21-create-aws-account-if-needed)
+- [2.2 Create IAM User](#step-22-create-iam-user-console-walkthrough)
+- [2.3 Configure AWS CLI](#step-23-configure-aws-cli)
+- [2.4 Create S3 Bucket for Terraform State](#step-24-create-s3-bucket-for-terraform-state-console) *(Optional)*
+- [2.5 Create S3 Bucket for Documents](#step-25-create-s3-bucket-for-documents-console) *(Optional)*
+
+**[Part 3: Terraform Setup](#part-3-terraform-setup)**
+- [3.1 Create Terraform Directory Structure](#step-31-create-terraform-directory-structure)
+- [3.2 Create Terraform Backend Configuration](#step-32-create-terraform-backend-configuration)
+- [3.3 Create S3 Module](#step-33-create-s3-module-terraform)
+- [3.4 Create Dev Environment Configuration](#step-34-create-dev-environment-configuration)
+- [3.5 Initialize and Apply Terraform](#step-35-initialize-and-apply-terraform)
+- [3.6 Verify Terraform-Created Resources](#step-36-verify-terraform-created-resources-console)
+- [3.7 Clean Up Manual Resources](#step-37-clean-up-manual-resources-if-applicable) *(If Applicable)*
+
+**[Part 4: Basic FastAPI Application](#part-4-basic-fastapi-application)**
+- [4.1 Create API Directory Structure](#step-41-create-api-directory-structure)
+- [4.2 Create Requirements File](#step-42-create-requirements-file)
+- [4.3 Create Configuration](#step-43-create-configuration)
+- [4.4 Create Health Check Router](#step-44-create-health-check-router)
+- [4.5 Create Main Application](#step-45-create-main-application)
+- [4.6 Test FastAPI Application](#step-46-test-fastapi-application)
+- [4.7 Create Dockerfile](#step-47-create-dockerfile)
+- [4.8 Build and Test Docker Image](#step-48-build-and-test-docker-image)
+
+**[Part 5: Verification Checklist](#part-5-verification-checklist)**
+
+**[Next Steps](#next-steps)**
+
+**[Troubleshooting](#troubleshooting)**
+
+---
+
 ## Prerequisites
 
 ### Required Software
