@@ -65,6 +65,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ### Terraform Initialization
 - [ ] Set up Terraform backend configuration (S3 state)
+- [ ] Create DynamoDB table for state locking
 - [ ] Create VPC module
 - [ ] Create S3 buckets module (documents, embeddings)
 - [ ] Set up basic security groups
