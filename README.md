@@ -329,8 +329,7 @@ llmops-rag-pipeline/
 │   │   ├── staging/                # Staging (structure only)
 │   │   └── prod/                   # Production (structure only)
 │   │
-│   ├── backend.tf                  # S3 backend for state
-│   └── dynamodb.tf                 # DynamoDB table for state locking
+│   └── backend.tf                  # S3 backend for state
 │
 ├── kubernetes/                     # Kubernetes manifests
 │   ├── base/                       # Base configurations

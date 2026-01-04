@@ -344,7 +344,6 @@ This approach balances:
 │   │   ├── staging/
 │   │   └── prod/
 │   ├── backend.tf
-│   ├── dynamodb.tf
 │   └── main.tf
 └── kubernetes/
     ├── base/
@@ -398,7 +397,7 @@ This approach balances:
 - [ ] Create Dockerfile for the application
 - [ ] Set up basic Terraform configuration for VPC and S3
 - [ ] Initialize Terraform state management (S3 backend)
-- [ ] Create DynamoDB table for Terraform state locking
+- [ ] Bootstrap backend resources (S3 bucket + DynamoDB table via script)
 
 **Learning Focus**: Terraform basics, Docker containerization, production-grade state management
 
