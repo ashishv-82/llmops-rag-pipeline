@@ -111,6 +111,11 @@ data:
 **File:** `kubernetes/base/secrets.yaml`
 _Purpose: Sensitive credentials (placeholder for local dev)._
 
+> [!CAUTION]
+> **NEVER commit real credentials to Git.**
+> 1. Run `echo "kubernetes/base/secrets.yaml" >> .gitignore` immediately.
+> 2. The value below is just base64 for "placeholder".
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -118,8 +123,8 @@ metadata:
   name: rag-api-secrets
 type: Opaque
 data:
-  # Base64 encoded values
-  # echo -n "test-key" | base64
+  # Base64 encoded values (echo -n "your-key" | base64)
+  # Example below decodes to: "placeholder"
   OPENAI_API_KEY: "cGxhY2Vob2xkZXIK" 
 ```
 
