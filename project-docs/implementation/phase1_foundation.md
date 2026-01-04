@@ -652,6 +652,48 @@ provider "aws" {
 
 ---
 
+### Step 3.2.1: Create DynamoDB Table for State Locking
+
+**Why:** Enable state locking to prevent concurrent Terraform runs (production-grade safety)
+
+**Create file:** `terraform/dynamodb.tf`
+
+```hcl
+# terraform/dynamodb.tf
+# DynamoDB table for Terraform state locking
+
+resource "aws_dynamodb_table" "terraform_state_lock" {
+  name         = "llmops-rag-terraform-state-lock"
+  billing_mode = "PAY_PER_REQUEST"  # Pay only for what you use (free tier eligible)
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"  # String type
+  }
+
+  tags = {
+    Name      = "Terraform State Lock Table"
+    Project   = "LLMOps"
+    Purpose   = "State Locking"
+    ManagedBy = "Terraform"
+  }
+}
+
+output "dynamodb_table_name" {
+  description = "Name of the DynamoDB table for state locking"
+  value       = aws_dynamodb_table.terraform_state_lock.name
+}
+```
+
+**What this does:**
+- Creates DynamoDB table for state locking
+- Prevents multiple users from running Terraform simultaneously
+- PAY_PER_REQUEST billing (free tier covers this)
+- Production-grade safety feature
+
+---
+
 ### Step 3.3: Create S3 Module (Terraform)
 
 **Why:** Replicate what we created manually in Console
