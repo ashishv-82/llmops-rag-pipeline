@@ -425,7 +425,10 @@ This project supports two ways to add documents:
 
 ## 📚 Documentation
 
-- [`project-docs/project_proposal.md`](./project-docs/project_proposal.md) - Detailed project proposal and architecture
+- [API Folder Explained](project-docs/api_folder_explained.md)
+- [Ignore Files Strategy (.gitignore vs .dockerignore)](project-docs/ignore_files_explained.md)
+- [Architecture Decisions](project-docs/decisions_summary.md)
+ - Detailed project proposal and architecture
 - More documentation coming as project develops
 
 ## 🎯 Technical Capabilities
