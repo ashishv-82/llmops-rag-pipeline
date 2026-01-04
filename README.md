@@ -360,7 +360,7 @@ llmops-rag-pipeline/
 │       └── mlflow_tracking.py
 │
 ├── tests/                          # Test suite
-│   ├── unit/                         # Unit tests
+│   ├── unit/                       # Unit tests
 │   ├── integration/                # Integration tests
 │   └── e2e/                        # End-to-end tests
 │
