@@ -56,24 +56,24 @@
 
 ## Cost Structure
 
-**Total Project Budget**: ~$100-200 over 8 weeks
+**Total Project Budget**: ~$100-200 over Phased Implementation
 
 ### **Detailed Breakdown:**
 
-**Weeks 1-4: Local Development**
+**Phase 1-4: Local Development**
 - **Local Infrastructure**: $0 (Kubernetes, Docker, Vector DB all run on your laptop)
 - **AWS Services**: ~$15-30/month (S3 storage, LLM API calls for testing)
-- **Total**: ~$60-120 for 4 weeks
+- **Total**: ~$60-120 for this duration
 
-**Weeks 5-6: Cost Optimization Phase (Still Local)**
+**Phase 5-6: Cost Optimization Phase (Still Local)**
 - **Local Infrastructure**: $0 (still running locally)
 - **AWS Services**: ~$20-35/month (more LLM testing)
-- **Total**: ~$40-70 for 2 weeks
+- **Total**: ~$40-70 for this duration
 
-**Weeks 7-8: EKS Deployment**
+**Phase 7-8: EKS Deployment**
 - **AWS Infrastructure**: ~$100 for 2 weeks (EKS control plane + EC2 nodes)
 - **AWS Services**: ~$20 (S3, LLM APIs)
-- **Total**: ~$100 for 2 weeks
+- **Total**: ~$100 for this duration
 
 **Weeks 9+: Maintenance**
 - **Infrastructure**: $0 (destroyed via `terraform destroy`)
@@ -83,7 +83,7 @@
 ### **Cost Optimization Options:**
 
 **Option 1: Minimize LLM Costs During Development**
-- Use **Ollama** (free local LLM) during weeks 1-6
+- Use **Ollama** (free local LLM) during early development
 - Switch to AWS Bedrock only for final deployment
 - **Savings**: ~$40-80
 - **Revised Total**: ~$100-120
@@ -91,7 +91,7 @@
 **Option 2: Skip AWS Services During Local Dev**
 - Use local storage instead of S3
 - Use mock LLM responses
-- Only use AWS during weeks 7-8
+- Only use AWS during final phases
 - **Savings**: ~$60-100
 - **Revised Total**: ~$100-110
 
@@ -210,6 +210,6 @@ This project demonstrates:
 - ✅ **MLOps expertise**: Custom pipeline, evaluation, versioning
 - ✅ **Business acumen**: Cost tracking, optimization, ROI demonstration
 
-**Estimated completion**: 8 weeks (part-time)  
+**Estimated completion**: Phased Implementation  
 **Total investment**: ~$195  
-**Career impact**: High (demonstrates senior-level skills)
+**Project Value**: High (demonstrates senior-level skills)

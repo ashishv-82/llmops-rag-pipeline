@@ -39,7 +39,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 1: Foundation (Weeks 1-2)
+## Phase 1: Foundation (Phase Allocation)
 
 ### Local Development Environment
 - [x] Install Docker and Docker Compose
@@ -71,7 +71,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 2: Kubernetes Setup (Weeks 2-3)
+## Phase 2: Kubernetes Setup (Phase Allocation)
 
 ### Local Kubernetes
 - [ ] Set up local K8s cluster (minikube or kind)
@@ -95,7 +95,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 3: Core Application Features (Weeks 3-4)
+## Phase 3: Core Application Features (Phase Allocation)
 
 ### AWS Bedrock Integration
 - [ ] Set up AWS Bedrock access (IAM permissions)
@@ -171,7 +171,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 4: CI/CD Pipeline (Weeks 4-5)
+## Phase 4: CI/CD Pipeline (Phase Allocation)
 
 ### GitHub Actions - CI (Code)
 - [ ] Create `ci.yml` workflow
@@ -224,7 +224,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 5: Monitoring & Observability (Weeks 5-6)
+## Phase 5: Monitoring & Observability (Phase Allocation)
 
 ### Prometheus & Grafana
 - [ ] Deploy Prometheus on K8s
@@ -264,7 +264,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 6: MLOps/LLMOps Features (Weeks 6-7)
+## Phase 6: MLOps/LLMOps Features (Phase Allocation)
 
 ### Semantic Caching (Redis)
 - [ ] Deploy Redis on K8s
@@ -317,7 +317,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 
 ---
 
-## Phase 7: EKS Deployment & Infrastructure Optimization (Weeks 7-8)
+## Phase 7: EKS Deployment & Infrastructure Optimization (Phase Allocation)
 
 ### EKS Deployment
 - [ ] Apply Terraform configuration for EKS
@@ -429,7 +429,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
   - [ ] Cost optimization demonstration
   - [ ] Pause/resume in action
 - [ ] Create slide deck (optional)
-- [ ] Prepare talking points for interviews
+- [ ] Prepare Architectural Rationale
 
 ### Blog Post (Optional)
 - [ ] Write technical deep-dive

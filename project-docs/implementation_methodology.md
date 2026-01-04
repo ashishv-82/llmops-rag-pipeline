@@ -35,7 +35,7 @@ This project follows a **hybrid implementation approach** to ensure deep underst
 - ✅ Navigate AWS services confidently
 - ✅ Debug issues using Console tools
 - ✅ Understand what Terraform is doing behind the scenes
-- ✅ Interview-ready (can explain manual setup)
+- ✅ Foundational knowledge (can explain manual setup)
 
 ### Terraform Expertise
 - ✅ Automate infrastructure provisioning
@@ -150,15 +150,15 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "documents" {
 - Understanding AWS services deeply
 - Troubleshooting complex issues
 - Learning best practices
-- Interview preparation
+- Technical certification prep
 
 ---
 
-## Interview Readiness
+## Key Architectural Explanations
 
-### Question: "How would you create an S3 bucket?"
+### Design Query: "How would you create an S3 bucket?"
 
-**Answer (Demonstrates Both Skills):**
+**Architecture Answer (Demonstrates Both Skills):**
 ```
 "For production, I'd use Terraform to define an aws_s3_bucket 
 resource with versioning, encryption, and lifecycle rules. This 
@@ -204,7 +204,7 @@ By following this approach, you will:
 
 1. **Understand AWS deeply** - Not just "run this Terraform"
 2. **Debug effectively** - Know where to look in Console
-3. **Interview confidently** - Explain both manual and automated approaches
+3. **Architectural Logic** - Explain both manual and automated approaches
 4. **Work flexibly** - Comfortable with or without IaC
 5. **Troubleshoot faster** - Understand what's happening behind the scenes
 

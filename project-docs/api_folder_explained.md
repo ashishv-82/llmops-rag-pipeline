@@ -186,8 +186,8 @@ sequenceDiagram
 
 ---
 
-## 🎯 Summary for Future Readers
-When you come back to this after weeks:
+## 🎯 Summary for Maintenance & Scaling
+When you come back to this project later:
 1.  **Change an Endpoint?** Look in `routers/`.
 2.  **Optimize AI behavior?** Look in `services/`.
 3.  **App failing on start?** Check `config.py`.
