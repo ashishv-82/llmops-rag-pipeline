@@ -517,9 +517,8 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
 
 2. **Create Bucket**
    - Click "Create bucket"
-   - Bucket name: `llmops-terraform-state-<your-initials>-<random>`
-     - Example: `llmops-terraform-state-av-2026`
-     - Must be globally unique
+   - Bucket name: `llmops-rag-terraform-state`
+     - Must be globally unique (add suffix if needed)
    - Region: `ap-southeast-2`
    - **Block Public Access:** Keep all checkboxes CHECKED (block all public access)
    - **Bucket Versioning:** Enable
@@ -621,11 +620,11 @@ tree terraform/
 
 terraform {
   backend "s3" {
-    bucket         = "llmops-terraform-state-av-2026"  # Replace with your bucket name
+    bucket         = "llmops-rag-terraform-state"
     key            = "llmops-rag/terraform.tfstate"
     region         = "ap-southeast-2"
     encrypt        = true
-    dynamodb_table = "terraform-state-lock"  # We'll create this later
+    dynamodb_table = "llmops-rag-terraform-state-lock"  # We'll create this later
   }
   
   required_version = ">= 1.7.0"
@@ -916,7 +915,7 @@ aws s3 ls | grep manual
 aws s3 ls
 
 # Should see:
-# - llmops-terraform-state-av-2026 (Terraform state)
+# - llmops-rag-terraform-state (Terraform state)
 # - llmops-rag-documents-dev-av (Terraform-managed)
 # Should NOT see: -manual bucket
 ```
@@ -1311,7 +1310,7 @@ sudo usermod -aG docker $USER
 **Problem:** Backend initialization failed
 ```bash
 # Solution: Verify S3 bucket exists and you have access
-aws s3 ls s3://llmops-terraform-state-av-2026
+aws s3 ls s3://llmops-rag-terraform-state
 ```
 
 **Problem:** Provider download failed
