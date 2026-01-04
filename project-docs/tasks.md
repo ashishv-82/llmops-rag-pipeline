@@ -66,9 +66,7 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 ### Terraform Initialization
 - [ ] Set up Terraform backend configuration (S3 state)
 - [ ] Bootstrap backend resources (run scripts/bootstrap-backend.sh)
-- [ ] Create VPC module
 - [ ] Create S3 buckets module (documents, embeddings)
-- [ ] Set up basic security groups
 - [ ] Initialize and validate Terraform
 
 ---
@@ -87,6 +85,8 @@ Phase 8: Documentation    ░░░░░░░░░░  0% (0/59)
 - [ ] Verify health checks and readiness probes
 
 ### Terraform EKS Preparation
+- [ ] Create VPC module
+- [ ] Set up basic security groups
 - [ ] Create EKS cluster Terraform module (don't apply yet)
 - [ ] Configure node groups
 - [ ] Set up IAM roles for service accounts

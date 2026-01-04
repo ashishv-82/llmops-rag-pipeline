@@ -12,7 +12,7 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 - Local development environment
 - Basic FastAPI application with health checks
 - AWS account setup and configuration
-- Terraform infrastructure foundation (S3, IAM, VPC basics)
+- Terraform infrastructure foundation (S3, Backend)
 
 **What We'll Learn:**
 - AWS Console navigation
