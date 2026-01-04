@@ -554,7 +554,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
 1. **Create Bucket**
    - Click "Create bucket"
    - Bucket name: `llmops-rag-documents-dev-<your-initials>-manual`
-     - Example: `llmops-rag-documents-dev-av-manual`
+     - Example: `llmops-rag-documents-dev-manual`
      - **Note the `-manual` suffix** - for learning/comparison only
    - Region: `ap-southeast-2`
    - **Block Public Access:** Keep all checkboxes CHECKED
@@ -828,7 +828,7 @@ terraform {
 module "documents_bucket" {
   source = "../../modules/s3"
   
-  bucket_name      = "llmops-rag-documents-dev-av"  # Replace with your bucket name
+  bucket_name      = "llmops-rag-documents-dev"  # Replace with your bucket name
   environment      = "dev"
   enable_lifecycle = true
 }
@@ -903,7 +903,7 @@ terraform apply
 Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
 
 Outputs:
-documents_bucket_name = "llmops-rag-documents-dev-av"
+documents_bucket_name = "llmops-rag-documents-dev"
 ```
 
 ---
@@ -917,14 +917,14 @@ documents_bucket_name = "llmops-rag-documents-dev-av"
 
 **If you did the manual steps (Step 2.5):**
 - You should see **TWO** buckets:
-  - `llmops-rag-documents-dev-av-manual` (created manually)
-  - `llmops-rag-documents-dev-av` (created by Terraform)
+  - `llmops-rag-documents-dev-manual` (created manually)
+  - `llmops-rag-documents-dev` (created by Terraform)
 - **Compare both** to see how Console settings map to Terraform code
 - Proceed to Step 3.7 for cleanup
 
 **If you skipped the manual steps:**
 - You should see **ONE** bucket:
-  - `llmops-rag-documents-dev-av` (created by Terraform)
+  - `llmops-rag-documents-dev` (created by Terraform)
 - Verify it has all the features:
   - Versioning: Enabled ✅
   - Encryption: Enabled ✅
@@ -951,7 +951,7 @@ documents_bucket_name = "llmops-rag-documents-dev-av"
 
 **Option 1: AWS Console**
 1. Go to AWS Console → S3
-2. Find bucket: `llmops-rag-documents-dev-av-manual`
+2. Find bucket: `llmops-rag-documents-dev-manual`
 3. Select the bucket (checkbox)
 4. Click "Delete"
 5. Type the bucket name to confirm
@@ -960,7 +960,7 @@ documents_bucket_name = "llmops-rag-documents-dev-av"
 **Option 2: AWS CLI**
 ```bash
 # Delete manual bucket
-aws s3 rb s3://llmops-rag-documents-dev-av-manual --force
+aws s3 rb s3://llmops-rag-documents-dev-manual --force
 
 # Verify it's gone
 aws s3 ls | grep manual
@@ -974,7 +974,7 @@ aws s3 ls
 
 # Should see:
 # - llmops-rag-terraform-state (Terraform state)
-# - llmops-rag-documents-dev-av (Terraform-managed)
+# - llmops-rag-documents-dev (Terraform-managed)
 # Should NOT see: -manual bucket
 ```
 
@@ -1056,7 +1056,7 @@ class Settings(BaseSettings):
     
     # AWS
     aws_region: str = "ap-southeast-2"
-    documents_bucket: str = "llmops-rag-documents-dev-av"  # Replace with your bucket
+    documents_bucket: str = "llmops-rag-documents-dev"  # Replace with your bucket
     
     class Config:
         env_file = ".env"
