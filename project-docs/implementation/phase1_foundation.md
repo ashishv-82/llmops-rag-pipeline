@@ -702,22 +702,7 @@ output "dynamodb_table_name" {
 
 ```hcl
 # terraform/modules/s3/main.tf
-
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment (dev, staging, prod)"
-  type        = string
-}
-
-variable "enable_lifecycle" {
-  description = "Enable lifecycle policies for cost optimization"
-  type        = bool
-  default     = true
-}
+# Resources only - production-grade structure
 
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
@@ -774,27 +759,58 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
     }
   }
 }
-
-output "bucket_name" {
-  value = aws_s3_bucket.this.id
-}
-
-output "bucket_arn" {
-  value = aws_s3_bucket.this.arn
-}
 ```
+
+---
 
 **Create file:** `terraform/modules/s3/variables.tf`
 
 ```hcl
-# Defined in main.tf above
+# terraform/modules/s3/variables.tf
+# Input variables - defines module interface
+
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment (dev, staging, prod)"
+  type        = string
+}
+
+variable "enable_lifecycle" {
+  description = "Enable lifecycle policies for cost optimization"
+  type        = bool
+  default     = true
+}
 ```
+
+---
 
 **Create file:** `terraform/modules/s3/outputs.tf`
 
 ```hcl
-# Defined in main.tf above
+# terraform/modules/s3/outputs.tf
+# Output values - what the module exposes
+
+output "bucket_name" {
+  description = "Name of the created S3 bucket"
+  value       = aws_s3_bucket.this.id
+}
+
+output "bucket_arn" {
+  description = "ARN of the created S3 bucket"
+  value       = aws_s3_bucket.this.arn
+}
 ```
+
+**Why three files?**
+- ✅ Industry best practice
+- ✅ Clear separation of concerns
+- ✅ Easy to find variables and outputs
+- ✅ Better for code reviews
+- ✅ Production-grade structure
 
 ---
 
