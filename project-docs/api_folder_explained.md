@@ -52,9 +52,9 @@ api/
 
 These files define the public endpoints of your system.
 
-````carousel
-#### `health.py` - Monitoring & Probes
+### `health.py` - Monitoring & Probes
 **Primary Role:** System status & K8s Health.
+
 <details>
 <summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
@@ -63,28 +63,25 @@ These files define the public endpoints of your system.
 - **GET /health/live**: Liveness probe for K8s (process check).
 </details>
 
-<!-- slide -->
-
-#### `documents.py` - Ingestion Path
+### `documents.py` - Ingestion Path
 **Primary Role:** Handling the "Knowledge" intake.
+
 <details>
-<summary>Technical Details</summary>
+<summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
 - **POST /documents/upload**: Orchestrates Parsing → S3 Upload → Embedding → Vector DB.
 - **DELETE /documents/{id}**: Cleanup of vectors and files.
 </details>
 
-<!-- slide -->
-
-#### `query.py` - Retrieval & Generation
+### `query.py` - Retrieval & Generation
 **Primary Role:** The core RAG "Ask" loop.
+
 <details>
-<summary>Technical Details</summary>
+<summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
 - **POST /query**: Orchestrates Cache lookup → Retrieval → LLM Generation → Guardrails.
 - **POST /query/batch**: Bulk evaluation support.
 </details>
-````
 
 ---
 
@@ -92,9 +89,9 @@ These files define the public endpoints of your system.
 
 These files contain the implementation of your LLMOps and MLOps strategies.
 
-````carousel
-#### `llm_service.py` - Intelligent Routing
+### `llm_service.py` - Intelligent Routing
 **Strategy:** Cost Optimization.
+
 <details>
 <summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
@@ -103,10 +100,9 @@ These files contain the implementation of your LLMOps and MLOps strategies.
 - **Cost Tracking:** Logs tokens per request.
 </details>
 
-<!-- slide -->
-
-#### `embedding_service.py` - Vector Store
+### `embedding_service.py` - Vector Store
 **Strategy:** MLOps Feature Versioning.
+
 <details>
 <summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
@@ -114,39 +110,35 @@ These files contain the implementation of your LLMOps and MLOps strategies.
 - `calculate_similarity()`: Logic for semantic cache hits.
 </details>
 
-<!-- slide -->
-
-#### `cache_service.py` - Semantic Caching
+### `cache_service.py` - Semantic Caching
 **Strategy:** Speed & 70% Cost Reduction.
+
 <details>
-<summary>Technical Details (Redis)</summary>
+<summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
 - `get_cached_response()`: Checks similarity > 0.95.
 - `cache_response()`: Stores answer + embedding hash.
 </details>
 
-<!-- slide -->
-
-#### `vector_store_service.py` - Storage
+### `vector_store_service.py` - Storage
 **Strategy:** Persistence & Search.
+
 <details>
-<summary>Technical Details (ChromaDB/Weaviate)</summary>
+<summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
 - `hybrid_search()`: Combines Vector and Keyword matching.
 - Metadata Filtering: Ensures data isolation.
 </details>
 
-<!-- slide -->
-
-#### `guardrails_service.py` - Safety
+### `guardrails_service.py` - Safety
 **Strategy:** Enterprise Compliance.
+
 <details>
-<summary>Technical Details (Bedrock Guardrails)</summary>
+<summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
 - `apply_guardrails()`: PII masking and Content Filtering.
 - `validate_query/response()`: Pre/Post-generation checks.
 </details>
-````
 
 ---
 
