@@ -1,8 +1,8 @@
-# Learning Approach: Console First, Then Terraform
+# Implementation Methodology: Console First, Then Infrastructure as Code
 
 ## Philosophy
 
-This project follows a **hybrid learning approach** to ensure deep understanding of both manual AWS operations and Infrastructure as Code automation.
+This project follows a **hybrid implementation approach** to ensure deep understanding of both manual AWS operations and Infrastructure as Code automation.
 
 ## Pattern: Console → Terraform → Verify
 

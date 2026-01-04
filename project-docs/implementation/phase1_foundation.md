@@ -1,27 +1,1086 @@
-# Phase 1: Foundation
+# Phase 1: Foundation - Implementation Plan
 
-**Status**: Not Started  
-**Duration**: Weeks 1-2  
-**Goal**: Set up local development environment and AWS prerequisites
+**Duration:** Weeks 1-2  
+**Goal:** Set up local development environment, create basic FastAPI application, configure AWS prerequisites, and initialize Terraform infrastructure
 
 ---
 
 ## Overview
 
-This phase establishes the foundation for the entire project by setting up:
-- Local development tools (Docker, Kubernetes, Terraform, Python)
-- AWS account and credentials
-- Basic FastAPI application
-- Terraform infrastructure initialization
+Phase 1 establishes the foundation for the entire project. We'll follow the **Console → Terraform → Verify** approach documented in `implementation_methodology.md`.
+
+**What We'll Build:**
+- Local development environment
+- Basic FastAPI application with health checks
+- AWS account setup and configuration
+- Terraform infrastructure foundation (S3, IAM, VPC basics)
+
+**What We'll Learn:**
+- AWS Console navigation
+- Terraform basics
+- FastAPI application structure
+- Docker containerization
 
 ---
 
-## Detailed Implementation Guide
+## Prerequisites
 
-*To be populated when starting Phase 1*
+### Required Software
+- macOS (your current OS)
+- Homebrew (package manager)
+- Git (already installed)
+- GitHub account (already set up)
+
+### Time Estimate
+- **Console walkthroughs:** 2-3 hours
+- **Terraform setup:** 2-3 hours
+- **FastAPI development:** 3-4 hours
+- **Testing and verification:** 1-2 hours
+- **Total:** ~8-12 hours
 
 ---
 
-## Checklist
+## Part 1: Local Development Environment
 
-See `tasks.md` for detailed checklist of Phase 1 tasks.
+### Step 1.1: Install Docker and Docker Compose
+
+**Why:** Containerize the FastAPI application for consistent environments
+
+**Installation:**
+
+```bash
+# Install Docker Desktop for Mac
+brew install --cask docker
+
+# Verify installation
+docker --version
+docker-compose --version
+
+# Start Docker Desktop (from Applications)
+open -a Docker
+```
+
+**Verification:**
+```bash
+# Test Docker
+docker run hello-world
+
+# Should see: "Hello from Docker!"
+```
+
+**Expected Output:**
+```
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
+
+---
+
+### Step 1.2: Install Kubernetes Tools (minikube)
+
+**Why:** Test Kubernetes deployments locally before deploying to EKS
+
+**Installation:**
+
+```bash
+# Install minikube
+brew install minikube
+
+# Install kubectl
+brew install kubectl
+
+# Install helm (for package management)
+brew install helm
+
+# Verify installations
+minikube version
+kubectl version --client
+helm version
+```
+
+**Start minikube:**
+```bash
+# Start local Kubernetes cluster
+minikube start --driver=docker --cpus=2 --memory=4096
+
+# Verify cluster is running
+kubectl cluster-info
+kubectl get nodes
+```
+
+**Expected Output:**
+```
+✅ minikube v1.32.0 on Darwin
+✅ Using the docker driver
+✅ Done! kubectl is now configured to use "minikube" cluster
+```
+
+---
+
+### Step 1.3: Install Terraform
+
+**Why:** Infrastructure as Code for AWS resources
+
+**Installation:**
+
+```bash
+# Install Terraform
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+
+# Verify installation
+terraform version
+```
+
+**Expected Output:**
+```
+Terraform v1.7.0
+```
+
+---
+
+### Step 1.4: Set Up Python Virtual Environment
+
+**Why:** Isolate project dependencies
+
+**Setup:**
+
+```bash
+# Navigate to project directory
+cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
+
+# Create virtual environment
+python3.11 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Verify Python version
+python --version  # Should show Python 3.11+
+
+# Upgrade pip
+pip install --upgrade pip
+
+# Verify
+which python  # Should show path to .venv/bin/python
+```
+
+**Expected Output:**
+```
+Python 3.11.x
+/Users/Ashish/GitHub Repos/llmops-rag-pipeline/.venv/bin/python
+```
+
+**Note:** Always activate `.venv` before working on the project:
+```bash
+source .venv/bin/activate
+```
+
+---
+
+### Step 1.5: Install AWS CLI
+
+**Why:** Interact with AWS services from command line
+
+**Installation:**
+
+```bash
+# Install AWS CLI
+brew install awscli
+
+# Verify installation
+aws --version
+```
+
+**Expected Output:**
+```
+aws-cli/2.15.0 Python/3.11.x Darwin/xx.x.x
+```
+
+---
+
+## Part 2: AWS Account Setup
+
+### Step 2.1: Create AWS Account (If Needed)
+
+**If you don't have an AWS account:**
+
+1. Go to https://aws.amazon.com
+2. Click "Create an AWS Account"
+3. Follow the signup process
+4. Verify email and phone
+5. Add payment method (credit card)
+6. Choose Free Tier plan
+
+**Cost Note:** We'll use Free Tier where possible, but some services will incur costs (~$200-290 total for 8 weeks)
+
+---
+
+### Step 2.2: Create IAM User (Console Walkthrough)
+
+**Why:** Don't use root account for daily operations
+
+**Console Steps:**
+
+1. **Sign in to AWS Console**
+   - Go to https://console.aws.amazon.com
+   - Sign in with root account
+
+2. **Navigate to IAM**
+   - Search for "IAM" in the top search bar
+   - Click "IAM" (Identity and Access Management)
+
+3. **Create User**
+   - Click "Users" in left sidebar
+   - Click "Create user"
+   - User name: `llmops-admin`
+   - Click "Next"
+
+4. **Set Permissions**
+   - Select "Attach policies directly"
+   - Search and select:
+     - `AdministratorAccess` (for now, we'll restrict later)
+   - Click "Next"
+
+5. **Review and Create**
+   - Review settings
+   - Click "Create user"
+
+6. **Create Access Keys**
+   - Click on the newly created user `llmops-admin`
+   - Go to "Security credentials" tab
+   - Scroll to "Access keys"
+   - Click "Create access key"
+   - Use case: "Command Line Interface (CLI)"
+   - Check "I understand" checkbox
+   - Click "Next"
+   - Description: "Local development"
+   - Click "Create access key"
+   - **IMPORTANT:** Download the CSV file or copy both:
+     - Access key ID
+     - Secret access key
+   - Click "Done"
+
+**Security Note:** Never commit these keys to Git!
+
+---
+
+### Step 2.3: Configure AWS CLI
+
+**Configure credentials:**
+
+```bash
+# Configure AWS CLI
+aws configure
+
+# Enter when prompted:
+# AWS Access Key ID: <your-access-key-id>
+# AWS Secret Access Key: <your-secret-access-key>
+# Default region name: us-east-1
+# Default output format: json
+```
+
+**Verify configuration:**
+
+```bash
+# Test AWS CLI
+aws sts get-caller-identity
+
+# Should show your user details
+```
+
+**Expected Output:**
+```json
+{
+    "UserId": "AIDAXXXXXXXXXXXXXXXXX",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:user/llmops-admin"
+}
+```
+
+---
+
+### Step 2.4: Create S3 Bucket for Terraform State (Console)
+
+**Why:** Store Terraform state remotely for team collaboration and safety
+
+**Console Steps:**
+
+1. **Navigate to S3**
+   - Search for "S3" in AWS Console
+   - Click "S3"
+
+2. **Create Bucket**
+   - Click "Create bucket"
+   - Bucket name: `llmops-terraform-state-<your-initials>-<random>`
+     - Example: `llmops-terraform-state-av-2026`
+     - Must be globally unique
+   - Region: `us-east-1`
+   - **Block Public Access:** Keep all checkboxes CHECKED (block all public access)
+   - **Bucket Versioning:** Enable
+   - **Encryption:** Enable (Server-side encryption with Amazon S3 managed keys)
+   - **Tags:**
+     - Key: `Project`, Value: `LLMOps`
+     - Key: `Purpose`, Value: `Terraform State`
+   - Click "Create bucket"
+
+3. **Verify Bucket**
+   - Find your bucket in the list
+   - Click on it
+   - Check "Properties" tab:
+     - Versioning: Enabled ✅
+     - Encryption: Enabled ✅
+
+**Note the bucket name** - you'll need it for Terraform configuration.
+
+---
+
+### Step 2.5: Create S3 Bucket for Documents (Console)
+
+**Why:** Store uploaded documents
+
+**Console Steps:**
+
+1. **Create Bucket**
+   - Click "Create bucket"
+   - Bucket name: `llmops-rag-documents-dev-<your-initials>`
+     - Example: `llmops-rag-documents-dev-av`
+   - Region: `us-east-1`
+   - **Block Public Access:** Keep all checkboxes CHECKED
+   - **Bucket Versioning:** Enable
+   - **Encryption:** Enable
+   - **Tags:**
+     - Key: `Project`, Value: `LLMOps`
+     - Key: `Environment`, Value: `dev`
+   - Click "Create bucket"
+
+2. **Configure Lifecycle Policy** (Cost Optimization)
+   - Click on the bucket
+   - Go to "Management" tab
+   - Click "Create lifecycle rule"
+   - Rule name: `transition-to-ia`
+   - Rule scope: Apply to all objects
+   - **Lifecycle rule actions:**
+     - Check "Transition current versions of objects between storage classes"
+     - Add transition:
+       - Days after object creation: `30`
+       - Storage class: `Standard-IA`
+     - Add transition:
+       - Days after object creation: `90`
+       - Storage class: `Glacier Flexible Retrieval`
+   - Click "Create rule"
+
+**Verify:**
+- Bucket created ✅
+- Versioning enabled ✅
+- Lifecycle rule active ✅
+
+---
+
+## Part 3: Terraform Setup
+
+### Step 3.1: Create Terraform Directory Structure
+
+**Create folders:**
+
+```bash
+# Navigate to project root
+cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
+
+# Create Terraform structure
+mkdir -p terraform/modules/{s3,iam,vpc,eks,monitoring}
+mkdir -p terraform/environments/{dev,staging,prod}
+
+# Verify structure
+tree terraform/
+```
+
+---
+
+### Step 3.2: Create Terraform Backend Configuration
+
+**Why:** Store Terraform state in S3 (not locally)
+
+**Create file:** `terraform/backend.tf`
+
+```hcl
+# terraform/backend.tf
+
+terraform {
+  backend "s3" {
+    bucket         = "llmops-terraform-state-av-2026"  # Replace with your bucket name
+    key            = "llmops-rag/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-lock"  # We'll create this later
+  }
+  
+  required_version = ">= 1.7.0"
+  
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+  
+  default_tags {
+    tags = {
+      Project     = "LLMOps"
+      ManagedBy   = "Terraform"
+      Environment = "dev"
+    }
+  }
+}
+```
+
+---
+
+### Step 3.3: Create S3 Module (Terraform)
+
+**Why:** Replicate what we created manually in Console
+
+**Create file:** `terraform/modules/s3/main.tf`
+
+```hcl
+# terraform/modules/s3/main.tf
+
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment (dev, staging, prod)"
+  type        = string
+}
+
+variable "enable_lifecycle" {
+  description = "Enable lifecycle policies for cost optimization"
+  type        = bool
+  default     = true
+}
+
+resource "aws_s3_bucket" "this" {
+  bucket = var.bucket_name
+  
+  tags = {
+    Name        = var.bucket_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_s3_bucket_versioning" "this" {
+  bucket = aws_s3_bucket.this.id
+  
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  bucket = aws_s3_bucket.this.id
+  
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "this" {
+  bucket = aws_s3_bucket.this.id
+  
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
+  count  = var.enable_lifecycle ? 1 : 0
+  bucket = aws_s3_bucket.this.id
+  
+  rule {
+    id     = "transition-to-ia"
+    status = "Enabled"
+    
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+    
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
+    }
+  }
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.this.id
+}
+
+output "bucket_arn" {
+  value = aws_s3_bucket.this.arn
+}
+```
+
+**Create file:** `terraform/modules/s3/variables.tf`
+
+```hcl
+# Defined in main.tf above
+```
+
+**Create file:** `terraform/modules/s3/outputs.tf`
+
+```hcl
+# Defined in main.tf above
+```
+
+---
+
+### Step 3.4: Create Dev Environment Configuration
+
+**Create file:** `terraform/environments/dev/main.tf`
+
+```hcl
+# terraform/environments/dev/main.tf
+
+terraform {
+  required_version = ">= 1.7.0"
+}
+
+module "documents_bucket" {
+  source = "../../modules/s3"
+  
+  bucket_name      = "llmops-rag-documents-dev-av"  # Replace with your bucket name
+  environment      = "dev"
+  enable_lifecycle = true
+}
+
+output "documents_bucket_name" {
+  value = module.documents_bucket.bucket_name
+}
+```
+
+**Create file:** `terraform/environments/dev/variables.tf`
+
+```hcl
+# terraform/environments/dev/variables.tf
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "llmops-rag"
+}
+```
+
+**Create file:** `terraform/environments/dev/terraform.tfvars`
+
+```hcl
+# terraform/environments/dev/terraform.tfvars
+
+aws_region   = "us-east-1"
+project_name = "llmops-rag"
+```
+
+---
+
+### Step 3.5: Initialize and Apply Terraform
+
+**Initialize Terraform:**
+
+```bash
+cd terraform/environments/dev
+
+# Initialize Terraform (downloads providers)
+terraform init
+
+# Expected output: "Terraform has been successfully initialized!"
+```
+
+**Plan changes:**
+
+```bash
+# See what Terraform will create
+terraform plan
+
+# Review the output - should show S3 bucket resources
+```
+
+**Apply changes:**
+
+```bash
+# Create the resources
+terraform apply
+
+# Type 'yes' when prompted
+```
+
+**Expected Output:**
+```
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+documents_bucket_name = "llmops-rag-documents-dev-av"
+```
+
+---
+
+### Step 3.6: Verify Terraform-Created Resources (Console)
+
+**Console Verification:**
+
+1. Go to AWS Console → S3
+2. Find bucket: `llmops-rag-documents-dev-av`
+3. Verify:
+   - Versioning: Enabled ✅
+   - Encryption: Enabled ✅
+   - Public access: Blocked ✅
+   - Lifecycle rule: Active ✅
+
+**Compare:**
+- Manual bucket (created earlier)
+- Terraform bucket (just created)
+- They should have identical settings!
+
+**Learning Point:** This is how Console actions map to Terraform code.
+
+---
+
+## Part 4: Basic FastAPI Application
+
+### Step 4.1: Create API Directory Structure
+
+```bash
+# Navigate to project root
+cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
+
+# Create API structure
+mkdir -p api/{routers,services,models,utils}
+touch api/__init__.py
+touch api/{routers,services,models,utils}/__init__.py
+```
+
+---
+
+### Step 4.2: Create Requirements File
+
+**Create file:** `api/requirements.txt`
+
+```txt
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# AWS
+boto3==1.34.0
+
+# Development
+pytest==7.4.3
+httpx==0.26.0
+```
+
+**Install dependencies:**
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r api/requirements.txt
+
+# Verify
+pip list | grep fastapi
+```
+
+---
+
+### Step 4.3: Create Configuration
+
+**Create file:** `api/config.py`
+
+```python
+# api/config.py
+
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    """Application settings"""
+    
+    # Application
+    app_name: str = "LLMOps RAG Pipeline"
+    app_version: str = "0.1.0"
+    debug: bool = True
+    
+    # AWS
+    aws_region: str = "us-east-1"
+    documents_bucket: str = "llmops-rag-documents-dev-av"  # Replace with your bucket
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+settings = Settings()
+```
+
+---
+
+### Step 4.4: Create Health Check Router
+
+**Create file:** `api/routers/health.py`
+
+```python
+# api/routers/health.py
+
+from fastapi import APIRouter
+from datetime import datetime
+
+router = APIRouter(prefix="/health", tags=["health"])
+
+@router.get("/")
+async def health_check():
+    """Basic health check"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@router.get("/ready")
+async def readiness_check():
+    """Readiness probe for Kubernetes"""
+    # TODO: Check connections (Redis, Vector DB, AWS)
+    return {
+        "status": "ready",
+        "checks": {
+            "api": "ok",
+            # "redis": "ok",
+            # "vector_db": "ok",
+            # "aws": "ok"
+        }
+    }
+
+@router.get("/live")
+async def liveness_check():
+    """Liveness probe for Kubernetes"""
+    return {"status": "alive"}
+```
+
+---
+
+### Step 4.5: Create Main Application
+
+**Create file:** `api/main.py`
+
+```python
+# api/main.py
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.config import settings
+from api.routers import health
+
+# Create FastAPI app
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    description="RAG-based Q&A system with MLOps best practices"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # TODO: Restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register routers
+app.include_router(health.router)
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Welcome to LLMOps RAG Pipeline",
+        "version": settings.app_version,
+        "docs": "/docs"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+---
+
+### Step 4.6: Test FastAPI Application
+
+**Run the application:**
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run FastAPI
+cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
+python -m uvicorn api.main:app --reload
+
+# Should see:
+# INFO:     Uvicorn running on http://127.0.0.1:8000
+```
+
+**Test endpoints:**
+
+```bash
+# In a new terminal
+
+# Test root endpoint
+curl http://localhost:8000/
+
+# Test health check
+curl http://localhost:8000/health/
+
+# Test readiness
+curl http://localhost:8000/health/ready
+
+# Test liveness
+curl http://localhost:8000/health/live
+```
+
+**Expected Responses:**
+```json
+// Root
+{"message":"Welcome to LLMOps RAG Pipeline","version":"0.1.0","docs":"/docs"}
+
+// Health
+{"status":"healthy","timestamp":"2026-01-04T13:00:00.000000"}
+
+// Ready
+{"status":"ready","checks":{"api":"ok"}}
+
+// Live
+{"status":"alive"}
+```
+
+**Interactive Docs:**
+- Open browser: http://localhost:8000/docs
+- See Swagger UI with all endpoints
+- Try them out interactively
+
+---
+
+### Step 4.7: Create Dockerfile
+
+**Create file:** `api/Dockerfile`
+
+```dockerfile
+# api/Dockerfile
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Run application
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+---
+
+### Step 4.8: Build and Test Docker Image
+
+**Build image:**
+
+```bash
+# Navigate to project root
+cd /Users/Ashish/GitHub\ Repos/llmops-rag-pipeline
+
+# Build Docker image
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+
+# Verify image
+docker images | grep llmops-rag-api
+```
+
+**Run container:**
+
+```bash
+# Run container
+docker run -d -p 8000:8000 --name rag-api llmops-rag-api:latest
+
+# Check if running
+docker ps
+
+# Test endpoint
+curl http://localhost:8000/health/
+
+# View logs
+docker logs rag-api
+
+# Stop and remove container
+docker stop rag-api
+docker rm rag-api
+```
+
+---
+
+## Part 5: Verification Checklist
+
+### ✅ Local Environment
+
+- [ ] Docker installed and running
+- [ ] minikube cluster running
+- [ ] kubectl configured
+- [ ] Terraform installed
+- [ ] Python 3.11+ virtual environment created
+- [ ] AWS CLI installed and configured
+
+### ✅ AWS Setup
+
+- [ ] IAM user created (`llmops-admin`)
+- [ ] Access keys generated and configured
+- [ ] S3 bucket for Terraform state created
+- [ ] S3 bucket for documents created (manual)
+- [ ] Lifecycle policies configured
+
+### ✅ Terraform
+
+- [ ] Terraform initialized
+- [ ] S3 module created
+- [ ] Dev environment configured
+- [ ] `terraform apply` successful
+- [ ] Resources visible in AWS Console
+- [ ] Manual vs Terraform buckets compared
+
+### ✅ FastAPI Application
+
+- [ ] API structure created
+- [ ] Dependencies installed
+- [ ] Health check endpoints working
+- [ ] Application runs locally
+- [ ] Interactive docs accessible
+- [ ] Docker image builds successfully
+- [ ] Container runs successfully
+
+---
+
+## Next Steps
+
+**After completing Phase 1:**
+
+1. **Mark tasks complete** in `project-docs/tasks.md`
+2. **Update progress** (Planning & Documentation → 100%)
+3. **Commit all code** to GitHub
+4. **Move to Phase 2:** Kubernetes Setup
+
+**Phase 2 Preview:**
+- Deploy API to local Kubernetes (minikube)
+- Create Kubernetes manifests
+- Test health checks with K8s probes
+- Prepare EKS Terraform module (don't apply yet)
+
+---
+
+## Troubleshooting
+
+### Docker Issues
+
+**Problem:** Docker daemon not running
+```bash
+# Solution: Start Docker Desktop
+open -a Docker
+```
+
+**Problem:** Permission denied
+```bash
+# Solution: Add user to docker group (may require restart)
+sudo usermod -aG docker $USER
+```
+
+### Terraform Issues
+
+**Problem:** Backend initialization failed
+```bash
+# Solution: Verify S3 bucket exists and you have access
+aws s3 ls s3://llmops-terraform-state-av-2026
+```
+
+**Problem:** Provider download failed
+```bash
+# Solution: Clear cache and retry
+rm -rf .terraform
+terraform init
+```
+
+### FastAPI Issues
+
+**Problem:** Module not found
+```bash
+# Solution: Ensure virtual environment is activated
+source .venv/bin/activate
+pip install -r api/requirements.txt
+```
+
+**Problem:** Port already in use
+```bash
+# Solution: Kill process on port 8000
+lsof -ti:8000 | xargs kill -9
+```
+
+---
+
+## Summary
+
+**What We Accomplished:**
+- ✅ Set up complete local development environment
+- ✅ Configured AWS account and IAM
+- ✅ Created S3 buckets (Console + Terraform)
+- ✅ Learned Console → Terraform mapping
+- ✅ Built basic FastAPI application
+- ✅ Containerized with Docker
+- ✅ Verified everything works
+
+**What We Learned:**
+- AWS Console navigation
+- Terraform basics and modules
+- FastAPI application structure
+- Docker containerization
+- Infrastructure as Code principles
+
+**Ready for Phase 2!** 🚀
