@@ -396,8 +396,9 @@ This approach balances:
 - [ ] Create Dockerfile for the application
 - [ ] Set up basic Terraform configuration for VPC and S3
 - [ ] Initialize Terraform state management (S3 backend)
+- [ ] Create DynamoDB table for Terraform state locking
 
-**Learning Focus**: Terraform basics, Docker containerization
+**Learning Focus**: Terraform basics, Docker containerization, production-grade state management
 
 ---
 
