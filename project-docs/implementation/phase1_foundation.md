@@ -117,6 +117,108 @@ kubectl get nodes
 
 ---
 
+### Step 1.2.1: Understanding minikube Lifecycle & Data Persistence
+
+**Important:** minikube runs as a Docker container and uses resources (CPU/RAM) only when running. Understanding how to manage it is crucial for daily development.
+
+#### **minikube Lifecycle:**
+
+**Check Status:**
+```bash
+minikube status
+
+# Output when running:
+# minikube
+# type: Control Plane
+# host: Running
+# kubelet: Running
+# apiserver: Running
+```
+
+**Stop Cluster** (frees 4 GB RAM, 2 CPUs):
+```bash
+minikube stop
+
+# ✋  Stopping node "minikube"  ...
+# 🛑  1 node stopped.
+
+# Resources freed, data preserved
+```
+
+**Start Cluster** (resumes in ~30 seconds):
+```bash
+minikube start
+
+# Everything restored automatically
+```
+
+**Delete Cluster** (complete removal):
+```bash
+minikube delete
+
+# Only do this if you want to start fresh
+# All data will be lost
+```
+
+#### **What Persists After Stop/Start:**
+
+**✅ Preserved:**
+- All Kubernetes deployments
+- Services and configurations
+- ConfigMaps and Secrets
+- PersistentVolume data
+- Docker images (cached)
+
+**❌ Not Preserved:**
+- Running pods (but they restart automatically)
+- Temporary data in `/tmp`
+- In-memory cache (unless persisted)
+
+#### **Daily Development Workflow:**
+
+```bash
+# Morning - Start work
+minikube start              # 30 seconds
+kubectl get pods            # Check your apps
+
+# Work on your code...
+kubectl apply -f app.yaml   # Deploy changes
+
+# Evening - Done for the day
+minikube stop               # Free resources
+```
+
+#### **Resource Usage:**
+
+**When Running:**
+- Uses 4 GB RAM
+- Uses 2 CPU cores
+- Container visible in `docker ps`
+
+**When Stopped:**
+- Uses 0 GB RAM
+- Uses 0 CPU cores
+- Container stopped (not visible in `docker ps`)
+
+#### **Best Practices:**
+
+**Stop minikube when:**
+- ❌ Not working on the project
+- ❌ Need more RAM for other apps
+- ❌ Done for the day
+
+**Keep minikube running when:**
+- ✅ Actively developing
+- ✅ Testing deployments
+- ✅ Running Phases 2-6
+
+**For This Project:**
+- **Phase 1:** Can stop after verification
+- **Phases 2-6:** Start when working, stop when done
+- **Phase 7:** Optional (we'll use AWS EKS)
+
+---
+
 ### Step 1.3: Install Terraform
 
 **Why:** Infrastructure as Code for AWS resources
