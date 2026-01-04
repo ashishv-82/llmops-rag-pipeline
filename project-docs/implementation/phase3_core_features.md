@@ -480,7 +480,64 @@ spec:
 
 ---
 
-## Part 6: Verification Checklist
+## Part 6: Verification
+
+### 6.1 Manual Verification Steps
+
+**1. Verify API Health**
+```bash
+curl http://localhost:8000/health
+# Expect: {"status": "ok"}
+```
+
+**2. Test Document Ingestion**
+```bash
+curl -X POST "http://localhost:8000/documents/upload?domain=engineering" \
+  -F "file=@./test_docs/deployment_guide.pdf"
+# Expect: {"status": "processing", "filename": "deployment_guide.pdf"}
+```
+
+**3. Test RAG Query (General Domain)**
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -H "x-user-role: employee" \
+  -d '{"question": "How do I deploy to EKS?", "domain": "engineering"}'
+# Expect: {"answer": "...", "sources": [...]}
+```
+
+**4. Verify Access Control (Negative Test)**
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -H "x-user-role: intern" \
+  -d '{"question": "What is the engineering budget?", "domain": "engineering"}'
+# Expect: 403 Forbidden
+```
+
+**5. Python Connectivity Test**
+Create `scripts/test_rag.py`:
+```python
+import requests
+
+def test_full_flow():
+    # 1. Upload
+    files = {'file': open('data/sample.txt', 'rb')}
+    up_res = requests.post("http://localhost:8000/documents/upload", files=files)
+    assert up_res.status_code == 200
+    print("✅ Upload Success")
+
+    # 2. Query
+    payload = {"question": "summarize sample", "domain": "general"}
+    q_res = requests.post("http://localhost:8000/query", json=payload)
+    assert q_res.status_code == 200
+    print("✅ Query Response:", q_res.json()['answer'])
+
+if __name__ == "__main__":
+    test_full_flow()
+```
+
+### 6.2 Verification Checklist
 
 ### ✅ Bedrock Integration
 - [ ] Connect `boto3` to Bedrock.
