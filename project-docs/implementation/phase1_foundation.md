@@ -386,6 +386,7 @@ aws-cli/2.15.0 Python/3.11.x Darwin/xx.x.x
    - Click "Users" in left sidebar
    - Click "Create user"
    - User name: `llmops-admin`
+   - **Note:** This user is the **Bootstrap Admin** that runs Terraform. It cannot be created by Terraform because Terraform needs these credentials to run! Application roles (e.g., for EKS) will be managed by Terraform in Phase 2.
    - Click "Next"
 
 4. **Set Permissions**
