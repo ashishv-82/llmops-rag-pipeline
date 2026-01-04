@@ -1,0 +1,45 @@
+# Avoid copying the virtual environment
+.venv/
+env/
+venv/
+
+# Source Control
+.git/
+.github/
+.gitignore
+.dockerignore
+
+# Documentation
+project-docs/
+README.md
+LICENSE
+project_proposal.md
+tasks.md
+
+# Infrastructure & Orchestration
+terraform/
+kubernetes/
+
+# MLOps & Data
+mlops/
+data/
+scripts/
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Development Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.DS_Store
+*.swp
+*.swo
+*~
+tmp/
+temp/
+*.tmp

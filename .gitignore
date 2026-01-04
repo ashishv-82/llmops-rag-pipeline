@@ -42,6 +42,7 @@ ENV/
 .terraform.lock.hcl
 terraform.tfvars
 *.tfvars
+*.tfplan
 crash.log
 override.tf
 override.tf.json
@@ -90,7 +91,6 @@ data/
 *.pickle
 
 # Docker
-.dockerignore
 
 # macOS
 .DS_Store
