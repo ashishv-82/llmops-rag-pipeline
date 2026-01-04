@@ -320,6 +320,7 @@ llmops-rag-pipeline/
 │   │   ├── s3/                     # S3 buckets (docs, embeddings)
 │   │   ├── iam/                    # IAM roles and policies
 │   │   └── monitoring/             # CloudWatch configuration
+│   │ 
 │   ├── environments/               # Environment-specific configs
 │   │   ├── dev/                    # Development (will be applied)
 │   │   │   ├── main.tf
@@ -327,6 +328,7 @@ llmops-rag-pipeline/
 │   │   │   └── terraform.tfvars
 │   │   ├── staging/                # Staging (structure only)
 │   │   └── prod/                   # Production (structure only)
+│   │
 │   └── backend.tf                  # S3 backend for state
 │
 ├── kubernetes/                     # Kubernetes manifests
@@ -337,6 +339,7 @@ llmops-rag-pipeline/
 │   │   ├── monitoring-stack.yaml
 │   │   ├── ingress.yaml
 │   │   └── namespaces.yaml         # dev, staging, prod
+│   │
 │   └── overlays/                   # Environment-specific overrides
 │       ├── dev/
 │       │   └── kustomization.yaml
@@ -349,13 +352,16 @@ llmops-rag-pipeline/
 │   ├── data_pipeline/              # Data processing
 │   │   ├── ingest.py               # Document ingestion
 │   │   └── preprocess.py           # Text preprocessing
+│   │
 │   ├── monitoring/                 # Custom metrics
 │   │   ├── metrics_collector.py
 │   │   ├── cost_tracker.py         # Cost per query tracking
 │   │   └── drift_detection.py
+│   │
 │   ├── evaluation/                 # LLM evaluation
 │   │   ├── quality_metrics.py      # Response quality
 │   │   └── prompt_testing.py       # Prompt A/B testing
+│   │
 │   └── experiments/                # MLflow tracking
 │       └── mlflow_tracking.py
 │
@@ -370,6 +376,7 @@ llmops-rag-pipeline/
 │   ├── environment_strategy.md     # Multi-env approach
 │   ├── branching_strategy.md       # PR-based GitHub Flow
 │   ├── tasks.md                    # Task checklist
+│   │
 │   └── implementation/             # Phase-by-phase guides
 │       ├── phase1_foundation.md
 │       ├── phase2_kubernetes.md
