@@ -284,25 +284,29 @@ llmops-rag-pipeline/
 │       └── .gitkeep            # Keep folder in Git
 │
 ├── api/                        # FastAPI application
-│   ├── main.py                # Application entry point
-│   ├── routers/               # API route handlers
-│   │   ├── documents.py       # Document upload/delete
-│   │   ├── query.py           # Q&A endpoints
-│   │   └── health.py          # Health checks
-│   ├── services/              # Business logic
-│   │   ├── embedding_service.py    # Titan Embeddings V2
-│   │   ├── llm_service.py          # Amazon Nova 2
+│   ├── main.py                 # Application entry point
+│   ├── config.py               # Configuration management
+│   ├── Dockerfile              # Container definition
+│   ├── requirements.txt        # Python dependencies
+│   │
+│   ├── routers/                # API route handlers
+│   │   ├── documents.py        # Document upload/delete
+│   │   ├── query.py            # Q&A endpoints
+│   │   └── health.py           # Health checks
+│   │
+│   ├── services/               # Business logic
+│   │   ├── embedding_service.py # Titan Embeddings V2
+│   │   ├── llm_service.py      # Amazon Nova 2
 │   │   ├── vector_store_service.py # ChromaDB/Weaviate
-│   │   ├── cache_service.py        # Redis semantic caching
-│   │   └── guardrails_service.py   # Bedrock Guardrails
-│   ├── models/                # Pydantic schemas
+│   │   ├── cache_service.py    # Redis semantic caching
+│   │   └── guardrails_service.py # Bedrock Guardrails
+│   │
+│   ├── models/                 # Pydantic schemas
 │   │   └── schemas.py
-│   ├── utils/                 # Helper functions
-│   │   ├── chunking.py        # Document chunking
-│   │   └── hybrid_search.py   # Vector + keyword search
-│   ├── config.py              # Configuration management
-│   ├── Dockerfile             # Container definition
-│   └── requirements.txt       # Python dependencies
+│   │
+│   └── utils/                  # Helper functions
+│       ├── chunking.py         # Document chunking
+│       └── hybrid_search.py    # Vector + keyword search
 │
 ├── frontend/                   # Simple web UI
 │   ├── index.html             # Main page
