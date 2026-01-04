@@ -343,6 +343,8 @@ This approach balances:
 │   │   ├── dev/
 │   │   ├── staging/
 │   │   └── prod/
+│   ├── backend.tf
+│   ├── dynamodb.tf
 │   └── main.tf
 └── kubernetes/
     ├── base/
