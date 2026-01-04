@@ -39,6 +39,7 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 - [2.1 Create AWS Account](#step-21-create-aws-account-if-needed)
 - [2.2 Create IAM User](#step-22-create-iam-user-console-walkthrough)
 - [2.3 Configure AWS CLI](#step-23-configure-aws-cli)
+  - [2.3.1 Verify Bedrock Model Availability](#step-231-verify-bedrock-model-availability)
 - [2.4 Create S3 Bucket for Terraform State](#step-24-create-s3-bucket-for-terraform-state-console) *(Optional)*
 - [2.5 Create S3 Bucket for Documents](#step-25-create-s3-bucket-for-documents-console) *(Optional)*
 
@@ -450,6 +451,54 @@ aws sts get-caller-identity
     "Account": "123456789012",
     "Arn": "arn:aws:iam::123456789012:user/llmops-admin"
 }
+```
+
+---
+
+### Step 2.3.1: Verify Bedrock Model Availability
+
+**Why:** Ensure AWS Bedrock models (Nova 2, Titan Embeddings) are available in your region
+
+**Check availability:**
+
+```bash
+# List Amazon Bedrock models in your region
+aws bedrock list-foundation-models --region ap-southeast-2 --query 'modelSummaries[?contains(modelId, `amazon`)].[modelId]' --output table
+
+# Replace ap-southeast-2 with your region if different
+```
+
+**Expected Output:**
+```
+-----------------------------------
+|      ListFoundationModels       |
++---------------------------------+
+|  amazon.nova-2-lite-v1:0        |  ← For simple queries
+|  amazon.nova-pro-v1:0           |  ← For complex queries
+|  amazon.titan-embed-text-v2:0   |  ← For embeddings
+|  amazon.titan-embed-image-v1:0  |
+|  amazon.nova-lite-v1:0          |
+|  amazon.nova-micro-v1:0         |
++---------------------------------+
+```
+
+**Required Models:**
+- ✅ `amazon.nova-2-lite-v1:0` or `amazon.nova-lite-v1:0` (cost-effective LLM)
+- ✅ `amazon.nova-pro-v1:0` (high-quality LLM)
+- ✅ `amazon.titan-embed-text-v2:0` (text embeddings)
+
+**If models are NOT available in your region:**
+- Option 1: Use `us-east-1` (most Bedrock models available)
+- Option 2: Check [AWS Bedrock regions](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html)
+- Option 3: Use a different region where models are available
+
+**Update region if needed:**
+```bash
+# If you need to change region
+aws configure set region us-east-1
+
+# Verify again
+aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?contains(modelId, `amazon`)].[modelId]' --output table
 ```
 
 ---
