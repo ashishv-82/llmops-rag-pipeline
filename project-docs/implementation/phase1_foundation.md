@@ -14,7 +14,7 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 - AWS account setup and configuration
 - Terraform infrastructure foundation (S3, Backend)
 
-**What We'll Learn:**
+**What We'll Achieve:**
 - AWS Console navigation
 - Terraform basics
 - FastAPI application structure
@@ -347,7 +347,7 @@ aws-cli/2.15.0 Python/3.11.x Darwin/xx.x.x
 
 ## Part 2: AWS Account Setup
 
-> **Note:** Steps 2.4 and 2.5 include **optional** manual Console walkthroughs for learning purposes. If you're already familiar with AWS Console or want to skip directly to Terraform, you can:
+> **Note:** Steps 2.4 and 2.5 include **optional** manual Console walkthroughs for hands-on purposes. If you're already familiar with AWS Console or want to skip directly to Terraform, you can:
 > - **Skip to Part 3** (Terraform Setup) and let Terraform create all resources
 > - **Come back later** if you want to understand Console → Terraform mapping
 > 
@@ -505,7 +505,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
 
 **Why:** Store Terraform state remotely for team collaboration and safety
 
-> **💡 Optional Learning Step:** This walkthrough shows you how to create S3 buckets in the Console. If you prefer, you can **skip this** and let Terraform create the bucket in Part 3. However, doing it manually first helps you understand what Terraform is doing behind the scenes.
+> **💡 Optional Hands-on Step:** This walkthrough shows you how to create S3 buckets in the Console. If you prefer, you can **skip this** and let Terraform create the bucket in Part 3. However, doing it manually first helps you understand what Terraform is doing behind the scenes.
 >
 > **To skip:** Jump to [Part 3: Terraform Setup](#part-3-terraform-setup)
 
@@ -543,7 +543,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
 
 **Why:** Store uploaded documents
 
-> **💡 Optional Learning Step:** This is for learning how Console settings map to Terraform code. If you've already done this in other projects or want to skip ahead, you can **skip this** and go directly to Part 3 where Terraform will create the production bucket.
+> **💡 Optional Hands-on Step:** This is for learning how Console settings map to Terraform code. If you've already done this in other projects or want to skip ahead, you can **skip this** and go directly to Part 3 where Terraform will create the production bucket.
 >
 > **To skip:** Jump to [Part 3: Terraform Setup](#part-3-terraform-setup)
 
@@ -555,7 +555,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
    - Click "Create bucket"
    - Bucket name: `llmops-rag-documents-dev-<your-initials>-manual`
      - Example: `llmops-rag-documents-dev-manual`
-     - **Note the `-manual` suffix** - for learning/comparison only
+     - **Note the `-manual` suffix** - for verification/comparison only
    - Region: `ap-southeast-2`
    - **Block Public Access:** Keep all checkboxes CHECKED
    - **Bucket Versioning:** Enable
@@ -563,7 +563,7 @@ aws bedrock list-foundation-models --region us-east-1 --query 'modelSummaries[?c
    - **Tags:**
      - Key: `Project`, Value: `LLMOps`
      - Key: `Environment`, Value: `dev`
-     - Key: `Purpose`, Value: `Learning-Manual`
+     - Key: `Purpose`, Value: `Validation-Manual`
    - Click "Create bucket"
 
 2. **Configure Lifecycle Policy** (Cost Optimization)
@@ -1085,7 +1085,7 @@ documents_bucket_name = "llmops-rag-documents-dev"
   - Lifecycle rule: Active ✅
 - **Skip Step 3.7** (no manual resources to clean up)
 
-**Learning Point:** 
+**Validation Insight:** 
 - If you did manual steps: See how Console actions → Terraform code
 - If you skipped: Terraform created everything automatically from code
 
@@ -1554,12 +1554,12 @@ lsof -ti:8000 | xargs kill -9
 - ✅ Set up complete local development environment
 - ✅ Configured AWS account and IAM
 - ✅ Created S3 buckets (Console + Terraform)
-- ✅ Learned Console → Terraform mapping
+- ✅ Validated Console → Terraform mapping
 - ✅ Built basic FastAPI application
 - ✅ Optimized exclusion rules for Git and Docker
 - ✅ Verified everything works
 
-**What We Learned:**
+**Engineering Competencies Mastered:**
 - AWS Console navigation
 - Terraform basics and modules
 - FastAPI application structure
