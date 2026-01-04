@@ -30,7 +30,6 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 **[Part 1: Local Development Environment](#part-1-local-development-environment)**
 - [1.1 Install Docker and Docker Compose](#step-11-install-docker-and-docker-compose)
 - [1.2 Install Kubernetes Tools (minikube)](#step-12-install-kubernetes-tools-minikube)
-  - [1.2.1 Understanding minikube Lifecycle](#step-121-understanding-minikube-lifecycle--data-persistence)
 - [1.3 Install Terraform](#step-13-install-terraform)
 - [1.4 Set Up Python Virtual Environment](#step-14-set-up-python-virtual-environment)
 - [1.5 Install AWS CLI](#step-15-install-aws-cli)
@@ -39,7 +38,6 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 - [2.1 Create AWS Account](#step-21-create-aws-account-if-needed)
 - [2.2 Create IAM User](#step-22-create-iam-user-console-walkthrough)
 - [2.3 Configure AWS CLI](#step-23-configure-aws-cli)
-  - [2.3.1 Verify Bedrock Model Availability](#step-231-verify-bedrock-model-availability)
 - [2.4 Create S3 Bucket for Terraform State](#step-24-create-s3-bucket-for-terraform-state-console) *(Optional)*
 - [2.5 Create S3 Bucket for Documents](#step-25-create-s3-bucket-for-documents-console) *(Optional)*
 
