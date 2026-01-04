@@ -826,6 +826,120 @@ project_name = "llmops-rag"
 
 ---
 
+### Step 3.4.1: Bootstrap Backend Resources
+
+**Why:** The S3 bucket and DynamoDB table must exist BEFORE running `terraform init` because the backend configuration references them.
+
+**This is a one-time setup step.**
+
+#### **Create S3 Bucket for Terraform State**
+
+```bash
+# Create the bucket
+aws s3 mb s3://llmops-rag-terraform-state --region ap-southeast-2
+
+# Enable versioning (required for state safety)
+aws s3api put-bucket-versioning \
+  --bucket llmops-rag-terraform-state \
+  --versioning-configuration Status=Enabled \
+  --region ap-southeast-2
+
+# Enable encryption
+aws s3api put-bucket-encryption \
+  --bucket llmops-rag-terraform-state \
+  --server-side-encryption-configuration '{
+    "Rules": [{
+      "ApplyServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+      }
+    }]
+  }' \
+  --region ap-southeast-2
+
+# Block public access
+aws s3api put-public-access-block \
+  --bucket llmops-rag-terraform-state \
+  --public-access-block-configuration \
+    "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" \
+  --region ap-southeast-2
+```
+
+**Expected Output:**
+```
+make_bucket: llmops-rag-terraform-state
+```
+
+---
+
+#### **Create DynamoDB Table for State Locking**
+
+```bash
+aws dynamodb create-table \
+  --table-name llmops-rag-terraform-state-lock \
+  --attribute-definitions AttributeName=LockID,AttributeType=S \
+  --key-schema AttributeName=LockID,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --region ap-southeast-2 \
+  --tags Key=Project,Value=LLMOps Key=Purpose,Value=TerraformStateLock
+```
+
+**Expected Output:**
+```json
+{
+    "TableDescription": {
+        "TableName": "llmops-rag-terraform-state-lock",
+        "TableStatus": "CREATING",
+        ...
+    }
+}
+```
+
+**Wait for table to be active:**
+```bash
+aws dynamodb wait table-exists \
+  --table-name llmops-rag-terraform-state-lock \
+  --region ap-southeast-2
+
+echo "DynamoDB table is ready!"
+```
+
+---
+
+#### **Verify Bootstrap Resources**
+
+```bash
+# Verify S3 bucket
+aws s3 ls | grep llmops-rag-terraform-state
+# Should show: llmops-rag-terraform-state
+
+# Verify bucket versioning
+aws s3api get-bucket-versioning \
+  --bucket llmops-rag-terraform-state \
+  --region ap-southeast-2
+# Should show: "Status": "Enabled"
+
+# Verify DynamoDB table
+aws dynamodb describe-table \
+  --table-name llmops-rag-terraform-state-lock \
+  --region ap-southeast-2 \
+  --query 'Table.TableStatus'
+# Should show: "ACTIVE"
+```
+
+**What you should see:**
+- ✅ S3 bucket: `llmops-rag-terraform-state` exists
+- ✅ Versioning: Enabled
+- ✅ Encryption: Enabled
+- ✅ DynamoDB table: `llmops-rag-terraform-state-lock` is ACTIVE
+
+**Why this step is needed:**
+- Terraform backend needs these resources to exist
+- Can't create them with Terraform (chicken-and-egg problem)
+- One-time manual setup, then Terraform manages everything else
+- These resources persist even after `terraform destroy` (perfect for pause/resume)
+
+---
+
 ### Step 3.5: Initialize and Apply Terraform
 
 **Initialize Terraform:**
