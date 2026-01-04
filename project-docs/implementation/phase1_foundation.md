@@ -792,8 +792,16 @@ module "documents_bucket" {
   enable_lifecycle = true
 }
 
+```
+
+**Create file:** `terraform/environments/dev/outputs.tf`
+
+```hcl
+# terraform/environments/dev/outputs.tf
+
 output "documents_bucket_name" {
-  value = module.documents_bucket.bucket_name
+  description = "Name of the created documents bucket"
+  value       = module.documents_bucket.bucket_name
 }
 ```
 
