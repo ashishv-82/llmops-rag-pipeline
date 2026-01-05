@@ -373,6 +373,125 @@ module "eks" {
 }
 ```
 
+**File:** `terraform/modules/vpc/variables.tf`
+_Purpose: Declare input variables for the VPC module._
+
+```hcl
+variable "project_name" {
+  description = "Name of the project"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+}
+
+variable "cluster_name" {
+  description = "Name of the EKS cluster"
+  type        = string
+}
+```
+
+**File:** `terraform/modules/vpc/outputs.tf`
+_Purpose: Export VPC and subnet IDs for use by other modules._
+
+```hcl
+output "vpc_id" {
+  description = "ID of the VPC"
+  value       = module.vpc.vpc_id
+}
+
+output "private_subnet_ids" {
+  description = "IDs of private subnets"
+  value       = module.vpc.private_subnets
+}
+
+output "public_subnet_ids" {
+  description = "IDs of public subnets"
+  value       = module.vpc.public_subnets
+}
+```
+
+### 4.2 Create EKS Module
+**File:** `terraform/modules/eks/main.tf`
+_Purpose: The managed Kubernetes control plane._
+
+```hcl
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
+
+  cluster_name    = var.cluster_name
+  cluster_version = "1.29"
+
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnet_ids
+
+  # Security: Private endpoint + Public access (restricted usage)
+  cluster_endpoint_public_access = true
+
+  # OIDC for Service Accounts (Critical for Pods -> AWS Permissions)
+  enable_irsa = true
+
+  eks_managed_node_groups = {
+    initial = {
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+
+      instance_types = ["t3.medium"]
+      capacity_type  = "ON_DEMAND"
+    }
+  }
+}
+```
+
+**File:** `terraform/modules/eks/variables.tf`
+_Purpose: Declare input variables for the EKS module._
+
+```hcl
+variable "cluster_name" {
+  description = "Name of the EKS cluster"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "ID of the VPC where EKS will be deployed"
+  type        = string
+}
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs for EKS nodes"
+  type        = list(string)
+}
+```
+
+**File:** `terraform/modules/eks/outputs.tf`
+_Purpose: Export cluster information for kubectl configuration and IRSA._
+
+```hcl
+output "cluster_id" {
+  description = "ID of the EKS cluster"
+  value       = module.eks.cluster_id
+}
+
+output "cluster_endpoint" {
+  description = "Endpoint for EKS cluster"
+  value       = module.eks.cluster_endpoint
+}
+
+output "cluster_security_group_id" {
+  description = "Security group ID attached to the EKS cluster"
+  value       = module.eks.cluster_security_group_id
+}
+
+output "cluster_oidc_issuer_url" {
+  description = "The URL on the EKS cluster OIDC Issuer"
+  value       = module.eks.cluster_oidc_issuer_url
+}
+```
+
 ### 4.3 Create IAM Roles for Service Accounts (IRSA)
 **File:** `terraform/modules/iam/main.tf`
 _Purpose: "Least Privilege" security. Pods assume these roles, not the underlying EC2 nodes._
