@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-api-config
+data:
+  APP_ENV: "dev"
+  AWS_REGION: "ap-southeast-2"
+  DOCUMENTS_BUCKET: "llmops-rag-documents-dev"
+  # DB Hosts will go here later

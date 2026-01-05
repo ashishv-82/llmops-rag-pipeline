@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-api
+  labels:
+    app: rag-api
+spec:
+  # Number of identical pod copies to run
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-api
+  template:
+    metadata:
+      labels:
+        app: rag-api
+    spec:
+      containers:
+      - name: api
+        # Docker image name (built locally in earlier steps)
+        image: llmops-rag-api:latest
+        # Crucial for local development: tells Minikube to use local images
+        imagePullPolicy: Never 
+        ports:
+        - containerPort: 8000
+        # Inject configuration and secrets as environment variables
+        envFrom:
+        - configMapRef:
+            name: rag-api-config
+        - secretRef:
+            name: rag-api-secrets
+            
+        # Liveness Probe: Checks if the container is still running.
+        # If this fails, Kubernetes restarts the pod.
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          
+        # Readiness Probe: Checks if the container is ready to handle traffic.
+        # If this fails, the pod is removed from service endpoints.
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          
+        # Resource constraints to ensure cluster stability
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

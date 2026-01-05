@@ -105,3 +105,6 @@ temp/
 # Cost reports (generated, not source)
 cost-reports/
 *.xlsx
+
+# Kubernetes
+kubernetes/base/secrets.yaml

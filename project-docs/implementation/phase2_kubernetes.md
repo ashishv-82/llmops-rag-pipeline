@@ -227,12 +227,15 @@ kubectl apply -f kubernetes/base/
 ### 3.2 Verify Pod Health & Probes
 
 ```bash
-# Check status
-kubectl get pods
+# Check if pods are running
+kubectl get pods -n dev
 # Should see STATUS: Running
 
-# Verify logs
-kubectl logs -l app=rag-api
+# Check pod logs
+kubectl logs -l app=rag-api -n dev
+
+# Check if the deployment is ready
+kubectl get deployment rag-api -n dev
 
 # Check events (useful if ImagePullBackOff occurs)
 kubectl describe pod -l app=rag-api
@@ -242,14 +245,61 @@ kubectl describe pod -l app=rag-api
 
 Since `ClusterIP` needs a proxy to be reached from your Mac:
 
+**Step 1: Set up port forwarding (in a separate terminal)**
 ```bash
-# Port forward in a separate terminal window
-kubectl port-forward service/rag-api-service 8080:80
+# IMPORTANT: Specify the namespace where your service is running
+kubectl port-forward service/rag-api-service 8080:80 -n dev
 
-# Validate in main terminal
-curl http://localhost:8080/health
-# Response: {"status":"healthy",...}
+# You should see:
+# Forwarding from 127.0.0.1:8080 -> 8000
+# Forwarding from [::1]:8080 -> 8000
 ```
+
+**Step 2: Test all health endpoints (in your main terminal)**
+```bash
+# Test basic health check
+curl http://localhost:8080/health
+# Expected: {"status":"healthy","timestamp":"2026-01-05T10:59:32.296231"}
+
+# Test readiness probe (used by Kubernetes)
+curl http://localhost:8080/health/ready
+# Expected: {"status":"ready","checks":{"api":"ok"}}
+
+# Test liveness probe (used by Kubernetes)
+curl http://localhost:8080/health/live
+# Expected: {"status":"alive"}
+
+# Test root endpoint
+curl http://localhost:8080/
+# Expected: {"message":"Welcome to LLMOps RAG Pipeline","version":"0.1.0","docs":"/docs"}
+```
+
+**Step 3: Verify environment variables are injected**
+```bash
+# Check if ConfigMap and Secrets are mounted correctly
+kubectl exec -n dev -it $(kubectl get pod -n dev -l app=rag-api -o jsonpath='{.items[0].metadata.name}') -- env | grep -E 'APP_ENV|AWS_REGION|DOCUMENTS_BUCKET'
+
+# Expected output:
+# APP_ENV=dev
+# AWS_REGION=ap-southeast-2
+# DOCUMENTS_BUCKET=llmops-rag-documents-dev
+```
+
+**Step 4: Check resource usage**
+```bash
+# View resource consumption
+kubectl top pod -n dev -l app=rag-api
+
+# Expected output similar to:
+# NAME                       CPU(cores)   MEMORY(bytes)
+# rag-api-868d5ff998-qp6m5   1m           45Mi
+```
+
+**Troubleshooting Tips:**
+- If `curl` returns nothing, ensure port-forward is running with `-n dev` flag
+- If you see "connection refused", check that the pod is in `Running` status
+- If health checks fail, check pod logs: `kubectl logs -n dev -l app=rag-api`
+- If you see "secret not found" warnings in events, ensure `secrets.yaml` was applied successfully
 
 ---
 
