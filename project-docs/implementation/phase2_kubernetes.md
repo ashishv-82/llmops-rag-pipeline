@@ -285,14 +285,20 @@ kubectl exec -n dev -it $(kubectl get pod -n dev -l app=rag-api -o jsonpath='{.i
 # DOCUMENTS_BUCKET=llmops-rag-documents-dev
 ```
 
-**Step 4: Check resource usage**
+**Step 4: Check resource usage (Optional)**
 ```bash
+# Note: Requires Metrics Server addon in Minikube
+# Enable it with: minikube addons enable metrics-server
+
 # View resource consumption
 kubectl top pod -n dev -l app=rag-api
 
 # Expected output similar to:
 # NAME                       CPU(cores)   MEMORY(bytes)
 # rag-api-868d5ff998-qp6m5   1m           45Mi
+
+# If you see "Metrics API not available", that's OK for local dev
+# You can skip this step or enable the addon if needed
 ```
 
 **Troubleshooting Tips:**
