@@ -54,6 +54,8 @@ Phase 6 adds **ML Operations Maturity** through:
 - [6.1 Query Pattern Monitoring](#61-query-pattern-monitoring)
 - [6.2 Drift Alerts](#62-drift-alerts)
 
+**[Part 6.5: Integration & Deployment](#part-65-integration--deployment)**
+
 **[Part 7: Verification](#part-7-verification)**
 
 ---
@@ -1187,6 +1189,425 @@ Action Required: Review query patterns and consider retraining or prompt adjustm
             Subject=f"Data Drift Alert - {domain}",
             Message=message
         )
+```
+
+---
+
+## Part 6.5: Integration & Deployment
+
+> **Critical**: This section bridges the gap between writing MLOps code and testing it. All the services you created in Parts 1-6 (Redis, routing, caching, MLflow, evaluation) need to be deployed and integrated before verification will work.
+
+### 6.5.1 Deploy Redis to Minikube
+
+**1. Apply Redis manifests:**
+```bash
+kubectl apply -f kubernetes/base/redis-deployment.yaml -n dev
+```
+
+**2. Verify Redis is running:**
+```bash
+kubectl get pods -n dev | grep redis
+# Should see: redis-xxxxx   1/1   Running
+
+kubectl logs -l app=redis -n dev --tail=20
+# Should see: "Ready to accept connections"
+```
+
+**3. Test Redis connectivity:**
+```bash
+kubectl port-forward service/redis-service 6379:6379 -n dev &
+redis-cli ping
+# Expect: PONG
+```
+
+**4. Verify PersistentVolumeClaim:**
+```bash
+kubectl get pvc -n dev | grep redis
+# Should show: redis-pvc   Bound
+```
+
+### 6.5.2 Create MLops Namespace and Deploy MLflow
+
+**1. Create mlops namespace:**
+```bash
+kubectl create namespace mlops
+```
+
+**2. Deploy PostgreSQL for MLflow backend:**
+```bash
+# Create PostgreSQL deployment
+kubectl apply -f kubernetes/mlops/postgres-deployment.yaml -n mlops
+
+# Verify PostgreSQL is running
+kubectl get pods -n mlops | grep postgres
+# Should see: postgres-xxxxx   1/1   Running
+```
+
+**3. Deploy MLflow:**
+```bash
+kubectl apply -f kubernetes/mlops/mlflow-deployment.yaml -n mlops
+```
+
+**4. Verify MLflow is running:**
+```bash
+kubectl get pods -n mlops | grep mlflow
+# Should see: mlflow-xxxxx   1/1   Running
+
+kubectl logs -l app=mlflow -n mlops --tail=30
+# Should see: "Listening at: http://0.0.0.0:5000"
+```
+
+**5. Port forward to access MLflow UI:**
+```bash
+kubectl port-forward service/mlflow 5000:5000 -n mlops &
+```
+
+**6. Verify MLflow UI is accessible:**
+```bash
+curl http://localhost:5000/health
+# Or open in browser: http://localhost:5000
+```
+
+### 6.5.3 Update Application with MLOps Services
+
+**1. Add new dependencies to requirements.txt:**
+```bash
+cat >> api/requirements.txt << EOF
+redis==5.0.1
+mlflow==2.9.2
+nltk==3.8.1
+scikit-learn==1.3.2
+numpy==1.26.2
+EOF
+```
+
+**2. Update main.py to register new services:**
+
+**File:** `api/main.py`
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.routers import health, documents, query
+from api.services.cache_service import cache_service
+from api.mlflow_tracking import mlflow
+import os
+
+app = FastAPI(title="RAG API", version="2.0.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register routers
+app.include_router(health.router, tags=["health"])
+app.include_router(documents.router, prefix="/documents", tags=["documents"])
+app.include_router(query.router, tags=["query"])
+
+@app.on_event("startup")
+async def startup_event():
+    # Test Redis connection
+    try:
+        cache_service.redis.ping()
+        print("✅ Redis connection successful")
+    except Exception as e:
+        print(f"❌ Redis connection failed: {e}")
+    
+    # Configure MLflow
+    mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlops.svc.cluster.local:5000'))
+    print("✅ MLflow configured")
+    
+    print("Application startup complete.")
+```
+
+**3. Update ConfigMap with new environment variables:**
+
+**File:** `kubernetes/base/configmap.yaml`
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-api-config
+  namespace: dev
+data:
+  APP_ENV: "dev"
+  AWS_REGION: "ap-southeast-2"
+  DOCUMENTS_BUCKET: "llmops-rag-documents-dev"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  MLFLOW_TRACKING_URI: "http://mlflow.mlops.svc.cluster.local:5000"
+  CACHE_SIMILARITY_THRESHOLD: "0.95"
+```
+
+### 6.5.4 Rebuild and Redeploy Application
+
+**1. Set Docker environment to Minikube:**
+```bash
+eval $(minikube docker-env)
+```
+
+**2. Rebuild the Docker image:**
+```bash
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+```
+
+**3. Verify the image:**
+```bash
+docker images | grep llmops-rag-api
+# Should show: llmops-rag-api:latest with recent timestamp
+```
+
+**4. Update ConfigMap:**
+```bash
+kubectl apply -f kubernetes/base/configmap.yaml
+```
+
+**5. Delete old pods to force recreation:**
+```bash
+kubectl delete pod -l app=rag-api -n dev
+```
+
+**6. Wait for new pod to be ready:**
+```bash
+kubectl wait --for=condition=ready pod -l app=rag-api -n dev --timeout=120s
+```
+
+**7. Check new pod logs:**
+```bash
+kubectl logs -l app=rag-api -n dev --tail=50
+# Should see: "✅ Redis connection successful"
+# Should see: "✅ MLflow configured"
+# Should see: "Application startup complete."
+```
+
+### 6.5.5 Verify Service Connectivity
+
+**1. Port forward the API service:**
+```bash
+kubectl port-forward service/rag-api-service 8000:80 -n dev
+```
+
+**2. Test Redis caching is working:**
+```bash
+# First query (cache miss)
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the deployment process?", "domain": "engineering"}'
+# Note the response time
+
+# Second identical query (should be cache hit)
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the deployment process?", "domain": "engineering"}'
+# Should be much faster and include "cached": true
+```
+
+**3. Test intelligent routing:**
+```bash
+# Simple query (should use lite model)
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Hello", "domain": "general"}'
+# Response should show: "model_used": "lite"
+
+# Complex query (should use pro model)
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Can you provide a comprehensive analysis of the deployment architecture including infrastructure considerations, security implications, and scalability patterns?", "domain": "engineering"}'
+# Response should show: "model_used": "pro"
+```
+
+**4. Verify MLflow is tracking experiments:**
+```bash
+# Check MLflow UI
+open http://localhost:5000
+
+# Or query MLflow API
+curl http://localhost:5000/api/2.0/mlflow/experiments/list
+```
+
+### 6.5.6 Test Cache Metrics
+
+**1. Check cache hit rate in Prometheus:**
+```bash
+# Port forward Prometheus (if not already running)
+kubectl port-forward service/prometheus-service 9090:9090 -n monitoring &
+
+# Query cache metrics
+curl 'http://localhost:9090/api/v1/query?query=rag_cache_hits_total'
+```
+
+**2. Verify cache is populating in Redis:**
+```bash
+# Connect to Redis
+kubectl exec -it deployment/redis -n dev -- redis-cli
+
+# Check keys
+KEYS *
+# Should see: embedding:* and response:* keys
+
+# Check a specific cache entry
+GET "response:engineering:..."
+# Should show cached response data
+
+# Exit Redis
+exit
+```
+
+### 6.5.7 Test Prompt Versioning
+
+**1. Make queries to test A/B testing:**
+```bash
+# Make multiple queries to the same domain
+for i in {1..10}; do
+  curl -X POST "http://localhost:8000/query" \
+    -H "Content-Type: application/json" \
+    -d '{"question": "What are the legal requirements?", "domain": "legal"}' \
+    | jq '.prompt_version'
+  sleep 1
+done
+# Should see different prompt versions (v1, v2) being used
+```
+
+**2. Check A/B test results:**
+```bash
+# Query the A/B test service endpoint (if exposed)
+curl http://localhost:8000/admin/ab-test-results
+```
+
+### 6.5.8 Verify MLflow Experiment Tracking
+
+**1. Generate some queries to create experiments:**
+```bash
+for i in {1..5}; do
+  curl -X POST "http://localhost:8000/query" \
+    -H "Content-Type: application/json" \
+    -d "{\"question\": \"Test query $i\", \"domain\": \"general\"}"
+  sleep 2
+done
+```
+
+**2. Check MLflow UI for experiments:**
+```
+Open: http://localhost:5000
+Navigate to: Experiments
+Verify: You should see runs with metrics (cost, tokens, latency)
+```
+
+**3. Query MLflow programmatically:**
+```bash
+kubectl exec -it deployment/rag-api -n dev -- python -c "
+import mlflow
+mlflow.set_tracking_uri('http://mlflow.mlops.svc.cluster.local:5000')
+experiments = mlflow.search_experiments()
+print(f'Found {len(experiments)} experiments')
+for exp in experiments:
+    print(f'  - {exp.name}: {exp.experiment_id}')
+"
+```
+
+### 6.5.9 Troubleshooting Common Issues
+
+**Issue: Redis connection fails**
+```bash
+# Check if Redis pod is running
+kubectl get pods -n dev | grep redis
+
+# Check Redis logs
+kubectl logs -l app=redis -n dev
+
+# Test connectivity from API pod
+kubectl exec -it deployment/rag-api -n dev -- redis-cli -h redis-service ping
+# Should return: PONG
+
+# If connection refused, check service
+kubectl get svc redis-service -n dev
+```
+
+**Issue: MLflow not accessible**
+```bash
+# Check MLflow pod status
+kubectl get pods -n mlops | grep mlflow
+
+# Check MLflow logs
+kubectl logs -l app=mlflow -n mlops --tail=100
+
+# Verify PostgreSQL is running
+kubectl get pods -n mlops | grep postgres
+
+# Test MLflow from API pod
+kubectl exec -it deployment/rag-api -n dev -- curl http://mlflow.mlops.svc.cluster.local:5000/health
+```
+
+**Issue: Cache not working**
+```bash
+# Check if cache service is initialized
+kubectl logs -l app=rag-api -n dev | grep -i redis
+
+# Verify Redis has data
+kubectl exec -it deployment/redis -n dev -- redis-cli DBSIZE
+# Should show number of keys > 0 after some queries
+
+# Check cache metrics
+curl 'http://localhost:9090/api/v1/query?query=rag_cache_hits_total{hit="true"}'
+```
+
+**Issue: Routing not selecting correct model**
+```bash
+# Check routing service logs
+kubectl logs -l app=rag-api -n dev | grep -i routing
+
+# Test routing logic directly
+kubectl exec -it deployment/rag-api -n dev -- python -c "
+from api.services.routing_service import routing_service
+print('Simple query:', routing_service.analyze_complexity('Hello', 'general'))
+print('Complex query:', routing_service.analyze_complexity('Provide comprehensive analysis...', 'general'))
+"
+```
+
+**Issue: Import errors for new libraries**
+```bash
+# Check if new dependencies are installed
+kubectl exec -it deployment/rag-api -n dev -- pip list | grep -E "redis|mlflow|nltk|scikit"
+
+# If missing, verify requirements.txt was updated
+kubectl exec -it deployment/rag-api -n dev -- cat /app/requirements.txt | grep -E "redis|mlflow"
+
+# Rebuild image if needed
+eval $(minikube docker-env)
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+kubectl delete pod -l app=rag-api -n dev
+```
+
+**Issue: NLTK data not found**
+```bash
+# Download NLTK data in the container
+kubectl exec -it deployment/rag-api -n dev -- python -c "
+import nltk
+nltk.download('punkt')
+print('NLTK data downloaded')
+"
+
+# Or add to Dockerfile:
+# RUN python -c "import nltk; nltk.download('punkt')"
+```
+
+**Issue: MLflow experiments not appearing**
+```bash
+# Check MLflow backend connection
+kubectl exec -it deployment/mlflow -n mlops -- env | grep MLFLOW
+
+# Verify PostgreSQL is accessible
+kubectl exec -it deployment/mlflow -n mlops -- psql -h postgres -U mlflow -d mlflow -c "SELECT COUNT(*) FROM experiments;"
+
+# Check S3 artifact storage
+kubectl exec -it deployment/mlflow -n mlops -- aws s3 ls s3://llmops-rag-mlflow/artifacts/
 ```
 
 ---

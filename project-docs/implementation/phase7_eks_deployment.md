@@ -65,6 +65,8 @@ Phase 7 is the **Production Deployment** phase where we:
 - [7.2 ECR Image Backup](#72-ecr-image-backup)
 - [7.3 Recovery Procedures](#73-recovery-procedures)
 
+**[Part 7.5: Integration & Deployment Validation](#part-75-integration--deployment-validation)**
+
 **[Part 8: Verification](#part-8-verification)**
 
 ---
@@ -1115,6 +1117,342 @@ aws ecr put-lifecycle-policy \
    kubectl delete externalsecret rag-api-secrets -n prod
    kubectl apply -f kubernetes/base/external-secret.yaml
    ```
+```
+
+---
+
+## Part 7.5: Integration & Deployment Validation
+
+> **Critical**: This section validates that all deployed components (Terraform infrastructure, Kubernetes deployments, External Secrets, monitoring) work together correctly. **No additional AWS resources are created** - we're only testing what's already deployed.
+
+### 7.5.1 Validate EKS Cluster Connectivity
+
+**1. Verify kubectl is configured:**
+```bash
+# Check current context
+kubectl config current-context
+# Should show: arn:aws:eks:ap-southeast-2:ACCOUNT_ID:cluster/llmops-rag-cluster
+
+# List all nodes
+kubectl get nodes -o wide
+# Should see 2+ nodes in Ready state
+```
+
+**2. Verify all namespaces exist:**
+```bash
+kubectl get namespaces
+# Should see: dev, staging, prod, monitoring, mlops
+```
+
+**3. Check cluster health:**
+```bash
+# Check cluster addons
+kubectl get daemonset -n kube-system
+# Should see: aws-node, kube-proxy, ebs-csi-node
+
+# Check system pods
+kubectl get pods -n kube-system
+# All pods should be Running
+```
+
+### 7.5.2 Validate Application Deployment
+
+**1. Check all application pods are running:**
+```bash
+# Check prod namespace
+kubectl get pods -n prod
+# Should see: rag-api, redis, vectordb all Running
+
+# Check pod logs for startup messages
+kubectl logs -l app=rag-api -n prod --tail=20
+# Should see: "Application startup complete"
+```
+
+**2. Verify services are created:**
+```bash
+kubectl get svc -n prod
+# Should see: rag-api-service, redis-service, vectordb-service
+```
+
+**3. Check deployments are healthy:**
+```bash
+kubectl get deployments -n prod
+# All deployments should show READY: X/X
+```
+
+### 7.5.3 Validate External Secrets Integration
+
+**1. Verify External Secrets Operator is running:**
+```bash
+kubectl get pods -n kube-system | grep external-secrets
+# Should see: external-secrets-xxxxx Running
+```
+
+**2. Check SecretStore is configured:**
+```bash
+kubectl get secretstore -n prod
+# Should show: aws-secrets-manager
+```
+
+**3. Verify ExternalSecret is syncing:**
+```bash
+kubectl get externalsecret -n prod
+# Should show: rag-api-secrets with READY: True
+
+# Check the synced secret exists
+kubectl get secret rag-api-secrets -n prod
+# Should show the secret with DATA entries
+```
+
+**4. Validate secret values are accessible to pods:**
+```bash
+# Check if pod can read secrets
+kubectl exec -it deployment/rag-api -n prod -- env | grep -E "BEDROCK|OPENAI"
+# Should show environment variables (values will be masked)
+```
+
+### 7.5.4 Validate Service-to-Service Communication
+
+**1. Test Redis connectivity from API pod:**
+```bash
+kubectl exec -it deployment/rag-api -n prod -- redis-cli -h redis-service ping
+# Should return: PONG
+```
+
+**2. Test VectorDB connectivity:**
+```bash
+kubectl exec -it deployment/rag-api -n prod -- curl http://vectordb-service:8000/api/v1/heartbeat
+# Should return heartbeat response
+```
+
+**3. Verify internal DNS resolution:**
+```bash
+kubectl exec -it deployment/rag-api -n prod -- nslookup redis-service
+# Should resolve to cluster IP
+
+kubectl exec -it deployment/rag-api -n prod -- nslookup vectordb-service
+# Should resolve to cluster IP
+```
+
+### 7.5.5 Validate External Access via Ingress
+
+**1. Get the Load Balancer URL:**
+```bash
+kubectl get ingress -n prod
+# Note the ADDRESS column - this is your ALB URL
+```
+
+**2. Test external access to health endpoint:**
+```bash
+# Get the ALB hostname
+ALB_URL=$(kubectl get ingress rag-api-ingress -n prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+# Test health endpoint (wait a few minutes for ALB to be ready)
+curl http://$ALB_URL/health
+# Expected: {"status":"healthy","timestamp":"..."}
+```
+
+**3. Verify SSL redirect (if configured):**
+```bash
+curl -I http://$ALB_URL/health
+# Should see: Location: https://...
+```
+
+### 7.5.6 Validate Monitoring Integration
+
+**1. Check Prometheus is scraping EKS pods:**
+```bash
+# Port forward Prometheus
+kubectl port-forward -n monitoring svc/prometheus-service 9090:9090 &
+
+# Query targets
+curl 'http://localhost:9090/api/v1/targets' | jq '.data.activeTargets[] | select(.labels.namespace=="prod")'
+# Should show rag-api pods with state="up"
+```
+
+**2. Verify metrics are being collected:**
+```bash
+# Query a metric
+curl 'http://localhost:9090/api/v1/query?query=rag_requests_total{namespace="prod"}' | jq '.data.result'
+# Should show metric data
+```
+
+**3. Check Grafana dashboards:**
+```bash
+# Port forward Grafana
+kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &
+
+# Open in browser
+open http://localhost:3000
+# Login and verify dashboards show EKS data
+```
+
+### 7.5.7 Validate IAM Roles for Service Accounts (IRSA)
+
+**1. Verify service account has IAM role annotation:**
+```bash
+kubectl get sa rag-api -n prod -o yaml | grep eks.amazonaws.com/role-arn
+# Should show: eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/rag-api-prod
+```
+
+**2. Test Bedrock access from pod:**
+```bash
+kubectl exec -it deployment/rag-api -n prod -- python -c "
+import boto3
+client = boto3.client('bedrock-runtime', region_name='ap-southeast-2')
+models = client.list_foundation_models()
+print(f'Bedrock access: OK - Found {len(models[\"modelSummaries\"])} models')
+"
+# Should print: Bedrock access: OK
+```
+
+**3. Test S3 access from pod:**
+```bash
+kubectl exec -it deployment/rag-api -n prod -- aws s3 ls s3://llmops-rag-documents-prod/
+# Should list S3 bucket contents
+```
+
+### 7.5.8 Validate Cost Optimization Features
+
+**1. Verify S3 lifecycle policies are active:**
+```bash
+aws s3api get-bucket-lifecycle-configuration \
+  --bucket llmops-rag-documents-prod \
+  --query 'Rules[].{ID:ID,Status:Status,Transitions:Transitions}'
+# Should show lifecycle rules
+```
+
+**2. Check auto-scaling CronJobs are created:**
+```bash
+kubectl get cronjob -n prod
+# Should see: scale-down-night, scale-up-morning
+```
+
+**3. Verify resource tags for cost tracking:**
+```bash
+aws eks describe-cluster --name llmops-rag-cluster \
+  --query 'cluster.tags' --output table
+# Should show: Project, Environment, ManagedBy, CostCenter tags
+```
+
+### 7.5.9 End-to-End Integration Test
+
+**1. Test complete RAG flow:**
+```bash
+# Get ALB URL
+ALB_URL=$(kubectl get ingress rag-api-ingress -n prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+# Test query endpoint
+curl -X POST "http://$ALB_URL/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the deployment process?", "domain": "engineering"}' \
+  | jq '.'
+
+# Should return:
+# - answer (from LLM)
+# - sources (from vector DB)
+# - model_used (routing decision)
+# - cached (caching status)
+# - cost (cost tracking)
+```
+
+**2. Verify caching is working:**
+```bash
+# First query (cache miss)
+time curl -X POST "http://$ALB_URL/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Test query", "domain": "general"}'
+# Note the time
+
+# Second identical query (should be cache hit)
+time curl -X POST "http://$ALB_URL/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Test query", "domain": "general"}'
+# Should be much faster
+```
+
+**3. Check metrics were recorded:**
+```bash
+# Query Prometheus for the test queries
+curl 'http://localhost:9090/api/v1/query?query=rag_requests_total{namespace="prod"}' | jq '.data.result[0].value[1]'
+# Should show increased count
+```
+
+### 7.5.10 Pre-Production Checklist
+
+**Before moving to verification, confirm:**
+
+- [ ] All pods in `prod` namespace are Running
+- [ ] External Secrets are syncing from AWS Secrets Manager
+- [ ] Services can communicate internally (Redis, VectorDB)
+- [ ] External access works via ALB/Ingress
+- [ ] IRSA allows pods to access Bedrock and S3
+- [ ] Monitoring is collecting metrics from EKS
+- [ ] Cost optimization features are active (lifecycle, tags)
+- [ ] End-to-end RAG query works successfully
+- [ ] Caching is functioning correctly
+- [ ] No errors in pod logs
+
+**If any item fails, troubleshoot before proceeding to verification.**
+
+### 7.5.11 Troubleshooting Common Issues
+
+**Issue: Pods stuck in Pending**
+```bash
+# Check pod events
+kubectl describe pod -l app=rag-api -n prod
+
+# Common causes:
+# - Insufficient node capacity
+# - PVC not bound
+# - Image pull errors
+```
+
+**Issue: External Secrets not syncing**
+```bash
+# Check ESO logs
+kubectl logs -n kube-system -l app.kubernetes.io/name=external-secrets
+
+# Verify IAM role permissions
+aws iam get-role --role-name external-secrets-prod
+
+# Check SecretStore status
+kubectl describe secretstore aws-secrets-manager -n prod
+```
+
+**Issue: ALB not accessible**
+```bash
+# Check ingress status
+kubectl describe ingress rag-api-ingress -n prod
+
+# Verify ALB exists
+aws elbv2 describe-load-balancers \
+  --query 'LoadBalancers[?contains(LoadBalancerName, `k8s-prod`)].{Name:LoadBalancerName,DNS:DNSName}'
+
+# Check target group health
+aws elbv2 describe-target-health --target-group-arn <ARN>
+```
+
+**Issue: IRSA not working**
+```bash
+# Verify OIDC provider exists
+aws iam list-open-id-connect-providers
+
+# Check service account annotation
+kubectl get sa rag-api -n prod -o yaml
+
+# Test from pod
+kubectl exec -it deployment/rag-api -n prod -- aws sts get-caller-identity
+# Should show the assumed role
+```
+
+**Issue: Monitoring not showing data**
+```bash
+# Check if ServiceMonitor exists
+kubectl get servicemonitor -n prod
+
+# Verify Prometheus can reach pods
+kubectl exec -it -n monitoring deployment/prometheus -- wget -O- http://rag-api-service.prod.svc.cluster.local/metrics
 ```
 
 ---
