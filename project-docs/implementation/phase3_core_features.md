@@ -128,7 +128,7 @@ class LLMService:
 llm_service = LLMService()
 ```
 
-### 1.4 Configure Bedrock Guardrails
+### 1.3 Configure Bedrock Guardrails
 **File:** `scripts/setup_guardrails.py`
 
 Create guardrails via AWS Console or CLI:
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     create_guardrail()
 ```
 
-### 1.3 Embedding Service (Titan V2)
+### 1.4 Embedding Service (Titan V2)
 **File:** `api/services/embedding_service.py`
 
 Converts text into vectors using Titan Embeddings V2.
