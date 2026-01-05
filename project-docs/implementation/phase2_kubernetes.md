@@ -42,7 +42,9 @@ Phase 2 executes the **"Verify First"** methodology:
 - [4.2 Create EKS Module](#42-create-eks-module)
 - [4.3 Create IAM Roles for Service Accounts (IRSA)](#43-create-iam-roles-for-service-accounts-irsa)
 
-**[Part 5: Verification Checklist](#part-5-verification-checklist)**
+**[Part 5: Verification](#part-5-verification)**
+- [5.1 Manual Verification Steps](#51-manual-verification-steps)
+- [5.2 Verification Checklist](#52-verification-checklist)
 
 ---
 
@@ -325,19 +327,120 @@ _Purpose: "Least Privilege" security. Pods assume these roles, not the underlyin
 
 ---
 
-## Part 5: Verification Checklist
+## Part 5: Verification
+
+### 5.1 Manual Verification Steps
+
+**1. Verify Minikube Status**
+```bash
+minikube status
+# Expect: host, kubelet, apiserver all "Running"
+
+kubectl config current-context
+# Expect: minikube
+```
+
+**2. Verify Namespace Creation**
+```bash
+kubectl get namespaces
+# Should see: dev
+
+kubectl config view --minify | grep namespace
+# Expect: namespace: dev
+```
+
+**3. Verify Manifests Applied**
+```bash
+kubectl get all -n dev
+# Should see: deployment, pod, service for rag-api
+```
+
+**4. Verify Pod Health**
+```bash
+# Check pod status
+kubectl get pods -n dev
+# STATUS should be: Running
+
+# Check logs
+kubectl logs -l app=rag-api -n dev --tail=50
+# Should see: "Application startup complete"
+
+# Describe pod (check events)
+kubectl describe pod -l app=rag-api -n dev
+# Events should show: Pulled, Created, Started (no errors)
+```
+
+**5. Verify Health Probes**
+```bash
+# Port forward to access service
+kubectl port-forward service/rag-api-service 8080:80 -n dev &
+
+# Test liveness probe
+curl http://localhost:8080/health/live
+# Expect: {"status": "alive"}
+
+# Test readiness probe
+curl http://localhost:8080/health/ready
+# Expect: {"status": "ready"}
+
+# Test main health endpoint
+curl http://localhost:8080/health
+# Expect: {"status": "healthy"}
+```
+
+**6. Verify ConfigMap & Secrets**
+```bash
+# Check ConfigMap
+kubectl get configmap rag-api-config -n dev -o yaml
+# Verify: APP_ENV, AWS_REGION values
+
+# Check Secret exists (don't expose values)
+kubectl get secret rag-api-secrets -n dev
+# Should show: 1 item in DATA column
+```
+
+**7. Test Image Loading in Minikube**
+```bash
+# Verify image is in Minikube's docker
+eval $(minikube docker-env)
+docker images | grep llmops-rag-api
+# Should see: llmops-rag-api:latest
+```
+
+**8. Verify Terraform Modules (Syntax Only)**
+```bash
+# Initialize VPC module
+cd terraform/modules/vpc
+terraform init
+terraform validate
+# Expect: Success! The configuration is valid.
+
+# Initialize EKS module
+cd ../eks
+terraform init
+terraform validate
+# Expect: Success! The configuration is valid.
+```
+
+### 5.2 Verification Checklist
 
 ### ✅ Local Orchestration
-- [ ] Minikube running with `dev` namespace active.
-- [ ] Pods running (`kubectl get pods`).
-- [ ] Logs show FastAPI startup successful.
-- [ ] `curl localhost:8080/health` returns 200 OK.
+- [ ] Minikube running with `dev` namespace active
+- [ ] All manifests in `kubernetes/base/` created
+- [ ] Pods running (`kubectl get pods` shows Running)
+- [ ] Logs show FastAPI startup successful
+- [ ] ConfigMap contains correct environment variables
+- [ ] Secret created (placeholder values)
+- [ ] Health probes responding correctly
+- [ ] `curl localhost:8080/health` returns 200 OK
 
 ### ✅ Infrastructure Readiness
-- [ ] `kubernetes/base/` contains all YAML manifests.
-- [ ] `terraform/modules/vpc` created.
-- [ ] `terraform/modules/eks` created.
-- [ ] `terraform init` passes in `modules/` (syntax check only).
+- [ ] `terraform/modules/vpc/main.tf` created with VPC configuration
+- [ ] `terraform/modules/eks/main.tf` created with EKS cluster config
+- [ ] `terraform/modules/iam/main.tf` created (placeholder for Phase 3)
+- [ ] `terraform init` passes in all modules (syntax check only)
+- [ ] `terraform validate` passes in all modules
+- [ ] No `terraform apply` executed (cost savings)
 
 ---
 
