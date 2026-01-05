@@ -881,6 +881,214 @@ requests==2.31.0
 
 ---
 
+## Part 5.5: Integration & Deployment
+
+> **Critical**: This section bridges the gap between writing code and testing it. All the services you created in Parts 1-5 need to be wired together and deployed before verification will work.
+
+### 5.5.1 Update main.py to Register New Routers
+
+**File:** `api/main.py`
+
+Add the new routers to your FastAPI application:
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.routers import health, documents, query
+
+app = FastAPI(title="RAG API", version="1.0.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register routers
+app.include_router(health.router, tags=["health"])
+app.include_router(documents.router, prefix="/documents", tags=["documents"])
+app.include_router(query.router, tags=["query"])
+
+@app.on_event("startup")
+async def startup_event():
+    print("Application startup complete.")
+```
+
+### 5.5.2 Deploy ChromaDB to Minikube
+
+**1. Apply the ChromaDB deployment:**
+```bash
+kubectl apply -f kubernetes/base/vectordb-deployment.yaml -n dev
+```
+
+**2. Verify ChromaDB is running:**
+```bash
+kubectl get pods -n dev
+# Should see: vectordb-0   1/1   Running
+
+kubectl logs vectordb-0 -n dev
+# Should see ChromaDB startup logs
+```
+
+**3. Test ChromaDB connectivity:**
+```bash
+kubectl port-forward service/vectordb-service 8001:8000 -n dev &
+curl http://localhost:8001/api/v1/heartbeat
+# Expect: {"nanosecond heartbeat": ...}
+```
+
+### 5.5.3 Configure AWS Credentials
+
+**Option A: Using Kubernetes Secrets (Recommended for local testing)**
+
+Update `kubernetes/base/secrets.yaml`:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rag-api-secrets
+  namespace: dev
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: "your-access-key-here"
+  AWS_SECRET_ACCESS_KEY: "your-secret-key-here"
+  OPENAI_API_KEY: "placeholder"  # Not needed for Bedrock
+```
+
+Apply the updated secret:
+```bash
+kubectl apply -f kubernetes/base/secrets.yaml
+```
+
+**Option B: Using AWS CLI Credentials (For local development)**
+
+If running locally without Kubernetes:
+```bash
+aws configure
+# Enter your credentials when prompted
+```
+
+### 5.5.4 Rebuild Docker Image with New Code
+
+**1. Set Docker environment to Minikube:**
+```bash
+eval $(minikube docker-env)
+```
+
+**2. Rebuild the image:**
+```bash
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+```
+
+**3. Verify the image:**
+```bash
+docker images | grep llmops-rag-api
+# Should show: llmops-rag-api:latest with recent timestamp
+```
+
+### 5.5.5 Redeploy to Minikube
+
+**1. Delete the old deployment to force a fresh pull:**
+```bash
+kubectl delete deployment rag-api -n dev
+```
+
+**2. Reapply the deployment:**
+```bash
+kubectl apply -f kubernetes/base/deployment.yaml
+```
+
+**3. Wait for the new pod to be ready:**
+```bash
+kubectl wait --for=condition=ready pod -l app=rag-api -n dev --timeout=120s
+```
+
+**4. Check the new pod logs:**
+```bash
+kubectl logs -l app=rag-api -n dev --tail=50
+# Should see: "Application startup complete."
+# Should NOT see import errors or missing module errors
+```
+
+### 5.5.6 Verify Service Connectivity
+
+**1. Port forward the API service:**
+```bash
+kubectl port-forward service/rag-api-service 8000:80 -n dev
+```
+
+**2. Test the new endpoints exist:**
+```bash
+# Health check (should still work)
+curl http://localhost:8000/health
+
+# Check if new endpoints are registered
+curl http://localhost:8000/docs
+# Should see Swagger UI with /documents/upload and /query endpoints
+```
+
+**3. Test ChromaDB connectivity from the API:**
+```bash
+kubectl exec -it deployment/rag-api -n dev -- python -c "
+from api.services.vector_store import vector_store
+print('ChromaDB connection test:', vector_store.client.heartbeat())
+"
+# Should print heartbeat response
+```
+
+**4. Test Bedrock connectivity (requires AWS credentials):**
+```bash
+kubectl exec -it deployment/rag-api -n dev -- python -c "
+from api.services.embedding_service import embedding_service
+result = embedding_service.generate_embedding('test')
+print('Bedrock test - embedding dimensions:', len(result))
+"
+# Should print: Bedrock test - embedding dimensions: 1024
+```
+
+### 5.5.7 Troubleshooting Common Issues
+
+**Issue: ChromaDB pod won't start**
+```bash
+# Check events
+kubectl describe pod vectordb-0 -n dev
+
+# Common fix: PVC issues
+kubectl get pvc -n dev
+# If stuck in Pending, check storage class
+```
+
+**Issue: API can't connect to ChromaDB**
+```bash
+# Verify service DNS
+kubectl exec -it deployment/rag-api -n dev -- nslookup vectordb-service
+
+# Check if port 8000 is open
+kubectl exec -it deployment/rag-api -n dev -- nc -zv vectordb-service 8000
+```
+
+**Issue: Bedrock authentication fails**
+```bash
+# Verify secrets are mounted
+kubectl exec -it deployment/rag-api -n dev -- env | grep AWS
+
+# Test AWS credentials
+kubectl exec -it deployment/rag-api -n dev -- aws sts get-caller-identity
+```
+
+**Issue: Import errors in new code**
+```bash
+# Check if requirements.txt was updated
+kubectl exec -it deployment/rag-api -n dev -- pip list | grep -E "chromadb|langchain|pypdf"
+
+# If missing, update api/requirements.txt and rebuild
+```
+
+---
+
 ## Part 6: Verification
 
 ### 6.0 Environment Setup (Prerequisites)
