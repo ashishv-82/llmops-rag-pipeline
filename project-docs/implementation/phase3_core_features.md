@@ -883,12 +883,67 @@ requests==2.31.0
 
 ## Part 6: Verification
 
+### 6.0 Environment Setup (Prerequisites)
+
+> **Note**: If you stopped Minikube at the end of Phase 2, you'll need to restart it and redeploy the services.
+
+**1. Start Minikube**
+```bash
+minikube start --driver=docker
+```
+
+**2. Verify Cluster Status**
+```bash
+minikube status
+# Expect: host, kubelet, apiserver all "Running"
+
+kubectl config current-context
+# Expect: minikube
+```
+
+**3. Set Namespace Context**
+```bash
+kubectl config set-context --current --namespace=dev
+```
+
+**4. Rebuild and Deploy API (if needed)**
+```bash
+# Build the Docker image in Minikube's environment
+eval $(minikube docker-env)
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+
+# Apply all Kubernetes manifests
+kubectl apply -f kubernetes/base/configmap.yaml
+kubectl apply -f kubernetes/base/secrets.yaml
+kubectl apply -f kubernetes/base/deployment.yaml
+kubectl apply -f kubernetes/base/service.yaml
+```
+
+**5. Verify Pod is Running**
+```bash
+kubectl get pods -n dev
+# Expect: rag-api-xxxxx   1/1   Running
+
+kubectl logs -l app=rag-api -n dev --tail=20
+# Should see: "Application startup complete"
+```
+
+**6. Port Forward the Service**
+```bash
+# In a separate terminal, keep this running
+kubectl port-forward service/rag-api-service 8000:80 -n dev
+```
+
+Now you're ready to test the Phase 3 features!
+
+---
+
 ### 6.1 Manual Verification Steps
 
 **1. Verify API Health**
 ```bash
 curl http://localhost:8000/health
-# Expect: {"status": "ok"}
+# Expect: {"status":"healthy","timestamp":"..."}
 ```
 
 **2. Test Document Ingestion**
@@ -960,3 +1015,28 @@ if __name__ == "__main__":
 - [ ] Set header `x-user-role: intern`.
 - [ ] Ask a question in `domain: legal`.
 - [ ] Verify `403 Forbidden` response.
+
+---
+
+### 6.3 Cleanup (Optional)
+
+After completing verification, you can stop Minikube to free up resources:
+
+**1. Stop Port Forwarding**
+```bash
+# Press Ctrl+C in the terminal running port-forward
+```
+
+**2. Stop Minikube**
+```bash
+minikube stop
+```
+
+**3. Verify Minikube is Stopped**
+```bash
+minikube status
+# Expect: "Stopped" or "host: Stopped"
+```
+
+> **Note**: Your deployments and data are preserved. When you run `minikube start` again, everything will resume from where you left off.
+```

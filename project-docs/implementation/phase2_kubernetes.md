@@ -589,4 +589,28 @@ terraform validate
 
 ---
 
+### 5.3 Cleanup (Optional)
+
+After completing Phase 2 verification, you can stop Minikube to free up resources:
+
+**1. Stop Port Forwarding**
+```bash
+# Press Ctrl+C in the terminal running port-forward
+```
+
+**2. Stop Minikube**
+```bash
+minikube stop
+```
+
+**3. Verify Minikube is Stopped**
+```bash
+minikube status
+# Expect: "Stopped" or "host: Stopped"
+```
+
+> **Note**: Your deployments and data are preserved. When you run `minikube start` again, everything will resume from where you left off.
+
+---
+
 **Next Strategic Move:** With the container orchestration validated locally, we will proceed to **Phase 3: Core Application Features**, where we will integrate the "Brains" (AWS Bedrock & Vector DB) into this running logic.

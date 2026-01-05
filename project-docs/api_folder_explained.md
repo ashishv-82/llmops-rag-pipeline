@@ -10,7 +10,8 @@ The `api/` folder contains the FastAPI application that serves as the backend fo
 | :--- | :--- | :--- |
 | **`main.py`** | Application Entry | Global config, Middleware, Route registration. |
 | **`routers/`** | API Endpoints | HTTP layer. Handles requests/responses. |
-| **`services/`** | Business Logic | The "Workhorses". Bedrock, Vector DB, Caching logic. |
+| **`services/`** | Business Logic | The "Workhorses". Bedrock, Vector DB, Ingestion logic. |
+| **`prompts/`** | AI Personas | System & user templates (Legal, HR, Engineering). |
 | **`models/`** | Data Validation | Pydantic schemas for strict payload typing. |
 | **`utils/`** | Helpers | Agnostic logic like PDF parsing and chunking. |
 | **`Dockerfile`** | Self-Contained Build | Follows the Microservices pattern. |
