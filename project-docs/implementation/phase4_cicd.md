@@ -715,6 +715,228 @@ jobs:
 
 ---
 
+
+## Part 4.5: Integration & Deployment
+
+> **Critical**: This section shows how to activate and test all the CI/CD workflows you created in Parts 1-4.
+
+### 4.5.1 Configure GitHub Secrets
+
+**1. Navigate to GitHub Repository Settings:**
+```
+https://github.com/YOUR_USERNAME/llmops-rag-pipeline/settings/secrets/actions
+```
+
+**2. Add Required Secrets:**
+
+Click "New repository secret" for each:
+
+| Secret Name | Value | Purpose |
+|------------|-------|---------|
+| `AWS_ACCESS_KEY_ID` | Your AWS access key | For Terraform and AWS deployments |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret key | For Terraform and AWS deployments |
+| `DOCKER_USERNAME` | Your Docker Hub username | For pushing images |
+| `DOCKER_PASSWORD` | Your Docker Hub token | For pushing images |
+| `API_URL` | `https://your-api-url.com` | For data sync workflow |
+
+**3. Verify Secrets are Set:**
+```bash
+# List secrets via GitHub CLI
+gh secret list
+```
+
+### 4.5.2 Commit and Push Workflow Files
+
+**1. Add all workflow files:**
+```bash
+git add .github/workflows/
+git status
+# Should see: ci.yml, data-sync.yml, deploy-dev.yml, deploy-prod.yml, terraform.yml
+```
+
+**2. Commit workflows:**
+```bash
+git commit -m "ci: add GitHub Actions workflows for CI/CD pipeline
+
+- Added CI workflow for linting and testing
+- Added data sync workflow for document ingestion
+- Added deployment workflows for dev and prod
+- Added Terraform automation workflow"
+```
+
+**3. Push to trigger workflows:**
+```bash
+git push origin main
+```
+
+### 4.5.3 Verify Workflows Appear in GitHub Actions
+
+**1. Check Actions tab:**
+```
+https://github.com/YOUR_USERNAME/llmops-rag-pipeline/actions
+```
+
+You should see:
+- ✅ CI Pipeline
+- ✅ Data Sync
+- ✅ Deploy to Dev
+- ✅ Deploy to Prod
+- ✅ Terraform Plan/Apply
+
+**2. Monitor first run:**
+The CI workflow should trigger automatically on push. Watch it complete.
+
+### 4.5.4 Test CI Workflow Manually
+
+**1. Trigger via GitHub UI:**
+- Go to Actions → CI Pipeline → Run workflow
+- Select branch: `main`
+- Click "Run workflow"
+
+**2. Or trigger via CLI:**
+```bash
+gh workflow run ci.yml
+```
+
+**3. Watch the workflow:**
+```bash
+gh run watch
+```
+
+**4. Expected output:**
+```
+✓ Lint (Python)
+✓ Lint (Terraform)
+✓ Test (Unit Tests)
+✓ Build Docker Image
+```
+
+### 4.5.5 Test Data Sync Workflow
+
+**1. Add a test document:**
+```bash
+mkdir -p data/documents
+echo "Test document for sync" > data/documents/test.txt
+git add data/documents/test.txt
+git commit -m "test: add sample document for sync workflow"
+git push origin main
+```
+
+**2. Verify workflow triggered:**
+```bash
+gh run list --workflow=data-sync.yml
+# Should show a recent run
+```
+
+**3. Check workflow logs:**
+```bash
+gh run view --log
+# Should see: "Sync to API" step with POST requests
+```
+
+### 4.5.6 Configure Branch Protection
+
+**1. Run the setup script:**
+```bash
+chmod +x scripts/setup_branch_protection.sh
+./scripts/setup_branch_protection.sh
+```
+
+**2. Or configure manually via GitHub UI:**
+```
+Settings → Branches → Add rule
+Branch name pattern: main
+☑ Require status checks to pass before merging
+  ☑ lint
+  ☑ test
+  ☑ docker-build
+☑ Require pull request reviews before merging
+  Required approvals: 1
+```
+
+**3. Verify protection is active:**
+```bash
+gh api repos/:owner/:repo/branches/main/protection | jq '.required_status_checks'
+```
+
+### 4.5.7 Test the Full CI/CD Flow
+
+**1. Create a feature branch:**
+```bash
+git checkout -b feature/test-cicd
+```
+
+**2. Make a change:**
+```bash
+echo "# CI/CD Test" >> README.md
+git add README.md
+git commit -m "test: verify CI/CD pipeline"
+git push origin feature/test-cicd
+```
+
+**3. Create a Pull Request:**
+```bash
+gh pr create --title "Test CI/CD Pipeline" --body "Testing automated checks"
+```
+
+**4. Watch CI checks run:**
+```bash
+gh pr checks
+# Should show: lint ✓, test ✓, docker-build ✓
+```
+
+**5. Merge the PR:**
+```bash
+gh pr merge --squash
+```
+
+**6. Verify deployment workflow triggers:**
+```bash
+gh run list --workflow=deploy-dev.yml
+# Should show a run triggered by the merge
+```
+
+### 4.5.8 Troubleshooting Common Issues
+
+**Issue: Workflows not appearing**
+```bash
+# Check if .github/workflows directory exists
+ls -la .github/workflows/
+
+# Verify YAML syntax
+yamllint .github/workflows/*.yml
+```
+
+**Issue: Secrets not accessible**
+```bash
+# Verify secrets are set at repository level (not environment)
+gh secret list
+
+# Check workflow permissions
+# Settings → Actions → General → Workflow permissions
+# Should be: "Read and write permissions"
+```
+
+**Issue: Docker build fails**
+```bash
+# Test Docker build locally first
+docker build -t test -f api/Dockerfile .
+
+# Check if DOCKER_USERNAME and DOCKER_PASSWORD are correct
+echo $DOCKER_USERNAME
+```
+
+**Issue: Terraform workflow fails**
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Check Terraform backend is configured
+cat terraform/backend.tf
+```
+
+---
+
 ## Part 5: Branch Protection & Verification
 
 ### 5.1 GitHub Branch Protection Rules
