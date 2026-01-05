@@ -2,7 +2,7 @@
 
 ## 📊 Progress Summary
 
-**Overall Progress**: 34/299 tasks (11%)
+**Overall Progress**: 34/300 tasks (11%)
  
  ```
  Planning & Documentation  ██████████ 100% (14/14)
@@ -12,7 +12,7 @@
  Phase 4: CI/CD            ░░░░░░░░░░  0% (0/39)
  Phase 5: Monitoring       ░░░░░░░░░░  0% (0/24)
  Phase 6: MLOps/LLMOps     ░░░░░░░░░░  0% (0/35)
- Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/38)
+ Phase 7: EKS Deployment   ░░░░░░░░░░  0% (0/41)
  Phase 8: Documentation    ░░░░░░░░░░  0% (0/47)
  Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
  ```
@@ -346,6 +346,7 @@
 - [ ] Verify tags in AWS console
 
 ### **Pause/Resume Validation (CRITICAL)**
+- [ ] Create one-click pause/resume master script (`pause_resume.sh`)
 - [ ] Test `terraform destroy` (full teardown)
 - [ ] Verify data persistence (S3, ECR, Secrets Manager)
 - [ ] Test `terraform apply` (full restoration)
