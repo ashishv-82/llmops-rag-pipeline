@@ -893,6 +893,231 @@ class RAGService:
 
 ---
 
+
+## Part 6.5: Integration & Deployment
+
+> **Critical**: This section shows how to deploy and configure Prometheus, Grafana, and application instrumentation for observability.
+
+### 6.5.1 Deploy Prometheus to Minikube
+
+**1. Create monitoring namespace:**
+```bash
+kubectl create namespace monitoring
+```
+
+**2. Apply Prometheus manifests:**
+```bash
+kubectl apply -f kubernetes/monitoring/prometheus-config.yaml -n monitoring
+kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml -n monitoring
+```
+
+**3. Verify Prometheus is running:**
+```bash
+kubectl get pods -n monitoring
+# Should see: prometheus-xxxxx   1/1   Running
+
+kubectl logs -l app=prometheus -n monitoring --tail=20
+# Should see: "Server is ready to receive web requests"
+```
+
+**4. Port forward to access Prometheus UI:**
+```bash
+kubectl port-forward service/prometheus-service 9090:9090 -n monitoring &
+```
+
+**5. Verify Prometheus is scraping:**
+```bash
+curl http://localhost:9090/api/v1/targets
+# Should show targets with state="up"
+```
+
+### 6.5.2 Deploy Grafana
+
+**1. Apply Grafana manifests:**
+```bash
+kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml -n monitoring
+```
+
+**2. Verify Grafana is running:**
+```bash
+kubectl get pods -n monitoring | grep grafana
+# Should see: grafana-xxxxx   1/1   Running
+```
+
+**3. Get Grafana admin password:**
+```bash
+kubectl get secret grafana-admin -n monitoring -o jsonpath="{.data.password}" | base64 --decode
+# Save this password
+```
+
+**4. Port forward to access Grafana UI:**
+```bash
+kubectl port-forward service/grafana-service 3000:3000 -n monitoring &
+```
+
+**5. Login to Grafana:**
+```
+http://localhost:3000
+Username: admin
+Password: (from step 3)
+```
+
+### 6.5.3 Configure Grafana Data Source
+
+**1. Add Prometheus as data source:**
+- Navigate to Configuration → Data Sources
+- Click "Add data source"
+- Select "Prometheus"
+- URL: `http://prometheus-service.monitoring.svc.cluster.local:9090`
+- Click "Save & Test"
+
+**2. Or apply via ConfigMap:**
+```bash
+kubectl apply -f kubernetes/monitoring/grafana-datasource.yaml -n monitoring
+kubectl rollout restart deployment/grafana -n monitoring
+```
+
+### 6.5.4 Import Grafana Dashboards
+
+**1. Import RAG metrics dashboard:**
+- Navigate to Dashboards → Import
+- Upload `kubernetes/monitoring/dashboards/rag-metrics.json`
+- Select Prometheus data source
+- Click "Import"
+
+**2. Or apply via ConfigMap:**
+```bash
+kubectl create configmap grafana-dashboards \
+  --from-file=kubernetes/monitoring/dashboards/ \
+  -n monitoring
+kubectl label configmap grafana-dashboards grafana_dashboard=1 -n monitoring
+```
+
+### 6.5.5 Update Application with Metrics
+
+**1. Add Prometheus client to requirements.txt:**
+```bash
+echo "prometheus-client==0.19.0" >> api/requirements.txt
+```
+
+**2. Update main.py with metrics endpoint:**
+```python
+from prometheus_client import make_asgi_app, Counter, Histogram
+import time
+
+# Metrics
+query_counter = Counter('rag_queries_total', 'Total RAG queries')
+query_duration = Histogram('rag_query_duration_seconds', 'Query duration')
+
+# Add metrics endpoint
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
+```
+
+**3. Rebuild and redeploy:**
+```bash
+eval $(minikube docker-env)
+docker build -t llmops-rag-api:latest -f api/Dockerfile .
+kubectl delete pod -l app=rag-api -n dev
+kubectl wait --for=condition=ready pod -l app=rag-api -n dev --timeout=120s
+```
+
+### 6.5.6 Configure ServiceMonitor for Prometheus
+
+**1. Apply ServiceMonitor:**
+```bash
+kubectl apply -f kubernetes/monitoring/servicemonitor.yaml -n dev
+```
+
+**2. Verify Prometheus is scraping the API:**
+```bash
+curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | select(.labels.job=="rag-api")'
+# Should show state="up"
+```
+
+### 6.5.7 Configure CloudWatch Integration (Optional)
+
+**1. Create IAM role for CloudWatch:**
+```bash
+aws iam create-role --role-name EKS-CloudWatch-Role \
+  --assume-role-policy-document file://iam/cloudwatch-trust-policy.json
+```
+
+**2. Attach CloudWatch policy:**
+```bash
+aws iam attach-role-policy \
+  --role-name EKS-CloudWatch-Role \
+  --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+```
+
+**3. Deploy CloudWatch agent:**
+```bash
+kubectl apply -f kubernetes/monitoring/cloudwatch-agent.yaml -n monitoring
+```
+
+### 6.5.8 Test Metrics Collection
+
+**1. Generate test traffic:**
+```bash
+for i in {1..10}; do
+  curl -X POST http://localhost:8000/query \
+    -H "Content-Type: application/json" \
+    -d '{"question": "test query '$i'", "domain": "general"}'
+  sleep 1
+done
+```
+
+**2. Verify metrics in Prometheus:**
+```bash
+curl http://localhost:9090/api/v1/query?query=rag_queries_total
+# Should show count increasing
+```
+
+**3. Check Grafana dashboard:**
+- Open http://localhost:3000
+- Navigate to RAG Metrics dashboard
+- Should see query count and latency graphs
+
+### 6.5.9 Troubleshooting Common Issues
+
+**Issue: Prometheus not scraping targets**
+```bash
+# Check ServiceMonitor exists
+kubectl get servicemonitor -n dev
+
+# Verify Prometheus config includes the job
+kubectl exec -it deployment/prometheus -n monitoring -- cat /etc/prometheus/prometheus.yml | grep rag-api
+```
+
+**Issue: Grafana can't connect to Prometheus**
+```bash
+# Test DNS resolution
+kubectl exec -it deployment/grafana -n monitoring -- nslookup prometheus-service.monitoring.svc.cluster.local
+
+# Check if Prometheus service is accessible
+kubectl exec -it deployment/grafana -n monitoring -- curl http://prometheus-service.monitoring.svc.cluster.local:9090/api/v1/status/config
+```
+
+**Issue: Metrics endpoint returns 404**
+```bash
+# Verify metrics endpoint exists
+kubectl exec -it deployment/rag-api -n dev -- curl http://localhost:8000/metrics
+
+# Check if prometheus-client is installed
+kubectl exec -it deployment/rag-api -n dev -- pip list | grep prometheus
+```
+
+**Issue: CloudWatch agent fails to start**
+```bash
+# Check IAM role is attached
+kubectl describe pod -l app=cloudwatch-agent -n monitoring | grep "AWS_ROLE_ARN"
+
+# Verify credentials
+kubectl exec -it deployment/cloudwatch-agent -n monitoring -- aws sts get-caller-identity
+```
+
+---
+
 ## Part 7: Verification
 
 ### 7.1 Verification Steps
