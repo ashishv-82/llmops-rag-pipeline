@@ -1384,25 +1384,27 @@ python scripts/test_rag.py
 ### 7.2 Verification Checklist
 
 ### ✅ Bedrock Integration
-- [ ] Connect `boto3` to Bedrock.
-- [ ] Generate an embedding vector -> `[0.1, ... 0.9]`.
-- [ ] Generate an LLM response -> "Hello world".
+- [x] Connect `boto3` to Bedrock.
+- [x] Verify **Global Inference Profile** ID (`global.amazon.nova-2-lite-v1:0`) is used.
+- [x] Generate an embedding vector -> `[0.1, ... 0.9]`.
+- [x] Generate an LLM response -> "Hello world".
 
 ### ✅ Vector Database
-- [ ] Deploy ChromaDB to Minikube.
-- [ ] Ingest a test document via API.
-- [ ] Search for "test" and see it hit the correct chunk.
+- [x] Deploy ChromaDB `0.5.3` to Minikube.
+- [x] Ingest a test document via API.
+- [x] Search for "test" and see it hit the correct chunk.
+- [x] **Empty Collection Test**: Verify searching an empty DB returns graceful fallback (no 500 Error).
 
 ### ✅ RAG Pipeline
-- [ ] Upload a file (e.g., "policy.pdf").
-- [ ] Ask a question about the policy.
-- [ ] Verify the answer cites the policy file.
-- [ ] Verify `rag-analytics` logs show the query event.
+- [x] Upload a file (e.g., "policy.pdf").
+- [x] Ask a question about the policy.
+- [x] Verify the answer cites the policy file.
+- [x] Verify Hybrid Search weights (Dense + BM25) are applied.
 
 ### ✅ Domain Controls
-- [ ] Set header `x-user-role: intern`.
-- [ ] Ask a question in `domain: legal`.
-- [ ] Verify `403 Forbidden` response.
+- [x] Set header `x-user-role: intern`.
+- [x] Ask a question in `domain: legal`.
+- [x] Verify `403 Forbidden` response.
 
 ---
 
