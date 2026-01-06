@@ -1123,6 +1123,34 @@ kubectl logs -l app=rag-api -n dev --tail=50
 # Should NOT see import errors or missing module errors
 ```
 
+**5. Verify all resources are running:**
+```bash
+kubectl get all -n dev
+```
+
+Expected output:
+```
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/rag-api-868d5ff998-xxxxx   1/1     Running   0          XXm
+pod/vectordb-0                 1/1     Running   0          XXm
+
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/rag-api-service    ClusterIP   10.xxx.xxx.xxx  <none>        80/TCP     XXh
+service/vectordb-service   ClusterIP   10.xxx.xxx.xxx  <none>        8000/TCP   XXm
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/rag-api   1/1     1            1           XXm
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/rag-api-868d5ff998   1         1         1       XXm
+
+NAME                        READY   AGE
+statefulset.apps/vectordb   1/1     XXm
+```
+
+All pods should show `Running` status and `1/1` ready.
+
+
 ### 6.6 Verify Service Connectivity
 
 **1. Port forward the API service:**
