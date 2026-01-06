@@ -1297,32 +1297,59 @@ curl -X POST "http://localhost:8000/documents/upload?domain=engineering" \
 # Expected: {"status":"processing","filename":"deployment_guide.txt","s3_key":"documents/engineering/deployment_guide.txt"}
 ```
 
+**3. Test RAG Query**
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -H "x-user-role: employee" \
+  -d '{"question": "How do I deploy to Kubernetes?", "domain": "engineering"}'
+# Expected: {"answer": "...", "sources": [...]}
+```
+
+**4. Test Access Control (Optional - requires access control middleware)**
+```bash
+curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
   -H "x-user-role: intern" \
   -d '{"question": "What is the engineering budget?", "domain": "engineering"}'
-# Expect: 403 Forbidden
+# Expected: 403 Forbidden (if access control is implemented)
 ```
 
-**5. Python Connectivity Test**
+**5. Python Integration Test (Optional)**
+
 Create `scripts/test_rag.py`:
 ```python
 import requests
 
 def test_full_flow():
     # 1. Upload
-    files = {'file': open('data/sample.txt', 'rb')}
-    up_res = requests.post("http://localhost:8000/documents/upload", files=files)
+    with open('test_docs/deployment_guide.txt', 'rb') as f:
+        files = {'file': f}
+        up_res = requests.post(
+            "http://localhost:8000/documents/upload?domain=engineering", 
+            files=files
+        )
     assert up_res.status_code == 200
-    print("✅ Upload Success")
+    print("✅ Upload Success:", up_res.json())
 
     # 2. Query
-    payload = {"question": "summarize sample", "domain": "general"}
-    q_res = requests.post("http://localhost:8000/query", json=payload)
+    payload = {"question": "How do I deploy to Kubernetes?", "domain": "engineering"}
+    headers = {"x-user-role": "employee"}
+    q_res = requests.post(
+        "http://localhost:8000/query", 
+        json=payload,
+        headers=headers
+    )
     assert q_res.status_code == 200
     print("✅ Query Response:", q_res.json()['answer'])
 
 if __name__ == "__main__":
     test_full_flow()
+```
+
+Run it:
+```bash
+python scripts/test_rag.py
 ```
 
 ### 7.2 Verification Checklist
