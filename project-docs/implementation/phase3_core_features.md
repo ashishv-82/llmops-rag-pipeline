@@ -1271,25 +1271,32 @@ curl http://localhost:8000/health
 
 ### 7.1 Test RAG Functionality
 
-**1. Test Document Ingestion**
+**1. Create a test document**
+```bash
+mkdir -p test_docs
+cat > test_docs/deployment_guide.txt << 'EOF'
+# Deployment Guide
+
+## Overview
+This is a test deployment guide for the RAG system.
+
+## Steps
+1. Deploy to Kubernetes
+2. Configure environment variables
+3. Test the endpoints
+
+## Troubleshooting
+Check pod logs if deployment fails.
+EOF
+```
+
+**2. Test Document Ingestion**
 ```bash
 curl -X POST "http://localhost:8000/documents/upload?domain=engineering" \
-  -F "file=@./test_docs/deployment_guide.pdf"
-# Expect: {"status": "processing", "filename": "deployment_guide.pdf"}
+  -F "file=@./test_docs/deployment_guide.txt"
+# Expected: {"status":"processing","filename":"deployment_guide.txt","s3_key":"documents/engineering/deployment_guide.txt"}
 ```
 
-**3. Test RAG Query (General Domain)**
-```bash
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -H "x-user-role: employee" \
-  -d '{"question": "How do I deploy to EKS?", "domain": "engineering"}'
-# Expect: {"answer": "...", "sources": [...]}
-```
-
-**4. Verify Access Control (Negative Test)**
-```bash
-curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
   -H "x-user-role: intern" \
   -d '{"question": "What is the engineering budget?", "domain": "engineering"}'
