@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+# StatefulSet is used for databases to ensure stable network identity and persistent storage
+kind: StatefulSet
+metadata:
+  name: vectordb
+spec:
+  serviceName: "vectordb"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vectordb
+  template:
+    metadata:
+      labels:
+        app: vectordb
+    spec:
+      containers:
+      - name: chroma
+        image: chromadb/chroma:0.5.3
+        ports:
+        - containerPort: 8000
+        # Mount the persistent volume to the container
+        volumeMounts:
+        - name: chroma-data
+          mountPath: /chroma/chroma
+  # Automatically creates a PersistentVolumeClaim (PVC) for this pod
+  volumeClaimTemplates:
+  - metadata:
+      name: chroma-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+# Exposes the Vector Database to other services in the cluster
+kind: Service
+metadata:
+  name: vectordb-service
+spec:
+  selector:
+    app: vectordb
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
