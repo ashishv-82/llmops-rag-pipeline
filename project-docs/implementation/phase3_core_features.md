@@ -887,6 +887,27 @@ requests==2.31.0
 
 > **Critical**: This section bridges the gap between writing code and testing it. All the services you created in Parts 1-5 need to be wired together and deployed before verification will work.
 
+### 6.0 Prerequisites - Start Minikube
+
+**Before proceeding with integration, ensure Minikube is running:**
+
+```bash
+# Start Minikube (if not already running)
+minikube start --driver=docker
+
+# Verify it's running
+minikube status
+# Should show: host, kubelet, apiserver all "Running"
+
+# Verify kubectl can connect
+kubectl get nodes
+# Should show your minikube node in Ready state
+```
+
+**If you see connection errors** like "connection refused" or "localhost:8080", Minikube is not running. Start it with the commands above.
+
+---
+
 ### 6.1 Update main.py to Register New Routers
 
 **File:** `api/main.py`
