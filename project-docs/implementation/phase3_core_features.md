@@ -1245,76 +1245,33 @@ kubectl exec -it deployment/rag-api -n dev -- pip list | grep -E "chromadb|langc
 
 > **✅ Just completed Part 6?** You've already verified:
 > - API health endpoints (Part 6.6 step 2)
-> - ChromaDB connectivity (Part 6.6 step 3)  
-> - Bedrock connectivity (Part 6.6 step 4)
+> - ChromaDB connectivity (Part 6.6 step 4)  
+> - Bedrock connectivity (Part 6.6 step 5)
 > - All pods running (Part 6.5 step 5)
 >
-> **Skip to section 7.1 step 2** to test document ingestion and RAG queries.
+> **Continue below** to test the RAG functionality.
 
-### 7.0 Environment Setup (Prerequisites)
+### 7.0 Prerequisites Check
 
-> **Note**: Only needed if you stopped Minikube after Part 6 or are starting fresh at Part 7.
+Verify your environment is ready:
 
-**1. Start Minikube**
 ```bash
-minikube start --driver=docker
-```
-
-**2. Verify Cluster Status**
-```bash
-minikube status
-# Expect: host, kubelet, apiserver all "Running"
-
-kubectl config current-context
-# Expect: minikube
-```
-
-**3. Set Namespace Context**
-```bash
-kubectl config set-context --current --namespace=dev
-```
-
-**4. Rebuild and Deploy API (if needed)**
-```bash
-# Build the Docker image in Minikube's environment
-eval $(minikube docker-env)
-docker build -t llmops-rag-api:latest -f api/Dockerfile .
-
-# Apply all Kubernetes manifests
-kubectl apply -f kubernetes/base/configmap.yaml -n dev
-kubectl apply -f kubernetes/base/secrets.yaml -n dev
-kubectl apply -f kubernetes/base/deployment.yaml -n dev
-kubectl apply -f kubernetes/base/service.yaml -n dev
-```
-
-**5. Verify Pod is Running**
-```bash
+# Check pods are running
 kubectl get pods -n dev
-# Expect: rag-api-xxxxx   1/1   Running
+# Expect: rag-api and vectordb-0 both Running
 
-kubectl logs -l app=rag-api -n dev --tail=20
-# Should see: "Application startup complete"
-```
-
-**6. Port Forward the Service**
-```bash
-# In a separate terminal, keep this running
-kubectl port-forward service/rag-api-service 8000:80 -n dev
-```
-
-Now you're ready to test the Phase 3 features!
-
----
-
-### 7.1 Manual Verification Steps
-
-**1. Verify API Health**
-```bash
+# Check API is accessible
 curl http://localhost:8000/health
 # Expect: {"status":"healthy","timestamp":"..."}
 ```
 
-**2. Test Document Ingestion**
+> **Note**: If pods aren't running or you stopped Minikube, you'll need to redeploy. See Part 6 for deployment steps.
+
+---
+
+### 7.1 Test RAG Functionality
+
+**1. Test Document Ingestion**
 ```bash
 curl -X POST "http://localhost:8000/documents/upload?domain=engineering" \
   -F "file=@./test_docs/deployment_guide.pdf"
