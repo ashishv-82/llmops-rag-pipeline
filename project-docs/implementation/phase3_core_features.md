@@ -62,11 +62,49 @@ Phase 3 is the **System Integration** phase where independent components come to
 
 - **Phase 2 Complete**: API running on local Minikube.
 - **AWS Access**: `llmops-admin` user with Bedrock access (`bedrock:InvokeModel`).
-- **Python Deps**: `boto3`, `langchain`, `fastapi`, `chromadb`, `pypdf`, `tiktoken`.
+- **Python Dependencies**: The following will be added to `api/requirements.txt` in Part 1:
+  - FastAPI: `fastapi`, `uvicorn`, `pydantic`, `pydantic-settings`, `python-multipart`
+  - AWS: `boto3`
+  - RAG: `langchain`, `chromadb`, `pypdf`, `PyPDF2`, `tiktoken`
+  - Search: `rank-bm25`
 
 ---
 
 ## Part 1: AWS Bedrock Integration
+
+### 1.0 Update Dependencies
+
+Before implementing the services, add Phase 3 dependencies to `api/requirements.txt`:
+
+**File:** `api/requirements.txt`
+
+```txt
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+
+# AWS
+boto3==1.34.0
+
+# Phase 3: RAG Dependencies
+langchain==0.1.0
+chromadb==0.4.22
+pypdf==3.17.4
+PyPDF2==3.0.1
+tiktoken==0.5.2
+rank-bm25==0.2.2
+
+# Development
+pytest==7.4.3
+httpx==0.26.0
+```
+
+> **Note**: These dependencies will be installed when you rebuild the Docker image in Part 6.4.
+
+---
 
 ### 1.1 Bedrock Client Service
 **File:** `api/services/bedrock_service.py`
@@ -271,14 +309,30 @@ import numpy as np
 
 class VectorStore:
     def __init__(self, host="vectordb-service", port=8000):
-        self.client = chromadb.HttpClient(
-            host=host, 
-            port=port,
-            settings=Settings(allow_reset=True)
-        )
-        self.collection = self.client.get_or_create_collection("rag_docs")
+        self.host = host
+        self.port = port
+        self._client = None
+        self._collection = None
         self.bm25 = None
         self.documents_cache = []
+    
+    @property
+    def client(self):
+        """Lazy connection to ChromaDB"""
+        if self._client is None:
+            self._client = chromadb.HttpClient(
+                host=self.host, 
+                port=self.port,
+                settings=Settings(allow_reset=True, anonymized_telemetry=False)
+            )
+        return self._client
+    
+    @property
+    def collection(self):
+        """Lazy collection initialization"""
+        if self._collection is None:
+            self._collection = self.client.get_or_create_collection("rag_docs")
+        return self._collection
     
     def add_documents(self, documents: list, metadatas: list, ids: list):
         # Generate embeddings in batch
@@ -1005,8 +1059,8 @@ metadata:
   namespace: dev
 type: Opaque
 stringData:
-  AWS_ACCESS_KEY_ID: "your-access-key-here"
-  AWS_SECRET_ACCESS_KEY: "your-secret-key-here"
+  AWS_ACCESS_KEY_ID: "your-access-key-here" # Your real AWS access key
+  AWS_SECRET_ACCESS_KEY: "your-secret-key-here" # Your real AWS secret key
   OPENAI_API_KEY: "placeholder"  # Not needed for Bedrock
 ```
 
@@ -1035,10 +1089,14 @@ eval $(minikube docker-env)
 docker build -t llmops-rag-api:latest -f api/Dockerfile .
 ```
 
-**3. Verify the image:**
+**3. Verify the image and dependencies:**
 ```bash
 docker images | grep llmops-rag-api
 # Should show: llmops-rag-api:latest with recent timestamp
+
+# Verify Phase 3 packages are installed
+docker run --rm llmops-rag-api:latest pip list | grep -E "langchain|chromadb|rank-bm25|PyPDF2"
+# Should show all Phase 3 packages with correct versions
 ```
 
 ### 6.5 Redeploy to Minikube
