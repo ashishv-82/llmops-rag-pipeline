@@ -1201,7 +1201,7 @@ print('Bedrock test - embedding dimensions:', len(result))
 # Should print: Bedrock test - embedding dimensions: 1024
 ```
 
-### 5.5.7 Troubleshooting Common Issues
+### 6.7 Troubleshooting Common Issues
 
 **Issue: ChromaDB pod won't start**
 ```bash
@@ -1378,7 +1378,7 @@ if __name__ == "__main__":
 
 ---
 
-### 6.3 Cleanup (Optional)
+### 7.3 Cleanup (Optional)
 
 After completing verification, you can stop Minikube to free up resources:
 
