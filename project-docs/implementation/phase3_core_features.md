@@ -65,8 +65,9 @@ Phase 3 is the **System Integration** phase where independent components come to
 - **Python Dependencies**: The following will be added to `api/requirements.txt` in Part 1:
   - FastAPI: `fastapi`, `uvicorn`, `pydantic`, `pydantic-settings`, `python-multipart`
   - AWS: `boto3`
-  - RAG: `langchain`, `chromadb`, `pypdf`, `PyPDF2`, `tiktoken`
+  - RAG: `langchain`, `chromadb` (0.5.23 for v2 API), `pypdf`, `PyPDF2`, `tiktoken`
   - Search: `rank-bm25`
+  - Testing: `pytest`, `httpx` (0.27.0 required by chromadb)
 
 ---
 
@@ -91,7 +92,7 @@ boto3==1.34.0
 
 # Phase 3: RAG Dependencies
 langchain==0.1.0
-chromadb==0.4.22
+chromadb==0.5.23
 pypdf==3.17.4
 PyPDF2==3.0.1
 tiktoken==0.5.2
@@ -99,10 +100,10 @@ rank-bm25==0.2.2
 
 # Development
 pytest==7.4.3
-httpx==0.26.0
+httpx==0.27.0
 ```
 
-> **Note**: These dependencies will be installed when you rebuild the Docker image in Part 6.4.
+> **Note**: chromadb 0.5.23 is required for compatibility with ChromaDB server v1.0.0 (v2 API). httpx 0.27.0 is required by chromadb 0.5.23.
 
 ---
 
