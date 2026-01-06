@@ -12,9 +12,10 @@ Phase 2 executes the **"Verify First"** methodology:
 3.  **Future Execution**: We will apply the EKS Terraform in Phase 7, once the application logic is mature.
 
 **Engineering Outcomes:**
-- Container orchestration mastery (Pods, Services, Deployments).
-- "Config-as-Code" via ConfigMaps and Secrets.
-- Production-ready Terraform modules for VPC and EKS.
+- **Local Orchestration**: Minikube cluster with namespace isolation (dev/prod).
+- **Declarative Configuration**: Kubernetes manifests for Deployments, Services, ConfigMaps, and Secrets.
+- **Scalable Infrastructure**: Terraform modules for VPC and EKS (ready for deployment).
+- **Zero-Downtime Architecture**: Implemented Liveness and Readiness probes.
 
 ---
 

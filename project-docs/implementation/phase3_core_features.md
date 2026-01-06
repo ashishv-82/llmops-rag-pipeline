@@ -13,9 +13,10 @@ Phase 3 is the **System Integration** phase where independent components come to
 4.  **Security**: Bedrock Guardrails ensuring safety.
 
 **Engineering Outcomes:**
-- Production-grade RAG pipeline with Hybrid Search.
-- Dual-path document ingestion (Real-time & Batch).
-- Engineering domain-specific features (Metadata, Filtering).
+- **Integrated AWS Bedrock**: Amazon Nova 2 (Global Inference Profile) & Titan Embeddings V2.
+- **Resilient Vector Store**: ChromaDB 0.5.3 on Kubernetes with Hybrid Search (BM25 + Vector).
+- **Verified RAG Pipeline**: End-to-end flow from Document Ingestion to Context-Aware Generation.
+- **Operational Excellence**: Comprehensive error handling, version pinning, and aligned documentation.
 
 ---
 
@@ -88,22 +89,17 @@ pydantic-settings==2.1.0
 python-multipart==0.0.6
 
 # AWS
-boto3==1.34.0
+boto3>=1.34.131
 
 # Phase 3: RAG Dependencies
 langchain==0.1.0
 chromadb==0.5.3
 pypdf==3.17.4
 PyPDF2==3.0.1
-tiktoken==0.5.2
-rank-bm25==0.2.2
-
-# Development
-pytest==7.4.3
 httpx==0.27.0
 ```
 
-> **Note**: chromadb 0.5.23 is required for compatibility with ChromaDB server v1.0.0 (v2 API). httpx 0.27.0 is required by chromadb 0.5.23.
+> **Note**: chromadb 0.5.3 is required for compatibility with ChromaDB server (v2 API). httpx 0.27.0 is required by chromadb.
 
 ---
 
@@ -143,13 +139,27 @@ Create `api/services/llm_service.py`:
 from api.services.bedrock_service import bedrock_client
 from api.config import settings
 
-class LLMService:
-    """Service for handling text generation via Amazon Bedrock"""
-    
-    def __init__(self, model_id="anthropic.claude-3-haiku-20240307-v1:0"):
-        self.model_id = model_id
-        # Check if Bedrock Guardrails are enabled
-        self.use_guardrails = hasattr(settings, 'guardrail_id')
+class#### 4.2.2 LLM Service (`api/services/llm_service.py`)
+
+Handles text generation via Amazon Bedrock (Nova 2 Lite).
+
+> [!IMPORTANT]
+> **Inference Profiles Required**: In regions like Sydney (ap-southeast-2), Amazon Nova models require an **Inference Profile ARN** (e.g., `global.amazon.nova-2-lite-v1:0`) instead of the direct model ID. The code handles this by catching routing errors and returning them clearly.
+
+```python
+# api/services/llm_service.py
+# Use the global Inference Profile ID for Nova 2
+model_id = "global.amazon.nova-2-lite-v1:0" 
+
+# Payload format for Nova 2 (System prompt at top level)
+body = {
+    "inferenceConfig": {"max_new_tokens": 1000},
+    "system": [{"text": system_prompt}],
+    "messages": [
+        {"role": "user", "content": [{"text": prompt}]}
+    ]
+}
+```        self.use_guardrails = hasattr(settings, 'guardrail_id')
 
     def generate_response(self, prompt: str, system_prompt: str = "") -> str:
         # Format request body for Claude 3 model
@@ -167,9 +177,12 @@ class LLMService:
             body["guardrailIdentifier"] = settings.guardrail_id
             body["guardrailVersion"] = "DRAFT"
 
-        # Invoke model and extract generated text
-        response = bedrock_client.invoke(self.model_id, body)
-        return response['content'][0]['text']
+        try:
+            # Invoke model and extract generated text
+            response = bedrock_client.invoke(self.model_id, body)
+            return response['output']['message']['content'][0]['text']
+        except Exception as e:
+            return f"Error invoking model: {str(e)}"
 
 # Singleton instance
 llm_service = LLMService()

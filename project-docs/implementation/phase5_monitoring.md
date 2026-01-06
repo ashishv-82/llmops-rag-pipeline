@@ -13,10 +13,10 @@ Phase 5 establishes **Observability Excellence** through:
 4.  **Tracing**: Distributed tracing to debug complex request flows.
 
 **Engineering Outcomes:**
-- Real-time cost visibility (cost per query, daily spend trends).
-- Performance monitoring (latency, error rates, throughput).
-- Proactive alerting before issues impact users.
-- Full request tracing from API to LLM to vector DB.
+- **FinOps Visibility**: Real-time cost dashboards (cost per query, daily spend).
+- **Application Instrumentation**: Custom metrics for LLM token usage and RAG latency.
+- **Proactive Alerting**: Automated notifications for budget overruns and error spikes.
+- **End-to-End Tracing**: Distributed tracing from API to Bedrock using AWS X-Ray.
 
 ---
 

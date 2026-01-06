@@ -13,10 +13,10 @@ Phase 4 establishes **DevOps Excellence** through automation:
 4.  **Infrastructure as Code**: Terraform automation with plan/apply workflows.
 
 **Engineering Outcomes:**
-- Zero-touch deployments to dev environment.
-- Quality gates preventing broken code from reaching production.
-- Automated security scanning catching vulnerabilities early.
-- Reproducible infrastructure changes via Terraform automation.
+- **Continuous Integration**: Automated linting, testing, and Docker builds on every commit.
+- **Continuous Deployment**: Zero-touch deployment to Dev; Blue/Green deployment to Production.
+- **Security Automation**: Automated vulnerability scanning (Trivy) and secret detection.
+- **Infrastructure as Code**: Terraform Plan/Apply workflows integrated into GitHub Actions.
 
 ---
 
