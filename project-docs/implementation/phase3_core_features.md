@@ -1066,7 +1066,7 @@ stringData:
 
 Apply the updated secret:
 ```bash
-kubectl apply -f kubernetes/base/secrets.yaml
+kubectl apply -f kubernetes/base/secrets.yaml -n dev
 ```
 
 **Option B: Using AWS CLI Credentials (For local development)**
@@ -1108,7 +1108,7 @@ kubectl delete deployment rag-api -n dev
 
 **2. Reapply the deployment:**
 ```bash
-kubectl apply -f kubernetes/base/deployment.yaml
+kubectl apply -f kubernetes/base/deployment.yaml -n dev
 ```
 
 **3. Wait for the new pod to be ready:**
@@ -1231,10 +1231,10 @@ eval $(minikube docker-env)
 docker build -t llmops-rag-api:latest -f api/Dockerfile .
 
 # Apply all Kubernetes manifests
-kubectl apply -f kubernetes/base/configmap.yaml
-kubectl apply -f kubernetes/base/secrets.yaml
-kubectl apply -f kubernetes/base/deployment.yaml
-kubectl apply -f kubernetes/base/service.yaml
+kubectl apply -f kubernetes/base/configmap.yaml -n dev
+kubectl apply -f kubernetes/base/secrets.yaml -n dev
+kubectl apply -f kubernetes/base/deployment.yaml -n dev
+kubectl apply -f kubernetes/base/service.yaml -n dev
 ```
 
 **5. Verify Pod is Running**
