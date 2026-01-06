@@ -65,6 +65,8 @@ Moving beyond "it works" to "it scales."
 
 ---
 
+
+
 ## 🗺️ Documentation Navigation Map
 
 Stop here for the high-level view. Dive deeper for the engineering specifics.
@@ -85,7 +87,7 @@ Stop here for the high-level view. Dive deeper for the engineering specifics.
 | :--- | :--- | :--- |
 | **Compute** | **Amazon EKS** | Industry-standard orchestration with full pause/resume control. |
 | **IaC** | **Terraform** | Cloud-agnostic state management and reproducibility. |
-| **LLM** | **Amazon Nova 2** | Latest 2026 model family; faster/cheaper than GPT-4. |
+| **LLM** | **Amazon Nova 2** | `global.amazon.nova-2-lite-v1:0` (Global Inference Profile) for low-latency generation. |
 | **Embeddings** | **Titan V2** | Normalized vectors optimized for hybrid search. |
 | **Vector DB** | **ChromaDB / Weaviate** | Self-managed on K8s for maximum indexing control. |
 | **Safety** | **Bedrock Guardrails** | Enterprise-grade PII masking and topic boundaries. |
@@ -105,6 +107,54 @@ llmops-rag-pipeline/
 ```
 
 ---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Python 3.12+** (Virtual Environment recommended)
+- **Docker Desktop** (for local containerization)
+- **Minikube** & **kubectl** (for local Kubernetes orchestration)
+- **AWS Credentials** (with Bedrock access for Nova 2 & Titan Embeddings)
+
+### Installation
+
+1.  **Clone & Setup**:
+    ```bash
+    git clone https://github.com/Ashish/llmops-rag-pipeline.git
+    cd llmops-rag-pipeline
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r api/requirements.txt
+    ```
+
+2.  **Configuration**:
+    Create a `.env` file or export environment variables:
+    ```bash
+    export AWS_PROFILE=default
+    export AWS_REGION=ap-southeast-2
+    ```
+
+3.  **Run Locally (FastAPI)**:
+    ```bash
+    uvicorn api.main:app --reload --port 8000
+    ```
+
+4.  **Run on Kubernetes (Minikube)**:
+    ```bash
+    minikube start
+    eval $(minikube docker-env)
+    docker build -t llmops-rag-api:latest -f api/Dockerfile .
+    kubectl apply -f kubernetes/base/
+    ```
+
+### Usage
+
+**Query the RAG Pipeline**:
+```bash
+curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How do I optimize costs?", "domain": "engineering"}'
+```
 
 ## 📊 Measurable Engineering Outcomes
 
