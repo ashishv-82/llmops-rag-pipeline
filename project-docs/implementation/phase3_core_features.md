@@ -1158,15 +1158,27 @@ All pods should show `Running` status and `1/1` ready.
 kubectl port-forward service/rag-api-service 8000:80 -n dev
 ```
 
-**2. Test the new endpoints exist:**
+**2. Test the API endpoints:**
 ```bash
-# Health check (should still work)
+# Health check
 curl http://localhost:8000/health
+# Expected: {"status":"healthy","timestamp":"..."}
 
-# Check if new endpoints are registered
+# Root endpoint
+curl http://localhost:8000/
+# Expected: {"message":"Welcome to LLMOps RAG Pipeline","version":"0.1.0","docs":"/docs"}
+
+# Readiness probe
+curl http://localhost:8000/health/ready
+# Expected: {"status":"ready","checks":{"api":"ok"}}
+
+# Swagger UI (in browser or curl)
 curl http://localhost:8000/docs
-# Should see Swagger UI with /documents/upload and /query endpoints
+# Should see Swagger UI HTML with /documents/upload and /query endpoints
 ```
+
+**3. Access Swagger UI in browser:**
+Open `http://localhost:8000/docs` to see the interactive API documentation.
 
 **3. Test ChromaDB connectivity from the API:**
 ```bash
