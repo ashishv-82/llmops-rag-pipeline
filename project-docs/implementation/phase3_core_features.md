@@ -977,11 +977,20 @@ kubectl logs vectordb-0 -n dev
 ```
 
 **3. Test ChromaDB connectivity:**
+
+**In a separate terminal window/tab**, start port-forwarding:
 ```bash
-kubectl port-forward service/vectordb-service 8001:8000 -n dev &
+kubectl port-forward service/vectordb-service 8001:8000 -n dev
+# Keep this terminal open. Press Ctrl+C to stop when done testing.
+```
+
+**In your main terminal**, test the connection:
+```bash
 curl http://localhost:8001/api/v1/heartbeat
 # Expect: {"nanosecond heartbeat": ...}
 ```
+
+**When finished testing**, go back to the port-forward terminal and press `Ctrl+C` to stop it.
 
 ### 6.3 Configure AWS Credentials
 
