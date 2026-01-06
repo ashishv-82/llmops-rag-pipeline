@@ -92,7 +92,7 @@ boto3==1.34.0
 
 # Phase 3: RAG Dependencies
 langchain==0.1.0
-chromadb==0.5.23
+chromadb==0.5.3
 pypdf==3.17.4
 PyPDF2==3.0.1
 tiktoken==0.5.2
@@ -135,37 +135,43 @@ class BedrockClient:
 bedrock_client = BedrockClient()
 ```
 
-### 1.2 LLM Service (Nova 2)
-**File:** `api/services/llm_service.py`
+### 1.2 LLM Service (Claude 3 Haiku)
 
-Handles text generation with Amazon Nova 2 and Bedrock Guardrails.
+Create `api/services/llm_service.py`:
 
 ```python
 from api.services.bedrock_service import bedrock_client
 from api.config import settings
 
 class LLMService:
-    def __init__(self, model_id="amazon.nova-2-lite-v1:0"):
+    """Service for handling text generation via Amazon Bedrock"""
+    
+    def __init__(self, model_id="anthropic.claude-3-haiku-20240307-v1:0"):
         self.model_id = model_id
+        # Check if Bedrock Guardrails are enabled
         self.use_guardrails = hasattr(settings, 'guardrail_id')
 
     def generate_response(self, prompt: str, system_prompt: str = "") -> str:
+        # Format request body for Claude 3 model
         body = {
-            "inferenceConfig": {"max_new_tokens": 1000},
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "system": system_prompt,
             "messages": [
-                {"role": "system", "content": [{"text": system_prompt}]},
-                {"role": "user", "content": [{"text": prompt}]}
+                {"role": "user", "content": [{"type": "text", "text": prompt}]}
             ]
         }
         
-        # Guardrails integration for PII masking and content filtering
+        # Apply safety guardrails if configured
         if self.use_guardrails:
             body["guardrailIdentifier"] = settings.guardrail_id
             body["guardrailVersion"] = "DRAFT"
 
+        # Invoke model and extract generated text
         response = bedrock_client.invoke(self.model_id, body)
-        return response['output']['message']['content'][0]['text']
+        return response['content'][0]['text']
 
+# Singleton instance
 llm_service = LLMService()
 ```
 
@@ -266,9 +272,10 @@ spec:
       labels:
         app: vectordb
     spec:
+    spec:
       containers:
-      - name: chromadb
-        image: chromadb/chroma:latest
+      - name: chroma
+        image: chromadb/chroma:0.5.3
         ports:
         - containerPort: 8000
         volumeMounts:
@@ -353,6 +360,11 @@ class VectorStore:
         """Rebuild BM25 index from all documents"""
         all_docs = self.collection.get()
         self.documents_cache = all_docs['documents']
+        
+        if not self.documents_cache:
+            self.bm25 = None
+            return
+
         tokenized_docs = [doc.lower().split() for doc in self.documents_cache]
         self.bm25 = BM25Okapi(tokenized_docs)
     
@@ -373,6 +385,10 @@ class VectorStore:
         if self.bm25 is None:
             self._rebuild_bm25_index()
         
+        if self.bm25 is None:
+            # Fallback to vector-only results if BM25 not available
+            return self.collection.get(ids=vector_results['ids'][0])
+
         tokenized_query = query.lower().split()
         bm25_scores = self.bm25.get_scores(tokenized_query)
         
