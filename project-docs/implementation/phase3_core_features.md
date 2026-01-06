@@ -986,7 +986,7 @@ kubectl port-forward service/vectordb-service 8001:8000 -n dev
 
 **In your main terminal**, test the connection:
 ```bash
-curl http://localhost:8001/api/v1/heartbeat
+curl http://localhost:8001/api/v2/heartbeat
 # Expect: {"nanosecond heartbeat": ...}
 ```
 
