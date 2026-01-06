@@ -65,8 +65,6 @@ Moving beyond "it works" to "it scales."
 
 ---
 
-
-
 ## 🗺️ Documentation Navigation Map
 
 Stop here for the high-level view. Dive deeper for the engineering specifics.
