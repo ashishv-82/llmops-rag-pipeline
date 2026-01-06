@@ -50,9 +50,11 @@ Phase 3 is the **System Integration** phase where independent components come to
 - [5.2 Analytics Service](#52-analytics-service)
 - [5.3 Frontend UI Deployment](#53-frontend-ui-deployment)
 
-**[Part 6: Verification](#part-6-verification)**
-- [6.1 Manual Verification Steps](#61-manual-verification-steps)
-- [6.2 Verification Checklist](#62-verification-checklist)
+**[Part 6: Integration & Deployment](#part-6-integration--deployment)**
+
+**[Part 7: Verification](#part-7-verification)**
+- [7.1 Manual Verification Steps](#71-manual-verification-steps)
+- [7.2 Verification Checklist](#72-verification-checklist)
 
 ---
 
@@ -881,11 +883,11 @@ requests==2.31.0
 
 ---
 
-## Part 5.5: Integration & Deployment
+## Part 6: Integration & Deployment
 
 > **Critical**: This section bridges the gap between writing code and testing it. All the services you created in Parts 1-5 need to be wired together and deployed before verification will work.
 
-### 5.5.1 Update main.py to Register New Routers
+### 6.1 Update main.py to Register New Routers
 
 **File:** `api/main.py`
 
@@ -917,7 +919,7 @@ async def startup_event():
     print("Application startup complete.")
 ```
 
-### 5.5.2 Deploy ChromaDB to Minikube
+### 6.2 Deploy ChromaDB to Minikube
 
 **1. Apply the ChromaDB deployment:**
 ```bash
@@ -940,7 +942,7 @@ curl http://localhost:8001/api/v1/heartbeat
 # Expect: {"nanosecond heartbeat": ...}
 ```
 
-### 5.5.3 Configure AWS Credentials
+### 6.3 Configure AWS Credentials
 
 **Option A: Using Kubernetes Secrets (Recommended for local testing)**
 
@@ -971,7 +973,7 @@ aws configure
 # Enter your credentials when prompted
 ```
 
-### 5.5.4 Rebuild Docker Image with New Code
+### 6.4 Rebuild Docker Image with New Code
 
 **1. Set Docker environment to Minikube:**
 ```bash
@@ -989,7 +991,7 @@ docker images | grep llmops-rag-api
 # Should show: llmops-rag-api:latest with recent timestamp
 ```
 
-### 5.5.5 Redeploy to Minikube
+### 6.5 Redeploy to Minikube
 
 **1. Delete the old deployment to force a fresh pull:**
 ```bash
@@ -1013,7 +1015,7 @@ kubectl logs -l app=rag-api -n dev --tail=50
 # Should NOT see import errors or missing module errors
 ```
 
-### 5.5.6 Verify Service Connectivity
+### 6.6 Verify Service Connectivity
 
 **1. Port forward the API service:**
 ```bash
@@ -1089,9 +1091,9 @@ kubectl exec -it deployment/rag-api -n dev -- pip list | grep -E "chromadb|langc
 
 ---
 
-## Part 6: Verification
+## Part 7: Verification
 
-### 6.0 Environment Setup (Prerequisites)
+### 7.0 Environment Setup (Prerequisites)
 
 > **Note**: If you stopped Minikube at the end of Phase 2, you'll need to restart it and redeploy the services.
 
@@ -1146,7 +1148,7 @@ Now you're ready to test the Phase 3 features!
 
 ---
 
-### 6.1 Manual Verification Steps
+### 7.1 Manual Verification Steps
 
 **1. Verify API Health**
 ```bash
@@ -1201,7 +1203,7 @@ if __name__ == "__main__":
     test_full_flow()
 ```
 
-### 6.2 Verification Checklist
+### 7.2 Verification Checklist
 
 ### ✅ Bedrock Integration
 - [ ] Connect `boto3` to Bedrock.
