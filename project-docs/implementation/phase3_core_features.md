@@ -1243,9 +1243,17 @@ kubectl exec -it deployment/rag-api -n dev -- pip list | grep -E "chromadb|langc
 
 ## Part 7: Verification
 
+> **✅ Just completed Part 6?** You've already verified:
+> - API health endpoints (Part 6.6 step 2)
+> - ChromaDB connectivity (Part 6.6 step 3)  
+> - Bedrock connectivity (Part 6.6 step 4)
+> - All pods running (Part 6.5 step 5)
+>
+> **Skip to section 7.1 step 2** to test document ingestion and RAG queries.
+
 ### 7.0 Environment Setup (Prerequisites)
 
-> **Note**: If you stopped Minikube at the end of Phase 2, you'll need to restart it and redeploy the services.
+> **Note**: Only needed if you stopped Minikube after Part 6 or are starting fresh at Part 7.
 
 **1. Start Minikube**
 ```bash
