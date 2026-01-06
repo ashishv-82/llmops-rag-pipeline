@@ -1181,7 +1181,7 @@ curl http://localhost:8000/docs
 **3. Access Swagger UI in browser:**
 Open `http://localhost:8000/docs` to see the interactive API documentation.
 
-**3. Test ChromaDB connectivity from the API:**
+**4. Test ChromaDB connectivity from the API:**
 ```bash
 kubectl exec deployment/rag-api -n dev -- python -c "
 from api.services.vector_store import vector_store
@@ -1191,7 +1191,7 @@ print('ChromaDB connection test:', vector_store.client.heartbeat())
 # Example: ChromaDB connection test: 1767698717371120292
 ```
 
-**4. Test Bedrock connectivity (requires AWS credentials):**
+**5. Test Bedrock connectivity (requires AWS credentials):**
 ```bash
 kubectl exec -it deployment/rag-api -n dev -- python -c "
 from api.services.embedding_service import embedding_service
