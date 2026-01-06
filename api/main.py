@@ -1,9 +1,7 @@
-# api/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
-from api.routers import health
+from api.routers import health, documents, query
 
 # Create FastAPI app
 app = FastAPI(
@@ -23,6 +21,8 @@ app.add_middleware(
 
 # Register routers
 app.include_router(health.router)
+app.include_router(documents.router, prefix="/documents", tags=["documents"])
+app.include_router(query.router, tags=["query"])
 
 @app.get("/")
 async def root():
@@ -32,6 +32,10 @@ async def root():
         "version": settings.app_version,
         "docs": "/docs"
     }
+
+@app.on_event("startup")
+async def startup_event():
+    print("Application startup complete.")
 
 if __name__ == "__main__":
     import uvicorn

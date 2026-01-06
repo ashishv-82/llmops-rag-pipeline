@@ -1,0 +1,16 @@
+name: Data Sync
+# Trigger sync when documents are added to the data/ folder
+on:
+  push:
+    paths:
+      - 'data/documents/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Process and upload files via a helper script
+      - name: Sync to API
+        run: |
+          python3 scripts/sync_docs.py --url ${{ secrets.API_URL }} --dir data/documents
