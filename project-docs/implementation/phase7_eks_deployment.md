@@ -1221,7 +1221,7 @@ kubectl exec -it deployment/rag-api -n prod -- redis-cli -h redis-service ping
 
 **2. Test VectorDB connectivity:**
 ```bash
-kubectl exec -it deployment/rag-api -n prod -- curl http://vectordb-service:8000/api/v1/heartbeat
+kubectl exec -it deployment/rag-api -n prod -- curl http://vectordb-service:8000/api/v2/heartbeat
 # Should return heartbeat response
 ```
 
