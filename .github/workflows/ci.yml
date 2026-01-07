@@ -169,6 +169,7 @@ jobs:
       
       # Post build success comment to PR with image details
       - name: Comment PR with Image Details
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
