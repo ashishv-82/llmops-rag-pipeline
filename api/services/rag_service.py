@@ -11,7 +11,7 @@ class RAGService:
 
     # pylint: disable=too-few-public-methods
 
-    def query(self, question: str, domain: str = None, use_hybrid=True):
+    def query(self, question: str, domain: str | None = None, use_hybrid=True):
         """
         Execute RAG workflow: Retrieve context -> Generate Answer.
 

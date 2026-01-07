@@ -16,6 +16,8 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 def validate_file(file: UploadFile) -> None:
     """Validate file type and size"""
     # Check extension
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Filename missing")
     ext = file.filename.split(".")[-1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
@@ -37,6 +39,8 @@ def validate_file(file: UploadFile) -> None:
 
 def parse_document(file: UploadFile, content_bytes: bytes) -> str:
     """Parse document based on file type"""
+    if not file.filename:
+        return ""
     ext = file.filename.split(".")[-1].lower()
 
     if ext == "txt":
@@ -76,7 +80,7 @@ async def upload_document(
     # Process in background (async)
     background_tasks.add_task(
         ingest_document,
-        file.filename,
+        file.filename or "unknown",
         text_content,
         {"domain": domain, "source": "web_upload", "s3_key": s3_key},
     )

@@ -10,7 +10,7 @@ router = APIRouter()
 # Schema for RAG query requests
 class QueryRequest(BaseModel):
     question: str
-    domain: str = None  # Optional domain for focused retrieval
+    domain: str | None = None  # Optional domain for focused retrieval
 
 
 # Main RAG endpoint combining retrieval and generation

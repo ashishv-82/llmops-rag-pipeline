@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     # AWS
     aws_region: str = "ap-southeast-2"
     documents_bucket: str = "llmops-rag-documents-dev"  # Replace with your bucket
+    guardrail_id: str | None = None
 
     class Config:
         """Pydantic configuration."""
