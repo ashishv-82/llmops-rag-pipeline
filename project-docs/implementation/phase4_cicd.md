@@ -835,8 +835,8 @@ Click "New repository secret" for each:
 |------------|-------|---------|
 | `AWS_ACCESS_KEY_ID` | Your AWS access key | For Terraform and AWS deployments |
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key | For Terraform and AWS deployments |
-| `DOCKER_USERNAME` | Your Docker Hub username | For pushing images |
-| `DOCKER_PASSWORD` | Your Docker Hub token | For pushing images |
+| `ECR_REGISTRY` | `<account-id>.dkr.ecr.ap-southeast-2.amazonaws.com` | ECR registry URL (optional, can be derived from login) |
+| `DOCUMENTS_BUCKET` | `llmops-rag-documents` | S3 bucket for document storage |
 | `API_URL` | `https://your-api-url.com` | For data sync workflow |
 
 **3. Verify Secrets are Set:**
@@ -1022,8 +1022,8 @@ gh secret list
 # Test Docker build locally first
 docker build -t test -f api/Dockerfile .
 
-# Check if DOCKER_USERNAME and DOCKER_PASSWORD are correct
-echo $DOCKER_USERNAME
+# Verify AWS credentials are set for ECR access
+aws ecr get-login-password --region ap-southeast-2
 ```
 
 **Issue: Terraform workflow fails**
