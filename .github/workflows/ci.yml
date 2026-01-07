@@ -110,22 +110,24 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      # Build image with commit SHA tag + latest tag
+      # Build image with build number tag + latest tag
       - name: Build Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: llmops-rag-api
-          IMAGE_TAG: ${{ github.sha }}  # Use git commit SHA for traceability
+          BUILD_NUMBER: ${{ github.run_number }}  # Auto-incrementing build number
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:build-$BUILD_NUMBER \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
                        -f api/Dockerfile .
       
       # Scan image for security vulnerabilities
       - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@master
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
         with:
-          image-ref: ${{ steps.login-ecr.outputs.registry }}/llmops-rag-api:${{ github.sha }}
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/llmops-rag-api:build-${{ env.BUILD_NUMBER }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'  # Only fail on high/critical issues
@@ -136,14 +138,14 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
       
-      # Push both SHA-tagged and latest images to ECR
+      # Push both build-tagged and latest images to ECR
       - name: Push to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: llmops-rag-api
-          IMAGE_TAG: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:build-$BUILD_NUMBER
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
       
       # Post build success comment to PR with image details

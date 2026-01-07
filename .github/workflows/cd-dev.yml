@@ -44,10 +44,10 @@ jobs:
       - name: Update Deployment Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}  # Use commit SHA from CI build
+          BUILD_NUMBER: ${{ github.run_number }}  # Match CI build number
         run: |
           kubectl set image deployment/rag-api \
-            api=$ECR_REGISTRY/llmops-rag-api:$IMAGE_TAG \
+            api=$ECR_REGISTRY/llmops-rag-api:build-$BUILD_NUMBER \
             -n dev
       
       # Wait for Kubernetes to complete the rolling update
