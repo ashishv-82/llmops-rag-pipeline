@@ -8,7 +8,7 @@ on:
     paths:
       - 'api/**'            # API source code changes
       - 'tests/**'          # Test file changes
-      - 'requirements.txt'  # Dependency changes
+      - 'api/requirements.txt'  # Dependency changes
       - 'Dockerfile'        # Container definition changes
   workflow_dispatch:        # Allow manual trigger from GitHub UI
 
@@ -33,13 +33,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('api/requirements.txt') }}
       
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pylint black mypy pytest
-          pip install -r requirements.txt
+          pip install -r api/requirements.txt
       
       # Check code formatting (PEP 8 compliance)
       - name: Run Black (Format Check)
@@ -69,7 +69,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r api/requirements.txt
           pip install pytest pytest-cov pytest-asyncio
       
       # Run tests with coverage tracking (fail if <70%)
