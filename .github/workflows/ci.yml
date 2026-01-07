@@ -114,12 +114,13 @@ jobs:
             --cov-report=term \
             --cov-fail-under=20
       
-      # Upload coverage report to Codecov for tracking
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
+      # Upload coverage report as an artifact (View in GitHub Actions Summary)
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
         with:
-          files: ./coverage.xml
-          fail_ci_if_error: true
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
 
   # Job 3: Container Build & Security Scan
   # Builds Docker image, scans for vulnerabilities, pushes to ECR
