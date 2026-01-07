@@ -52,8 +52,11 @@ Phase 4 establishes **DevOps Excellence** through automation:
 
 - **Phase 3 Complete**: RAG application functional with all services.
 - **GitHub Repository**: With Actions enabled.
-- **AWS ECR**: Container registry created.
-- **GitHub Secrets**: AWS credentials, ECR URL configured.
+- **AWS ECR Repository**: Created in [Phase 1, Step 3.4](phase1_foundation.md#step-34-create-ecr-module-terraform) and applied in [Step 3.6](phase1_foundation.md#step-36-initialize-and-apply-terraform).
+- **GitHub CLI**: Installed and authenticated (`gh auth login`).
+- **AWS CLI**: Configured with credentials.
+
+> **⚠️ Important**: If you haven't created the ECR repository yet, go back to Phase 1 and complete Steps 3.4-3.6 before proceeding.
 
 ---
 
