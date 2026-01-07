@@ -922,9 +922,33 @@ terraform {
 module "documents_bucket" {
   source = "../../modules/s3"
   
-  bucket_name      = "llmops-rag-documents-dev"  # Replace with your bucket name
+  bucket_name      = "llmops-rag-documents-dev"
   environment      = "dev"
   enable_lifecycle = true
+}
+
+module "embeddings_bucket" {
+  source = "../../modules/s3"
+  
+  bucket_name      = "llmops-rag-embeddings-dev"
+  environment      = "dev"
+  enable_lifecycle = false
+}
+
+# ECR Repository for Docker images
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name      = "llmops-rag-api"
+  image_tag_mutability = "MUTABLE"
+  scan_on_push         = true
+  encryption_type      = "AES256"
+
+  tags = {
+    Environment = "dev"
+    Project     = "llmops-rag-pipeline"
+    ManagedBy   = "terraform"
+  }
 }
 
 ```
@@ -935,8 +959,18 @@ module "documents_bucket" {
 # terraform/environments/dev/outputs.tf
 
 output "documents_bucket_name" {
-  description = "Name of the created documents bucket"
+  description = "Name of the documents S3 bucket"
   value       = module.documents_bucket.bucket_name
+}
+
+output "embeddings_bucket_name" {
+  description = "Name of the embeddings S3 bucket"
+  value       = module.embeddings_bucket.bucket_name
+}
+
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = module.ecr.repository_url
 }
 ```
 

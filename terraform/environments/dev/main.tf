@@ -20,3 +20,18 @@ module "embeddings_bucket" {
   enable_lifecycle = false # No lifecycle needed for short-lived feature store
 }
 
+# ECR Repository for Docker images
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name      = "llmops-rag-api"
+  image_tag_mutability = "MUTABLE"
+  scan_on_push         = true
+  encryption_type      = "AES256"
+
+  tags = {
+    Environment = "dev"
+    Project     = "llmops-rag-pipeline"
+    ManagedBy   = "terraform"
+  }
+}
