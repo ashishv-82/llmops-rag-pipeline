@@ -71,15 +71,3 @@ jobs:
           # curl -f -X POST http://$API_URL/query \
           #   -H "Content-Type: application/json" \
           #   -d '{"question": "test", "domain": "general"}' || exit 1
-      
-      # Send success notification to Slack (optional)
-      - name: Notify Slack on Success
-        if: success()
-        uses: slackapi/slack-github-action@v1
-        with:
-          payload: |
-            {
-              "text": "✅ Deployed to Dev: ${{ github.sha }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
