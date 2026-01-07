@@ -847,7 +847,7 @@ Click "New repository variable" for each:
 | Variable Name | Value | Purpose |
 |------------|-------|---------|
 | `ECR_REGISTRY_URI` | `<account-id>.dkr.ecr.ap-southeast-2.amazonaws.com` | ECR registry URI |
-| `DOCUMENTS_BUCKET` | `llmops-rag-documents` | S3 bucket for document storage |
+| `S3_DOCUMENTS_BUCKET` | `llmops-rag-documents` | S3 bucket for document storage |
 | `API_URL` | See note below | For data sync workflow |
 | `STAGING_API_URL` | TBD after Phase 7 | Staging environment API |
 | `PROD_API_URL` | TBD after Phase 7 | Production environment API |
