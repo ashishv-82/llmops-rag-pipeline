@@ -10,6 +10,7 @@ on:
       - 'tests/**'          # Test file changes
       - 'requirements.txt'  # Dependency changes
       - 'Dockerfile'        # Container definition changes
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
 
 env:
   PYTHON_VERSION: '3.11'  # Match production Python version
