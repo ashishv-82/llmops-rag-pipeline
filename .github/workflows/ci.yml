@@ -82,6 +82,7 @@ jobs:
       # Run tests with coverage tracking (fail if <70%)
       - name: Run Tests with Coverage
         run: |
+          export PYTHONPATH=$PYTHONPATH:.
           pytest tests/ \
             --cov=api \
             --cov-report=xml \
