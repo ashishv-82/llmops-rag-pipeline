@@ -45,7 +45,7 @@ jobs:
         id: changed-files
         run: |
           # Get list of added/modified files in data/documents/
-          git diff --name-only --diff-filter=AM HEAD~1 HEAD | \
+          git diff --name-only --diff-filter=ACMRT HEAD~1 HEAD | \
             grep '^data/documents/' > changed_files.txt || true
           
           echo "Changed files:"
