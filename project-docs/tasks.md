@@ -300,6 +300,8 @@
 - [ ] Configure ingress and load balancers
 - [ ] Verify all services are running
 - [ ] Test end-to-end functionality
+- [ ] **Revert CD Simulation Mode**: Uncomment `kubectl` commands in `cd-dev.yml`
+- [ ] **Enable Notifications**: Re-enable Slack webhook in `cd-dev.yml`
 
 ### S3 Lifecycle Policies
 - [ ] Implement 30-day transition to Standard-IA
