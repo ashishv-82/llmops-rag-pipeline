@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - 'api/**'
-      - 'kubernetes/**'
+      # - 'kubernetes/**'  # Excluded: K8s changes don't trigger Code Build
       - 'tests/**'
       - '.github/workflows/**'
       - '!.github/workflows/data-sync.yml' # Ignore data pipeline changes
