@@ -140,7 +140,7 @@
 **Gaps**: None
 
 **Integration Points**:
-- ✅ ECR repository → Created in Phase 7 Terraform
+- ✅ ECR repository → Created in Phase 1 Terraform
 - ✅ EKS cluster → Deployed to in CD workflows
 - ✅ S3 data sync → Uses buckets from Phase 1
 - ✅ Terraform workflows → Apply Phase 7 infrastructure
@@ -256,7 +256,7 @@
 - ✅ Network policies
 - ✅ Pod Security Standards
 - ✅ S3 versioning
-- ✅ ECR lifecycle policy
+- ✅ ECR lifecycle policy (defined in Phase 1 module)
 - ✅ **Disaster recovery procedures document**
 
 **Gaps**: None
@@ -281,6 +281,7 @@
 ### 2. Docker Image Flow ✅
 - **Phase 1**: Build locally, test with Docker
 - **Phase 2**: Use in Minikube (imagePullPolicy: Never)
+- **Phase 1**: ECR repository created via Terraform
 - **Phase 4**: Build in CI, push to ECR
 - **Phase 7**: Pull from ECR in EKS
 - **Status**: ✅ Complete flow documented
