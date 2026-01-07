@@ -206,7 +206,7 @@ jobs:
 ```
 
 ### 1.2 Unit Testing
-**File:** `tests/test_rag_service.py`
+**File:** `tests/unit/test_rag_service.py`
 
 Example unit test structure.
 
