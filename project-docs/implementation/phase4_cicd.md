@@ -837,7 +837,12 @@ Click "New repository secret" for each:
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key | For Terraform and AWS deployments |
 | `ECR_REGISTRY` | `<account-id>.dkr.ecr.ap-southeast-2.amazonaws.com` | ECR registry URL (optional, can be derived from login) |
 | `DOCUMENTS_BUCKET` | `llmops-rag-documents` | S3 bucket for document storage |
-| `API_URL` | `https://your-api-url.com` | For data sync workflow |
+| `API_URL` | See note below | For data sync workflow |
+
+> **Note on `API_URL`:**
+> - **Local Development**: Use `http://localhost:8000` (when using `kubectl port-forward`)
+> - **After Phase 7 (EKS)**: Update to your LoadBalancer URL (e.g., `http://a1b2c3d4-123456.ap-southeast-2.elb.amazonaws.com`)
+> - **For now**: Set to `http://localhost:8000` and update later when you deploy to EKS
 
 **3. Verify Secrets are Set:**
 ```bash
