@@ -112,6 +112,7 @@ llmops-rag-pipeline/
 - **Python 3.12+** (Virtual Environment recommended)
 - **Docker Desktop** (for local containerization)
 - **Minikube** & **kubectl** (for local Kubernetes orchestration)
+- **Helm** (for monitoring stack deployment)
 - **AWS Credentials** (with Bedrock access for Nova 2 & Titan Embeddings)
 
 ### Installation
