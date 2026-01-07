@@ -85,6 +85,7 @@ mlartifacts/
 
 # Data (don't commit large datasets)
 data/
+!data/documents/
 *.csv
 *.parquet
 *.pkl
