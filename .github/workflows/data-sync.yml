@@ -54,8 +54,8 @@ jobs:
       # Upload documents to S3 and trigger API ingestion
       - name: Upload to S3 and Trigger Ingestion
         env:
-          API_URL: ${{ secrets.API_URL }}  # RAG API endpoint
-          S3_BUCKET: ${{ secrets.DOCUMENTS_BUCKET }}  # S3 bucket name
+          API_URL: ${{ secrets.API_URL || vars.API_URL }}
+          S3_BUCKET: ${{ secrets.S3_DOCUMENTS_BUCKET || vars.S3_DOCUMENTS_BUCKET }}
         run: |
           python scripts/sync_documents.py \
             --files changed_files.txt \
