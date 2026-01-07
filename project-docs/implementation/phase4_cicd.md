@@ -33,6 +33,7 @@ Phase 4 establishes **DevOps Excellence** through automation:
 **[Part 2: Data Sync Workflow](#part-2-data-sync-workflow)**
 - [2.1 Document Upload Automation](#21-document-upload-automation)
 - [2.2 Embedding Generation](#22-embedding-generation)
+- [2.3 Verification Script](#23-verification-script)
 
 **[Part 3: CD Workflows](#part-3-cd-workflows)**
 - [3.1 Dev Deployment (Auto)](#31-dev-deployment-auto)
@@ -42,9 +43,21 @@ Phase 4 establishes **DevOps Excellence** through automation:
 **[Part 4: Infrastructure Automation](#part-4-infrastructure-automation)**
 - [4.1 Terraform Plan/Apply](#41-terraform-planapply)
 
+**[Part 4.5: Integration & Deployment](#part-45-integration--deployment)**
+- [4.5.1 Configure GitHub Secrets](#451-configure-github-secrets)
+- [4.5.2 Commit and Push Workflow Files](#452-commit-and-push-workflow-files)
+- [4.5.3 Verify Workflows](#453-verify-workflows)
+- [4.5.4 Test CI Workflow Manually](#454-test-ci-workflow-manually)
+- [4.5.5 Test Data Sync Workflow](#455-test-data-sync-workflow)
+- [4.5.6 Configure Branch Protection](#456-configure-branch-protection)
+- [4.5.7 Test the Full CI/CD Flow](#457-test-the-full-cicd-flow)
+- [4.5.8 Troubleshooting Common Issues](#458-troubleshooting-common-issues)
+
 **[Part 5: Branch Protection & Verification](#part-5-branch-protection--verification)**
 - [5.1 GitHub Branch Protection Rules](#51-github-branch-protection-rules)
 - [5.2 Verification Steps](#52-verification-steps)
+
+**[Verification Checklist](#verification-checklist)**
 
 ---
 
@@ -1123,37 +1136,37 @@ git push origin main
 ## Verification Checklist
 
 ### ✅ CI Workflow
-- [ ] Linting runs on every PR
-- [ ] Unit tests execute with coverage reporting
-- [ ] Docker images build successfully
-- [ ] Trivy security scans complete
-- [ ] Images push to ECR
-- [ ] PR comments show build status
+- [x] Linting runs on every PR
+- [x] Unit tests execute with coverage reporting
+- [x] Docker images build successfully
+- [x] Trivy security scans complete
+- [x] Images push to ECR
+- [x] PR comments show build status
 
 ### ✅ Data Sync
-- [ ] Workflow triggers on document changes
-- [ ] Documents upload to S3
-- [ ] Embeddings generate automatically
-- [ ] Vector DB updates successfully
+- [x] Workflow triggers on document changes
+- [x] Documents upload to S3
+- [ ] Embeddings generate automatically (Requires Phase 7/EKS)
+- [ ] Vector DB updates successfully (Requires Phase 7/EKS)
 
 ### ✅ CD Workflows
-- [ ] Dev deploys automatically on main push
-- [ ] Staging deploys on manual trigger
-- [ ] Production requires approval
-- [ ] Rollback works on failure
-- [ ] Health checks validate deployments
+- [x] Dev deploys automatically on main push (Simulated)
+- [x] Staging deploys on manual trigger
+- [x] Production requires approval
+- [x] Rollback works on failure
+- [x] Health checks validate deployments (Simulated)
 
 ### ✅ Infrastructure
-- [ ] Terraform plan runs on PR
-- [ ] Plan output comments on PR
-- [ ] Apply requires manual approval
-- [ ] State stored in S3 backend
+- [x] Terraform plan runs on PR
+- [x] Plan output comments on PR
+- [x] Apply requires manual approval
+- [x] State stored in S3 backend
 
 ### ✅ Branch Protection
-- [ ] Direct pushes to main blocked
-- [ ] PR approval required
-- [ ] Status checks must pass
-- [ ] Stale reviews dismissed
+- [x] Direct pushes to main blocked
+- [x] PR approval required
+- [x] Status checks must pass
+- [x] Stale reviews dismissed
 
 ---
 
