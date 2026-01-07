@@ -9,6 +9,7 @@ on:
       - 'kubernetes/**'
       - 'tests/**'
       - '.github/workflows/**'
+      - '!.github/workflows/data-sync.yml' # Ignore data pipeline changes
       - '!data/**'  # Explicitly ignore data changes (handled by data-sync.yml)
 
 jobs:
