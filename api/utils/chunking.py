@@ -4,10 +4,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Configure recursive splitter with overlaps to maintain context
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=512,
-    chunk_overlap=50,
-    separators=["\n\n", "\n", " ", ""]
+    chunk_size=512, chunk_overlap=50, separators=["\n\n", "\n", " ", ""]
 )
+
 
 # Split input text into chunks based on configuration
 def chunk_text(text: str):

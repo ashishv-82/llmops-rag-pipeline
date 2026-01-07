@@ -6,10 +6,12 @@ from api.services.rag_service import rag_service
 
 router = APIRouter()
 
+
 # Schema for RAG query requests
 class QueryRequest(BaseModel):
     question: str
     domain: str = None  # Optional domain for focused retrieval
+
 
 # Main RAG endpoint combining retrieval and generation
 @router.post("/query")

@@ -1,4 +1,4 @@
-""" Domain-specific system and user prompt templates for RAG queries """
+"""Domain-specific system and user prompt templates for RAG queries"""
 
 # Configuration for different domain assistants (Legal, HR, Engineering, etc.)
 DOMAIN_PROMPTS = {
@@ -12,7 +12,7 @@ If uncertain, state limitations clearly.""",
 
 Question: {question}
 
-Provide a detailed answer with specific citations."""
+Provide a detailed answer with specific citations.""",
     },
     "hr": {
         "system": """You are an HR policy assistant. Provide clear, empathetic guidance.
@@ -24,7 +24,7 @@ Use accessible language.""",
 
 Question: {question}
 
-Provide a helpful, policy-compliant answer."""
+Provide a helpful, policy-compliant answer.""",
     },
     "engineering": {
         "system": """You are a technical documentation assistant. Provide accurate, actionable guidance.
@@ -35,7 +35,7 @@ Include code examples when relevant. Focus on best practices.""",
 
 Question: {question}
 
-Provide a technical answer with examples if applicable."""
+Provide a technical answer with examples if applicable.""",
     },
     "general": {
         "system": """You are a helpful assistant. Answer questions based on the provided context.
@@ -46,9 +46,10 @@ Be concise and accurate.""",
 
 Question: {question}
 
-Answer:"""
-    }
+Answer:""",
+    },
 }
+
 
 def get_prompt(domain: str, context: str, question: str) -> tuple[str, str]:
     """Get formatted system and user prompts based on domain and context"""
