@@ -446,8 +446,8 @@ This approach balances:
   - Upload to S3
   - Generate embeddings
   - Update vector database
-- [ ] Create CD workflow for staging
-  - Deploy to staging namespace in K8s
+- [ ] Create CD workflow for staging (Simulated for Phase 4)
+  - Deploy to staging namespace (Echo command substitution)
   - Run integration tests
 - [ ] Create CD workflow for production
   - Manual approval gate
@@ -461,7 +461,7 @@ This approach balances:
 ### **Phase 5: Monitoring & Observability (Week 5-6)**
 **Goal**: Implement comprehensive monitoring and cost tracking
 
-- [ ] Deploy Prometheus and Grafana on K8s
+- [ ] Deploy Prometheus and Grafana via Helm (kube-prometheus-stack)
 - [ ] Instrument application with metrics
   - Request latency
   - LLM token usage (tokens per request)
