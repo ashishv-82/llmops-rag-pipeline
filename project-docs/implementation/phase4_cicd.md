@@ -827,27 +827,43 @@ jobs:
 https://github.com/YOUR_USERNAME/llmops-rag-pipeline/settings/secrets/actions
 ```
 
-**2. Add Required Secrets:**
+**2. Add Required Secrets (Sensitive Credentials):**
+
+Navigate to **Settings → Secrets and variables → Actions → Secrets**
 
 Click "New repository secret" for each:
 
 | Secret Name | Value | Purpose |
 |------------|-------|---------|
-| `AWS_ACCESS_KEY_ID` | Your AWS access key | For Terraform and AWS deployments |
-| `AWS_SECRET_ACCESS_KEY` | Your AWS secret key | For Terraform and AWS deployments |
-| `ECR_REGISTRY` | `<account-id>.dkr.ecr.ap-southeast-2.amazonaws.com` | ECR registry URL (optional, can be derived from login) |
+| `AWS_ACCESS_KEY_ID` | `AKIA...` (your AWS access key) | AWS authentication |
+| `AWS_SECRET_ACCESS_KEY` | `****...` (your AWS secret key) | AWS authentication |
+
+**3. Add Required Variables (Non-Sensitive Configuration):**
+
+Navigate to **Settings → Secrets and variables → Actions → Variables**
+
+Click "New repository variable" for each:
+
+| Variable Name | Value | Purpose |
+|------------|-------|---------|
+| `ECR_REGISTRY` | `<account-id>.dkr.ecr.ap-southeast-2.amazonaws.com` | ECR registry URL |
 | `DOCUMENTS_BUCKET` | `llmops-rag-documents` | S3 bucket for document storage |
 | `API_URL` | See note below | For data sync workflow |
+| `STAGING_API_URL` | TBD after Phase 7 | Staging environment API |
+| `PROD_API_URL` | TBD after Phase 7 | Production environment API |
 
 > **Note on `API_URL`:**
 > - **Local Development**: Use `http://localhost:8000` (when using `kubectl port-forward`)
 > - **After Phase 7 (EKS)**: Update to your LoadBalancer URL (e.g., `http://a1b2c3d4-123456.ap-southeast-2.elb.amazonaws.com`)
 > - **For now**: Set to `http://localhost:8000` and update later when you deploy to EKS
 
-**3. Verify Secrets are Set:**
+**4. Verify Configuration:**
 ```bash
-# List secrets via GitHub CLI
+# List secrets (values will be hidden)
 gh secret list
+
+# List variables (values will be visible)
+gh variable list
 ```
 
 ### 4.5.2 Commit and Push Workflow Files
