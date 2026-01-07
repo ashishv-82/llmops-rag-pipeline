@@ -84,7 +84,7 @@ mlartifacts/
 *.ipynb
 
 # Data (don't commit large datasets)
-data/
+data/*
 !data/documents/
 *.csv
 *.parquet
