@@ -18,9 +18,7 @@ class Settings(BaseSettings):
     documents_bucket: str = "llmops-rag-documents-dev"  # Replace with your bucket
     guardrail_id: str | None = None
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=False
-    )
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+
 
 settings = Settings()
