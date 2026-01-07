@@ -212,7 +212,7 @@ spec:
 
 ### 3.1 Deploy to Local Cluster
 
-Load the local docker image into Minikube so it doesn't try to pull from Docker Hub.
+Load the local docker image into Minikube so it doesn't try to pull from ECR/Docker Hub.
 
 ```bash
 # Point minikube to local docker env (Run in your terminal)
