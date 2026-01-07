@@ -2,6 +2,14 @@
 
 terraform {
   required_version = ">= 1.7.0"
+
+  backend "s3" {
+    bucket         = "llmops-rag-terraform-state"
+    key            = "dev/terraform.tfstate"
+    region         = "ap-southeast-2"
+    encrypt        = true
+    dynamodb_table = "llmops-rag-terraform-state-lock"
+  }
 }
 
 module "documents_bucket" {
