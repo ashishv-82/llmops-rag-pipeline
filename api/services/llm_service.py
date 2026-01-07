@@ -1,9 +1,13 @@
+"""Service for handling text generation via Amazon Bedrock."""
+
 from api.services.bedrock_service import bedrock_client
 from api.config import settings
 
 
 class LLMService:
-    """Service for handling text generation via Amazon Bedrock"""
+    """Service for handling text generation via Amazon Bedrock."""
+
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, model_id="global.amazon.nova-2-lite-v1:0"):
         self.model_id = model_id
@@ -11,6 +15,16 @@ class LLMService:
         self.use_guardrails = hasattr(settings, "guardrail_id")
 
     def generate_response(self, prompt: str, system_prompt: str = "") -> str:
+        """
+        Generate a response using the configured LLM.
+        
+        Args:
+            prompt: User input prompt
+            system_prompt: Optional system context
+            
+        Returns:
+            Generated text response
+        """
         # Format request body for Nova 2 model
         # System prompt must be a top-level parameter, not in messages
         body = {

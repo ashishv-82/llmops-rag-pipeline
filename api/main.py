@@ -1,3 +1,5 @@
+"""FastAPI application entry point."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
@@ -37,6 +39,7 @@ async def root():
 
 @app.on_event("startup")
 async def startup_event():
+    """Execute startup tasks."""
     print("Application startup complete.")
 
 

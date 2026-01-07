@@ -7,7 +7,6 @@ from api.config import settings
 
 class BedrockClient:
     """Client for invoking AWS Bedrock models."""
-    
     # pylint: disable=too-few-public-methods
 
     def __init__(self):
