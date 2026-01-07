@@ -60,6 +60,25 @@ jobs:
       - name: Run MyPy (Type Check)
         run: mypy api/ --ignore-missing-imports
 
+  # Job 2: Security Scanning (SAST & SCA)
+  # Generic scan for vulnerabilities, secrets, and misconfigurations
+  security:
+    name: Security Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret,config'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
   # Job 2: Automated Testing
   # Runs unit tests with coverage requirements (70% minimum)
   test:
@@ -107,7 +126,7 @@ jobs:
   docker-build:
     name: Docker Build & Push
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, security]
     outputs:
       registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
