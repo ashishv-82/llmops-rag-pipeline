@@ -38,10 +38,11 @@ Phase 1 establishes the foundation for the entire project. We'll follow the **Co
 - [3.1 Create Terraform Directory Structure](#step-31-create-terraform-directory-structure)
 - [3.2 Create Terraform Backend Configuration](#step-32-create-terraform-backend-configuration)
 - [3.3 Create S3 Module](#step-33-create-s3-module-terraform)
-- [3.4 Create Dev Environment Configuration](#step-34-create-dev-environment-configuration)
-- [3.5 Initialize and Apply Terraform](#step-35-initialize-and-apply-terraform)
-- [3.6 Verify Terraform-Created Resources](#step-36-verify-terraform-created-resources-console)
-- [3.7 Clean Up Manual Resources](#step-37-clean-up-manual-resources-if-applicable) *(If Applicable)*
+- [3.4 Create ECR Module](#step-34-create-ecr-module-terraform)
+- [3.5 Create Dev Environment Configuration](#step-35-create-dev-environment-configuration)
+- [3.6 Initialize and Apply Terraform](#step-36-initialize-and-apply-terraform)
+- [3.7 Verify Terraform-Created Resources](#step-37-verify-terraform-created-resources-console)
+- [3.8 Clean Up Manual Resources](#step-38-clean-up-manual-resources-if-applicable) *(If Applicable)*
 
 **[Part 4: Basic FastAPI Application](#part-4-basic-fastapi-application)**
 - [4.1 Create API Directory Structure](#step-41-create-api-directory-structure)
@@ -768,7 +769,7 @@ output "bucket_arn" {
 
 ---
 
-### Step 3.3a: Create ECR Module (Terraform)
+### Step 3.4: Create ECR Module (Terraform)
 
 **Why ECR?** Elastic Container Registry stores Docker images for your application. Setting this up in Phase 1 ensures it's ready for CI/CD in Phase 4.
 
@@ -907,7 +908,7 @@ output "registry_id" {
 
 ---
 
-### Step 3.4: Create Dev Environment Configuration
+### Step 3.5: Create Dev Environment Configuration
 
 **Create file:** `terraform/environments/dev/main.tf`
 
@@ -1153,7 +1154,7 @@ aws dynamodb describe-table \
 
 ---
 
-### Step 3.5: Initialize and Apply Terraform
+### Step 3.6: Initialize and Apply Terraform
 
 **Initialize Terraform:**
 
@@ -1194,7 +1195,7 @@ documents_bucket_name = "llmops-rag-documents-dev"
 
 ---
 
-### Step 3.6: Verify Terraform-Created Resources (Console)
+### Step 3.7: Verify Terraform-Created Resources (Console)
 
 **Console Verification:**
 
@@ -1224,7 +1225,7 @@ documents_bucket_name = "llmops-rag-documents-dev"
 
 ---
 
-### Step 3.7: Clean Up Manual Resources (If Applicable)
+### Step 3.8: Clean Up Manual Resources (If Applicable)
 
 > **Note:** Only do this if you created manual resources in Step 2.5. If you skipped the manual steps, skip this section too.
 
