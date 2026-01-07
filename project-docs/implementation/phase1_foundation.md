@@ -768,6 +768,145 @@ output "bucket_arn" {
 
 ---
 
+### Step 3.3a: Create ECR Module (Terraform)
+
+**Why ECR?** Elastic Container Registry stores Docker images for your application. Setting this up in Phase 1 ensures it's ready for CI/CD in Phase 4.
+
+**Create file:** `terraform/modules/ecr/variables.tf`
+
+```hcl
+variable "repository_name" {
+  description = "Name of the ECR repository"
+  type        = string
+}
+
+variable "image_tag_mutability" {
+  description = "Tag mutability setting for the repository"
+  type        = string
+  default     = "MUTABLE"
+}
+
+variable "scan_on_push" {
+  description = "Enable image scanning on push"
+  type        = bool
+  default     = true
+}
+
+variable "encryption_type" {
+  description = "Encryption type for the repository"
+  type        = string
+  default     = "AES256"
+}
+
+variable "lifecycle_policy" {
+  description = "Lifecycle policy for the repository"
+  type        = string
+  default     = ""
+}
+
+variable "tags" {
+  description = "Tags to apply to the repository"
+  type        = map(string)
+  default     = {}
+}
+```
+
+**Create file:** `terraform/modules/ecr/main.tf`
+
+```hcl
+resource "aws_ecr_repository" "this" {
+  name                 = var.repository_name
+  image_tag_mutability = var.image_tag_mutability
+
+  image_scanning_configuration {
+    scan_on_push = var.scan_on_push
+  }
+
+  encryption_configuration {
+    encryption_type = var.encryption_type
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = var.repository_name
+    }
+  )
+}
+
+# Default lifecycle policy: Keep last 10 images, expire untagged after 7 days
+locals {
+  default_lifecycle_policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 10 images"
+        selection = {
+          tagStatus     = "tagged"
+          tagPrefixList = ["v"]
+          countType     = "imageCountMoreThan"
+          countNumber   = 10
+        }
+        action = {
+          type = "expire"
+        }
+      },
+      {
+        rulePriority = 2
+        description  = "Expire untagged images after 7 days"
+        selection = {
+          tagStatus   = "untagged"
+          countType   = "sinceImagePushed"
+          countUnit   = "days"
+          countNumber = 7
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_ecr_lifecycle_policy" "default" {
+  count      = var.lifecycle_policy == "" ? 1 : 0
+  repository = aws_ecr_repository.this.name
+  policy     = local.default_lifecycle_policy
+}
+```
+
+**Create file:** `terraform/modules/ecr/outputs.tf`
+
+```hcl
+output "repository_url" {
+  description = "URL of the ECR repository"
+  value       = aws_ecr_repository.this.repository_url
+}
+
+output "repository_arn" {
+  description = "ARN of the ECR repository"
+  value       = aws_ecr_repository.this.arn
+}
+
+output "repository_name" {
+  description = "Name of the ECR repository"
+  value       = aws_ecr_repository.this.name
+}
+
+output "registry_id" {
+  description = "Registry ID where the repository was created"
+  value       = aws_ecr_repository.this.registry_id
+}
+```
+
+**Why this structure?**
+- ✅ Automatic image scanning for security
+- ✅ Lifecycle policy to control costs (auto-delete old images)
+- ✅ Encryption at rest (AES256)
+- ✅ Reusable module for multiple repositories
+
+---
+
 ### Step 3.4: Create Dev Environment Configuration
 
 **Create file:** `terraform/environments/dev/main.tf`
