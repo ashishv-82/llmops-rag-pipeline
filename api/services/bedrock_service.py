@@ -16,18 +16,21 @@ class BedrockClient:
             service_name="bedrock-runtime", region_name=settings.aws_region
         )
 
-    def invoke(self, model_id: str, body: dict) -> dict:
+    def invoke(self, model_id: str, body: dict, **kwargs) -> dict:
         """
         Invoke Bedrock model with given model ID and body.
 
         Args:
             model_id: The ID of the model to invoke
             body: The JSON body payload
+            **kwargs: Additional arguments for invoke_model (e.g., guardrails)
 
         Returns:
             The parsed JSON response body
         """
-        response = self.client.invoke_model(modelId=model_id, body=json.dumps(body))
+        response = self.client.invoke_model(
+            modelId=model_id, body=json.dumps(body), **kwargs
+        )
         return json.loads(response["body"].read())
 
 

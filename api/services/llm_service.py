@@ -33,14 +33,15 @@ class LLMService:
             "messages": [{"role": "user", "content": [{"text": prompt}]}],
         }
 
-        # Apply safety guardrails if configured
-        if self.use_guardrails:
-            body["guardrailIdentifier"] = settings.guardrail_id
-            body["guardrailVersion"] = "DRAFT"
+        # Prepare request kwargs
+        request_kwargs = {}
+        if self.use_guardrails and settings.guardrail_id:
+            request_kwargs["guardrailIdentifier"] = settings.guardrail_id
+            request_kwargs["guardrailVersion"] = "DRAFT"
 
         try:
             # Invoke model and extract generated text
-            response = bedrock_client.invoke(self.model_id, body)
+            response = bedrock_client.invoke(self.model_id, body, **request_kwargs)
             return response["output"]["message"]["content"][0]["text"]
         except Exception as e:
             return f"Error invoking model: {str(e)}"
