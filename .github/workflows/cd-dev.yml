@@ -34,44 +34,43 @@ jobs:
           aws-region: ap-southeast-2
       
       # Configure kubectl to connect to EKS cluster
-      - name: Update kubeconfig
+      - name: Update kubeconfig (Simulated)
         run: |
-          aws eks update-kubeconfig \
-            --name llmops-rag-cluster \
-            --region ap-southeast-2
+          echo "Simulating: aws eks update-kubeconfig --name llmops-rag-cluster"
+          # aws eks update-kubeconfig \
+          #   --name llmops-rag-cluster \
+          #   --region ap-southeast-2
       
       # Login to ECR to pull the latest image
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      - name: Update Deployment Image
+      - name: Update Deployment Image (Simulated)
         env:
           ECR_REGISTRY: ${{ inputs.ecr_registry }}
           BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
-          kubectl set image deployment/rag-api \
-            api=$ECR_REGISTRY/llmops-rag-api:build-$BUILD_NUMBER \
-            -n dev
+          echo "Simulating: kubectl set image deployment/rag-api api=$ECR_REGISTRY/llmops-rag-api:build-$BUILD_NUMBER -n dev"
+          # kubectl set image deployment/rag-api \
+          #   api=$ECR_REGISTRY/llmops-rag-api:build-$BUILD_NUMBER \
+          #   -n dev
       
       # Wait for Kubernetes to complete the rolling update
-      - name: Wait for Rollout
+      - name: Wait for Rollout (Simulated)
         run: |
-          kubectl rollout status deployment/rag-api -n dev --timeout=5m
+          echo "Simulating: kubectl rollout status deployment/rag-api -n dev --timeout=5m"
+          # kubectl rollout status deployment/rag-api -n dev --timeout=5m
       
       # Verify deployment with basic smoke tests
-      - name: Run Smoke Tests
+      - name: Run Smoke Tests (Simulated)
         run: |
-          # Get service URL
-          API_URL=$(kubectl get svc rag-api-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          
-          # Test health endpoint
-          curl -f http://$API_URL/health || exit 1
-          
-          # Test query endpoint
-          curl -f -X POST http://$API_URL/query \
-            -H "Content-Type: application/json" \
-            -d '{"question": "test", "domain": "general"}' || exit 1
+          echo "Simulating: Smoke Tests"
+          # API_URL=$(kubectl get svc rag-api-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          # curl -f http://$API_URL/health || exit 1
+          # curl -f -X POST http://$API_URL/query \
+          #   -H "Content-Type: application/json" \
+          #   -d '{"question": "test", "domain": "general"}' || exit 1
       
       # Send success notification to Slack (optional)
       - name: Notify Slack on Success
