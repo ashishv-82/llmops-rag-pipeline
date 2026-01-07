@@ -27,6 +27,7 @@ By following this "Console → Terraform" pattern, we achieve a higher standard 
 | **System Visibility** | Confident AWS Navigation | Immediate Root Cause Analysis |
 | **State Mastery** | Full Console/TF Mapping | Deep Troubleshooting Skills |
 | **Infrastructure-as-Code** | Reproducible Blueprints | Scalable Multi-Env Delivery |
+| **Component Abstraction** | Helm for Commodity Apps | Maintainability & Standardization |
 | **Operational Readiness** | Manual & Auto Proficiency | Resilient System Management |
 
 ---

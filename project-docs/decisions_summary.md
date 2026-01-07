@@ -45,6 +45,7 @@ graph LR
 - ✅ **Vector Database**: ChromaDB/Weaviate on Kubernetes (Full control over indexing/retrieval).
 - ✅ **RAG Pipeline**: Custom LangChain orchestration (Internal optimization mastery).
 - ✅ **Infrastructure**: Terraform + EKS (Cloud-agnostic automation skills).
+- ✅ **Monitoring**: Helm (kube-prometheus-stack) on K8s (Standardized Enterprise Observability).
 
 ### **AWS Managed (Enterprise Features)**
 - ✅ **LLM**: Amazon Nova 2 (Replaces Claude 3/GPT-4; faster, AWS-native).
