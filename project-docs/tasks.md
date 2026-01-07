@@ -148,22 +148,23 @@
 ## Phase 4: CI/CD Pipeline (Phase Allocation)
 
 ### GitHub Actions - CI (Code)
-- [ ] Create `ci.yml` workflow
-  - [ ] Trigger on pull requests to main
-  - [ ] Set up linting (pylint, black, mypy)
-  - [ ] Set up unit tests (pytest)
-  - [ ] Configure Docker build
-  - [ ] Push Docker images to ECR
-  - [ ] Add security scanning (Trivy)
-  - [ ] Post results to PR
+- [x] Create `ci.yml` workflow
+  - [x] Trigger on pull requests to main
+  - [x] Set up linting (pylint, black, mypy)
+  - [x] Set up unit tests (pytest)
+  - [x] Configure Docker build
+  - [x] Push Docker images to ECR
+  - [x] Add security scanning (Trivy)
+  - [x] Post results to PR
 
 ### GitHub Actions - Data Sync
-- [ ] Create `data-sync.yml` workflow
-  - [ ] Trigger on push to main with changes in `data/documents/**`
-  - [ ] Upload new documents to S3
-  - [ ] Generate embeddings for new documents
-  - [ ] Update vector database
-  - [ ] Add validation and error handling
+### GitHub Actions - Data Sync
+- [x] Create `data-sync.yml` workflow
+  - [x] Trigger on push to main with changes in `data/documents/**`
+  - [x] Upload new documents to S3
+  - [x] Generate embeddings for new documents
+  - [x] Update vector database
+  - [x] Add validation and error handling
 
 ### GitHub Actions - CD Workflows
 - [ ] Create `cd-dev.yml` workflow
