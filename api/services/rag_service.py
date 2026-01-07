@@ -1,11 +1,28 @@
+"""Service for RAG (Retrieval-Augmented Generation) operations."""
+
+import time
 from api.services.vector_store import vector_store
 from api.services.llm_service import llm_service
 from api.prompts.templates import get_prompt
-import time
 
 
 class RAGService:
+    """Orchestrates retrieval and generation for RAG pipeline."""
+
+    # pylint: disable=too-few-public-methods
+
     def query(self, question: str, domain: str = None, use_hybrid=True):
+        """
+        Execute RAG workflow: Retrieve context -> Generate Answer.
+        
+        Args:
+            question: User query
+            domain: Optional domain filter
+            use_hybrid: Whether to use hybrid search (Vector + BM25)
+            
+        Returns:
+            Dictionary with answer, sources, and metadata
+        """
         start_time = time.time()
 
         # 1. Retrieve with hybrid search
