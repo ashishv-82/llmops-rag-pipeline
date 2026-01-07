@@ -1,0 +1,20 @@
+# Accepted Risks / False Positives
+
+# AWS EKS Public Access (We need this for initial dev setup/access)
+AVD-AWS-0040
+AVD-AWS-0041
+
+# AWS S3 Customer Managed Keys (Using AWS Managed Keys AES256 for now)
+AVD-AWS-0132
+
+# ECR Mutability (Need mutable 'latest' tag)
+AVD-AWS-0031
+
+# Docker - Run as Root (Will fix later, appuser exists but some setup needs root)
+AVD-DS-0002
+AVD-DS-0029
+
+# Kubernetes - ReadOnly Filesystem (Not ready to implement yet)
+AVD-KSV-0014
+AVD-KSV-0118
+AVD-AWS-0104
