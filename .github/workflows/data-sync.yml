@@ -1,16 +1,68 @@
-name: Data Sync
-# Trigger sync when documents are added to the data/ folder
+# Data Sync Workflow: Automated Document Ingestion
+# Triggers when documents are committed to data/documents/
+# Automatically uploads to S3 and indexes in ChromaDB
+
+name: Data Sync - Document Processing
+
 on:
   push:
+    branches: [main]  # Only trigger on main branch
     paths:
-      - 'data/documents/**'
+      - 'data/documents/**'  # Watch for changes in document directory
 
 jobs:
-  sync:
+  # Job: Process and sync documents to S3 and Vector DB
+  sync-documents:
+    name: Sync Documents to S3 & Vector DB
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      # Process and upload files via a helper script
-      - name: Sync to API
+      # Fetch code with previous commit for diff comparison
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Get previous commit for diff
+      
+      # Setup Python environment for document processing
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      # Install required libraries for S3 upload and PDF parsing
+      - name: Install dependencies
         run: |
-          python3 scripts/sync_docs.py --url ${{ secrets.API_URL }} --dir data/documents
+          pip install boto3 requests PyPDF2
+      
+      # Authenticate with AWS for S3 access
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+      
+      # Detect which files were added or modified in this commit
+      - name: Get Changed Files
+        id: changed-files
+        run: |
+          # Get list of added/modified files in data/documents/
+          git diff --name-only --diff-filter=AM HEAD~1 HEAD | \
+            grep '^data/documents/' > changed_files.txt || true
+          
+          echo "Changed files:"
+          cat changed_files.txt
+      
+      # Upload documents to S3 and trigger API ingestion
+      - name: Upload to S3 and Trigger Ingestion
+        env:
+          API_URL: ${{ secrets.API_URL }}  # RAG API endpoint
+          S3_BUCKET: ${{ secrets.DOCUMENTS_BUCKET }}  # S3 bucket name
+        run: |
+          python scripts/sync_documents.py \
+            --files changed_files.txt \
+            --bucket $S3_BUCKET \
+            --api-url $API_URL
+      
+      # Verify documents were successfully indexed in ChromaDB
+      - name: Verify Ingestion
+        run: |
+          python scripts/verify_sync.py --files changed_files.txt

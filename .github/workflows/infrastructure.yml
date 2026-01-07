@@ -1,0 +1,118 @@
+# Infrastructure Workflow: Terraform Automation
+# Automates infrastructure changes with plan/apply workflow
+# Ensures all changes are reviewed before applying to AWS
+
+name: Infrastructure - Terraform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'  # Trigger on Terraform file changes
+  workflow_dispatch:  # Allow manual trigger for apply
+
+jobs:
+  # Job 1: Generate Terraform Plan (always runs)
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Install Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0  # Pin version for consistency
+      
+      # Authenticate with AWS for Terraform operations
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+      
+      # Initialize Terraform (download providers, modules)
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+      
+      # Validate Terraform formatting
+      - name: Terraform Format Check
+        working-directory: terraform
+        run: terraform fmt -check
+      
+      # Validate Terraform syntax and configuration
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+      
+      # Generate execution plan showing what will change
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          terraform plan -out=tfplan
+          terraform show -no-color tfplan > plan.txt
+      
+      # Post plan to PR for review (if triggered by PR)
+      - name: Comment PR with Plan
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\`\`\`\n${plan}\n\`\`\``
+            })
+      
+      # Save plan for apply job
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path: terraform/tfplan
+
+  # Job 2: Apply Terraform Changes (manual trigger only)
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: terraform-plan  # Requires plan to complete first
+    if: github.event_name == 'workflow_dispatch'  # Only on manual trigger
+    environment: production  # Requires approval before apply
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Install Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      # Authenticate with AWS for infrastructure changes
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+      
+      # Download the approved plan from plan job
+      - name: Download Plan
+        uses: actions/download-artifact@v3
+        with:
+          name: tfplan
+          path: terraform/
+      
+      # Re-initialize Terraform in apply job
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+      
+      # Apply the approved plan to AWS infrastructure
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply tfplan

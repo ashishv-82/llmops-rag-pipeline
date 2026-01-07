@@ -1,0 +1,100 @@
+# CD Workflow: Gated Deployment to Production
+# Requires manual approval via GitHub Environment protection
+# Supports multiple deployment strategies for zero-downtime releases
+
+name: CD - Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual trigger with approval required
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy'
+        required: true  # Must specify exact version (no defaults)
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        type: choice
+        options:
+          - rolling      # Standard rolling update
+          - blue-green   # Zero-downtime switch
+          - canary       # Gradual rollout
+
+jobs:
+  # Job: Deploy to Production with Approval Gate
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment:  # Requires manual approval before deployment
+      name: production
+      url: https://rag.example.com  # Production URL for verification
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Authenticate with AWS for EKS access
+      - name: Configure AWS & kubectl
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+      
+      # Configure kubectl to connect to production EKS cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name llmops-rag-cluster \
+            --region ap-southeast-2
+      
+      # Strategy 1: Rolling Update (standard Kubernetes rollout)
+      - name: Deploy (Rolling Update)
+        if: github.event.inputs.deployment_strategy == 'rolling'
+        run: |
+          kubectl set image deployment/rag-api \
+            api=${{ secrets.ECR_REGISTRY }}/llmops-rag-api:${{ github.event.inputs.image_tag }} \
+            -n prod
+          
+          # Wait up to 10 minutes for rollout to complete
+          kubectl rollout status deployment/rag-api -n prod --timeout=10m
+      
+      # Strategy 2: Blue-Green Deployment (instant switch, zero downtime)
+      - name: Deploy (Blue-Green)
+        if: github.event.inputs.deployment_strategy == 'blue-green'
+        run: |
+          # Create green deployment with new version
+          kubectl apply -f kubernetes/prod/deployment-green.yaml
+          
+          # Wait for green to be ready
+          kubectl wait --for=condition=available deployment/rag-api-green -n prod --timeout=5m
+          
+          # Switch service to green (instant cutover)
+          kubectl patch service rag-api-service -n prod \
+            -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Delete blue deployment after verification period
+          sleep 60
+          kubectl delete deployment rag-api-blue -n prod
+      
+      # Verify production deployment health
+      - name: Health Check
+        run: |
+          API_URL=${{ secrets.PROD_API_URL }}
+          
+          # Retry health check 5 times with 10s intervals
+          for i in {1..5}; do
+            if curl -f $API_URL/health; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            sleep 10
+          done
+          
+          echo "❌ Health check failed"
+          exit 1
+      
+      # Automatic rollback if any step fails
+      - name: Rollback on Failure
+        if: failure()  # Runs only if previous steps failed
+        run: |
+          echo "⚠️ Deployment failed, initiating automatic rollback..."
+          kubectl rollout undo deployment/rag-api -n prod
+          kubectl rollout status deployment/rag-api -n prod

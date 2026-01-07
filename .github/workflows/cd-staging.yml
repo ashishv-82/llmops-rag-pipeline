@@ -1,0 +1,54 @@
+# CD Workflow: Manual Deployment to Staging Environment
+# Triggers via manual workflow dispatch (no auto-deploy)
+# Allows specifying which image tag to deploy for testing
+
+name: CD - Deploy to Staging
+
+on:
+  workflow_dispatch:  # Manual trigger only
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (default: latest)'
+        required: false
+        default: 'latest'  # Can specify commit SHA for specific version
+
+jobs:
+  # Job: Deploy to Staging for Integration Testing
+  deploy-staging:
+    name: Deploy to Staging Environment
+    runs-on: ubuntu-latest
+    environment: staging  # Requires approval if configured
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Authenticate with AWS for EKS access
+      - name: Configure AWS & kubectl
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+      
+      # Configure kubectl to connect to EKS cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name llmops-rag-cluster \
+            --region ap-southeast-2
+      
+      # Deploy specified image tag to staging namespace
+      - name: Deploy to Staging
+        run: |
+          kubectl set image deployment/rag-api \
+            api=${{ secrets.ECR_REGISTRY }}/llmops-rag-api:${{ github.event.inputs.image_tag }} \
+            -n staging
+          
+          # Wait for rollout to complete
+          kubectl rollout status deployment/rag-api -n staging --timeout=5m
+      
+      # Run comprehensive integration tests against staging
+      - name: Run Integration Tests
+        run: |
+          pytest tests/integration/ \
+            --env=staging \
+            --api-url=${{ secrets.STAGING_API_URL }}
