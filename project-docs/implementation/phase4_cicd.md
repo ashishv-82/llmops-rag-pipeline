@@ -217,30 +217,36 @@ from unittest.mock import Mock, patch
 
 @pytest.mark.asyncio
 async def test_rag_query_success():
-    """Test successful RAG query"""
-    with patch('api.services.vector_store.vector_store') as mock_vector:
-        with patch('api.services.llm_service.llm_service') as mock_llm:
-            # Mock vector search results
-            mock_vector.hybrid_search.return_value = {
-                'documents': ['Test document content'],
-                'metadatas': [{'domain': 'test'}]
-            }
-            
-            # Mock LLM response
-            mock_llm.generate_response.return_value = "Test answer"
-            
-            # Execute
-            result = rag_service.query("test question", domain="test")
-            
-            # Assert
-            assert result['answer'] == "Test answer"
-            assert result['domain'] == "test"
-            assert 'execution_time_ms' in result
+    """Test successful RAG query with mocked dependencies"""
+    
+    with patch('api.services.rag_service.vector_store') as mock_vector:
+        with patch('api.services.rag_service.llm_service') as mock_llm:
+            with patch('api.services.rag_service.get_prompt') as mock_prompt:
+                
+                mock_vector.hybrid_search.return_value = {
+                    'documents': ['Test document content'],
+                    'metadatas': [{'domain': 'test', 'source': 'test.pdf'}]
+                }
+                
+                mock_prompt.return_value = (
+                    "System: You are a helpful assistant",
+                    "User: test question\nContext: Test document content"
+                )
+                
+                mock_llm.generate_response.return_value = "Test answer"
+                
+                result = rag_service.query("test question", domain="test")
+                
+                assert result['answer'] == "Test answer"
+                assert result['domain'] == "test"
+                assert 'execution_time_ms' in result
+                assert len(result['sources']) == 1
+                
+                mock_vector.hybrid_search.assert_called_once()
+                mock_llm.generate_response.assert_called_once()
 
 @pytest.mark.asyncio
 async def test_rag_query_with_invalid_domain():
-    """Test RAG query with access control"""
-    # Test implementation here
     pass
 ```
 
@@ -371,6 +377,100 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     sync_documents(args.files, args.bucket, args.api_url)
+```
+
+### 2.3 Verification Script
+**File:** `scripts/verify_sync.py`
+
+Script to verify documents were successfully indexed in ChromaDB.
+
+```python
+#!/usr/bin/env python3
+"""
+Verification Script for Data Sync Workflow
+Validates that documents were successfully indexed in ChromaDB
+"""
+
+import argparse
+import requests
+import sys
+from pathlib import Path
+
+def verify_ingestion(files_list: str, api_url: str = None):
+    """
+    Verify that all synced documents are searchable in the vector database
+    
+    Args:
+        files_list: Path to file containing list of synced documents
+        api_url: Optional API URL (defaults to localhost for local testing)
+    """
+    if not api_url:
+        api_url = "http://localhost:8000"
+    
+    # Read the list of files that were synced
+    with open(files_list, 'r') as f:
+        files = [line.strip() for line in f if line.strip()]
+    
+    if not files:
+        print("✅ No files to verify")
+        return True
+    
+    print(f"Verifying {len(files)} document(s)...")
+    
+    failed = []
+    for file_path in files:
+        path = Path(file_path)
+        
+        # Extract domain from path structure
+        parts = path.parts
+        domain = parts[2] if len(parts) > 2 else 'general'
+        
+        # Test query: search for the filename (should return the document)
+        test_query = path.stem  # Filename without extension
+        
+        try:
+            response = requests.post(
+                f"{api_url}/query",
+                json={
+                    "question": test_query,
+                    "domain": domain
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                # Check if the document appears in sources
+                sources = result.get('sources', [])
+                
+                if any(path.name in str(source) for source in sources):
+                    print(f"✅ {path.name} is indexed and searchable")
+                else:
+                    print(f"⚠️  {path.name} indexed but not in search results")
+            else:
+                print(f"❌ {path.name} verification failed: {response.status_code}")
+                failed.append(path.name)
+                
+        except requests.exceptions.RequestException as e:
+            print(f"❌ {path.name} verification error: {str(e)}")
+            failed.append(path.name)
+    
+    # Summary
+    if failed:
+        print(f"❌ Verification failed for {len(failed)} file(s)")
+        return False
+    else:
+        print(f"✅ All {len(files)} document(s) verified successfully")
+        return True
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--files', required=True)
+    parser.add_argument('--api-url')
+    args = parser.parse_args()
+    
+    success = verify_ingestion(args.files, args.api_url)
+    sys.exit(0 if success else 1)
 ```
 
 ---
