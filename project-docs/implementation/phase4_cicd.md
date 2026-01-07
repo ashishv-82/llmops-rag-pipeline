@@ -868,44 +868,18 @@ gh variable list
 
 ### 4.5.2 Commit and Push Workflow Files
 
-**1. Add all workflow files:**
 ```bash
+# Add, commit, and push all workflows
 git add .github/workflows/
-git status
-# Should see: ci.yml, data-sync.yml, deploy-dev.yml, deploy-prod.yml, terraform.yml
-```
-
-**2. Commit workflows:**
-```bash
-git commit -m "ci: add GitHub Actions workflows for CI/CD pipeline
-
-- Added CI workflow for linting and testing
-- Added data sync workflow for document ingestion
-- Added deployment workflows for dev and prod
-- Added Terraform automation workflow"
-```
-
-**3. Push to trigger workflows:**
-```bash
+git commit -m "ci: add GitHub Actions workflows for CI/CD pipeline"
 git push origin main
 ```
 
-### 4.5.3 Verify Workflows Appear in GitHub Actions
+### 4.5.3 Verify Workflows
 
-**1. Check Actions tab:**
-```
-https://github.com/YOUR_USERNAME/llmops-rag-pipeline/actions
-```
+Check `https://github.com/YOUR_USERNAME/llmops-rag-pipeline/actions` to confirm all workflows appear:
+- ✅ CI Pipeline, Data Sync, Deploy to Dev/Prod, Terraform Plan/Apply
 
-You should see:
-- ✅ CI Pipeline
-- ✅ Data Sync
-- ✅ Deploy to Dev
-- ✅ Deploy to Prod
-- ✅ Terraform Plan/Apply
-
-**2. Monitor first run:**
-The CI workflow should trigger automatically on push. Watch it complete.
 
 ### 4.5.4 Test CI Workflow Manually
 
