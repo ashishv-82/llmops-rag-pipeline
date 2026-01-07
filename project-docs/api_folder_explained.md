@@ -35,8 +35,8 @@ api/
 ├── services/                    # Business logic
 │   ├── embedding_service.py     # Titan Embeddings V2
 │   ├── llm_service.py           # Amazon Nova 2
-│   ├── vector_store_service.py  # ChromaDB/Weaviate
-│   ├── cache_service.py         # Redis semantic caching
+│   ├── vector_store.py          # ChromaDB implementation
+│   │   ├── cache_service.py     # [Planned Phase 6] Redis semantic caching
 │   └── guardrails_service.py    # Bedrock Guardrails
 │
 ├── models/                      # Pydantic schemas
@@ -90,15 +90,15 @@ These files define the public endpoints of your system.
 
 These files contain the implementation of your LLMOps and MLOps strategies.
 
-### `llm_service.py` - Intelligent Routing
-**Strategy:** Cost Optimization.
+### `llm_service.py` - LLM Interaction
+**Current**: Amazon Nova 2 Integration.
+**Future (Phase 6)**: Intelligent Routing (Lite vs Pro).
 
 <details>
 <summary>▶️ <b>Technical Details (Click to expand)</b></summary>
 
-- `select_model()`: Routes simple queries to Lite and complex to Pro.
-- `apply_domain_prompt()`: Context-aware prompt injection.
-- **Cost Tracking:** Logs tokens per request.
+- `generate_response()`: Invokes Bedrock `global.amazon.nova-2-lite-v1:0`.
+- **Global Inference Profile**: Handles cross-region routing for resilience.
 </details>
 
 ### `embedding_service.py` - Vector Store
@@ -111,14 +111,12 @@ These files contain the implementation of your LLMOps and MLOps strategies.
 - `calculate_similarity()`: Logic for semantic cache hits.
 </details>
 
-### `cache_service.py` - Semantic Caching
+### `cache_service.py` - [Planned Phase 6]
 **Strategy:** Speed & 70% Cost Reduction.
 
 <details>
 <summary>▶️ <b>Technical Details (Click to expand)</b></summary>
-
-- `get_cached_response()`: Checks similarity > 0.95.
-- `cache_response()`: Stores answer + embedding hash.
+*Not yet implemented. Will use Redis to store (Question_Hash -> Response).*
 </details>
 
 ### `vector_store_service.py` - Storage
@@ -147,24 +145,17 @@ These files contain the implementation of your LLMOps and MLOps strategies.
 
 Knowing how these files collaborate is key to troubleshooting:
 
-```mermaid
-sequenceDiagram
     participant U as User
     participant R as Router (query.py)
-    participant C as Cache (Redis)
-    participant V as Vector Store
+    participant V as Vector Store (Chroma)
     participant L as LLM (Bedrock)
 
     U->>R: POST /query
-    R->>C: Check Semantic Cache
-    C-->>R: Miss
-    R->>V: Hybrid Search
+    R->>V: Hybrid Search (BM25 + Dense)
     V-->>R: Top-K Context
-    R->>L: Generate Response (Intelligent Route)
+    R->>L: Generate Response (Nova 2)
     L-->>R: Raw Answer
-    R->>C: Store Answer
     R-->>U: Final Answer + Citations
-```
 
 ---
 
