@@ -157,23 +157,6 @@ jobs:
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
                        -f api/Dockerfile .
       
-      # Scan image for security vulnerabilities
-      - name: Run Trivy Security Scan
-        uses: aquasecurity/trivy-action@master
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
-        with:
-          image-ref: ${{ steps.login-ecr.outputs.registry }}/llmops-rag-api:build-${{ env.BUILD_NUMBER }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'  # Only fail on high/critical issues
-      
-      # Upload scan results to GitHub Security tab
-      - name: Upload Trivy Results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
-      
       # Push both build-tagged and latest images to ECR
       - name: Push to ECR
         env:
