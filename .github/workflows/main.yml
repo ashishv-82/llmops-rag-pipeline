@@ -13,17 +13,17 @@ on:
 jobs:
   # 1. CI Workflow (Lint, Test, Build)
   build:
-    name: Build & Test
+    name: Build
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 
   # 2. CD Workflow (Deploy to Dev)
   deploy-dev:
     name: Deploy to Dev
-    needs: build-test
+    needs: build
     if: success()
     uses: ./.github/workflows/cd-dev.yml
     with:
-      ecr_registry: ${{ needs.build-test.outputs.registry }}
+      ecr_registry: ${{ needs.build.outputs.registry }}
       build_number: ${{ github.run_number }}
     secrets: inherit
