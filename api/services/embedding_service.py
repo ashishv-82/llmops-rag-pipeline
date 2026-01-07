@@ -17,10 +17,10 @@ class EmbeddingService:
     def generate_embedding(self, text: str) -> List[float]:
         """
         Generate vector embedding for given text.
-        
+
         Args:
             text: Input string
-            
+
         Returns:
             List of floats representing the embedding vector
         """

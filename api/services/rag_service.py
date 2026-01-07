@@ -14,12 +14,12 @@ class RAGService:
     def query(self, question: str, domain: str = None, use_hybrid=True):
         """
         Execute RAG workflow: Retrieve context -> Generate Answer.
-        
+
         Args:
             question: User query
             domain: Optional domain filter
             use_hybrid: Whether to use hybrid search (Vector + BM25)
-            
+
         Returns:
             Dictionary with answer, sources, and metadata
         """

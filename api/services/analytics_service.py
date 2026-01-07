@@ -17,7 +17,7 @@ class AnalyticsService:
     def track_query(self, domain: str, execution_time: float):
         """
         Log query execution metrics.
-        
+
         Args:
             domain: The knowledge domain accessed
             execution_time: Time taken to process query in seconds

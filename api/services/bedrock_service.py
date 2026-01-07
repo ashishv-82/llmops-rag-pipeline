@@ -7,6 +7,7 @@ from api.config import settings
 
 class BedrockClient:
     """Client for invoking AWS Bedrock models."""
+
     # pylint: disable=too-few-public-methods
 
     def __init__(self):
@@ -18,11 +19,11 @@ class BedrockClient:
     def invoke(self, model_id: str, body: dict) -> dict:
         """
         Invoke Bedrock model with given model ID and body.
-        
+
         Args:
             model_id: The ID of the model to invoke
             body: The JSON body payload
-            
+
         Returns:
             The parsed JSON response body
         """

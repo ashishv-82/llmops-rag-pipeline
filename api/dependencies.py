@@ -10,11 +10,11 @@ async def verify_domain_access(
 ):
     """
     Check if the user has permission to access the requested domain.
-    
+
     Args:
         x_user_role: User role from header
         domain: Target knowledge domain
-    
+
     Raises:
         HTTPException: If access is denied
     """

@@ -17,11 +17,11 @@ class LLMService:
     def generate_response(self, prompt: str, system_prompt: str = "") -> str:
         """
         Generate a response using the configured LLM.
-        
+
         Args:
             prompt: User input prompt
             system_prompt: Optional system context
-            
+
         Returns:
             Generated text response
         """

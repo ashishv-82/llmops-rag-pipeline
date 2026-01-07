@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """Application settings"""
-    
+
     # pylint: disable=too-few-public-methods
 
     # Application
@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     class Config:
         """Pydantic configuration."""
+
         env_file = ".env"
         case_sensitive = False
 
