@@ -9,6 +9,7 @@ on:
       - 'kubernetes/**'
       - 'tests/**'
       - '.github/workflows/**'
+      - '!data/**'  # Explicitly ignore data changes (handled by data-sync.yml)
 
 jobs:
   # 1. CI Workflow (Lint, Test, Build)
