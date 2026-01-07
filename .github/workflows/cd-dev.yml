@@ -5,11 +5,16 @@
 name: CD - Deploy to Dev
 
 on:
-  push:
-    branches: [main]  # Auto-deploy on merge to main
-    paths:
-      - 'api/**'           # Deploy when API code changes
-      - 'kubernetes/**'    # Deploy when K8s manifests change
+  workflow_call:
+    inputs:
+      ecr_registry:
+        required: true
+        type: string
+        description: "ECR Registry URL"
+      build_number:
+        required: true
+        type: string
+        description: "Build number to deploy"
 
 jobs:
   # Job: Deploy to Development Environment
@@ -40,11 +45,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      # Update the deployment with the new image (built in CI)
       - name: Update Deployment Image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          BUILD_NUMBER: ${{ github.run_number }}  # Match CI build number
+          ECR_REGISTRY: ${{ inputs.ecr_registry }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           kubectl set image deployment/rag-api \
             api=$ECR_REGISTRY/llmops-rag-api:build-$BUILD_NUMBER \

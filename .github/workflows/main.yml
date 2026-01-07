@@ -1,0 +1,27 @@
+# Main Orchestration Workflow
+name: Main Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'kubernetes/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+jobs:
+  # 1. Reuse CI Workflow
+  call-ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit  # Pass all secrets (AWS_ACCESS_KEY_ID, etc.)
+
+  # 2. Reuse CD Workflow (Depends on CI)
+  call-cd-dev:
+    needs: call-ci
+    if: success()  # Only run if CI passes
+    uses: ./.github/workflows/cd-dev.yml
+    with:
+      ecr_registry: ${{ needs.call-ci.outputs.registry }}
+      build_number: ${{ github.run_number }}
+    secrets: inherit

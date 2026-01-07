@@ -3,14 +3,21 @@
 name: CI - Code Quality & Build
 
 on:
+  workflow_call:
+    outputs:
+      registry:
+        description: "ECR Registry URL"
+        value: ${{ jobs.docker-build.outputs.registry }}
+
+  # Keep pull_request for independent checks if desired, or remove to force use of main.yml.
+  # User requested main.yml calls both. Standard practice: CI runs on PRs independently too.
   pull_request:
     branches: [main]
     paths:
-      - 'api/**'                # API source code changes
-      - 'tests/**'              # Test file changes
-      - 'api/requirements.txt'  # Dependency changes
-      - 'Dockerfile'            # Container definition changes
-  workflow_dispatch:  # Allow manual trigger from GitHub UI
+      - 'api/**'
+      - 'tests/**'
+      - 'api/requirements.txt'
+      - 'Dockerfile'
 
 env:
   PYTHON_VERSION: '3.11'  # Match production Python version
@@ -93,7 +100,9 @@ jobs:
   docker-build:
     name: Docker Build & Push
     runs-on: ubuntu-latest
-    needs: test  # Only run if tests pass
+    needs: test
+    outputs:
+      registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
       - uses: actions/checkout@v4
       
