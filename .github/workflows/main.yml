@@ -11,17 +11,19 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  # 1. Reuse CI Workflow
-  call-ci:
+  # 1. CI Workflow (Lint, Test, Build)
+  build:
+    name: Build & Test
     uses: ./.github/workflows/ci.yml
-    secrets: inherit  # Pass all secrets (AWS_ACCESS_KEY_ID, etc.)
+    secrets: inherit
 
-  # 2. Reuse CD Workflow (Depends on CI)
-  call-cd-dev:
-    needs: call-ci
-    if: success()  # Only run if CI passes
+  # 2. CD Workflow (Deploy to Dev)
+  deploy-dev:
+    name: Deploy to Dev
+    needs: build-test
+    if: success()
     uses: ./.github/workflows/cd-dev.yml
     with:
-      ecr_registry: ${{ needs.call-ci.outputs.registry }}
+      ecr_registry: ${{ needs.build-test.outputs.registry }}
       build_number: ${{ github.run_number }}
     secrets: inherit
