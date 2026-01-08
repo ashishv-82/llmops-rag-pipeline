@@ -178,13 +178,28 @@ module "monitoring" {
 }
 ```
 
-### 1.3 Apply Infrastructure
+### 1.3 Integration & Deployment
 
 ```bash
 cd terraform/environments/dev
 terraform init
 terraform apply -auto-approve
 ```
+
+**Immediate Verification:**
+
+1.  **Check Pods:**
+    ```bash
+    kubectl get pods -n monitoring
+    # Wait until all pods are 'Running'
+    ```
+
+2.  **Access Grafana:**
+    ```bash
+    kubectl port-forward svc/prometheus-grafana 3200:80 -n monitoring
+    ```
+    - Open [http://localhost:3200](http://localhost:3200)
+    - Login: `admin` / `admin`
 
 ---
 
