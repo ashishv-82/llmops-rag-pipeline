@@ -212,10 +212,10 @@
 - [x] Define custom metrics (Cost, Tokens, Latency) in `api/utils/metrics.py`
 - [x] Expose `/metrics` endpoint
 - [x] Create ServiceMonitor for Prometheus scraping
-- [ ] Integrate cost tracking in RAG service
-- [ ] Integrate token tracking in RAG service
-- [ ] Integrate latency tracking in query endpoint
-- [ ] Test metrics with real API requests
+- [x] Integrate cost tracking in RAG service
+- [x] Integrate token tracking in RAG service
+- [x] Integrate latency tracking in query endpoint
+- [x] Test metrics with real API requests
 
 ### Cost Tracking Dashboard (Grafana)
 - [ ] Create cost per query visualization
