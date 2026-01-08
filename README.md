@@ -106,6 +106,25 @@ llmops-rag-pipeline/
 
 ---
 
+## 🏗️ Architecture Inventory (Pods & Services)
+
+Reference this list when debugging or connecting services.
+
+### Namespace: `dev` (Application Layer)
+| Service Name | Port | Pod Name | Purpose |
+| :--- | :--- | :--- | :--- |
+| `rag-api-service` | 8000 | `rag-api-*` | **The Brain**: FastAPI application (Python). |
+| `chromadb-service` | 8000 | `chromadb-*` | **The Memory**: Vector Database (Chroma). |
+
+### Namespace: `monitoring` (Observability Layer)
+| Service Name | Port | Pod Name | Purpose |
+| :--- | :--- | :--- | :--- |
+| `prometheus-grafana` | **80** | `prometheus-grafana-*` | **Dashboard**: The UI (Login: admin/admin). |
+| `prometheus-kube-prometheus-prometheus` | 9090 | `prometheus-prometheus-kube-prometheus-prometheus-0` | **Database**: Metric storage. |
+| `prometheus-kube-prometheus-alertmanager` | 9093 | `alertmanager-prometheus-kube-prometheus-alertmanager-0` | **Alerting**: Notification dispatcher. |
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
