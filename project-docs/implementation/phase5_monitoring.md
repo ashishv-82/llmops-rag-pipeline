@@ -324,7 +324,6 @@ Since we modified the code, we must rebuild the image **inside** Minikube's Dock
     ```bash
     kubectl rollout restart deployment/rag-api -n dev
     ```
-```
 
 ---
 
