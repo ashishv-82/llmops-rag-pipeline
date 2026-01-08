@@ -1306,6 +1306,25 @@ export PYTHONPATH=.
 python tests/test_drift_simulation.py
 ```
 
+### 6.4 RAG Integration
+**File:** `api/services/rag_service.py`
+
+Integrate drift detection into the main query flow.
+
+```python
+# ... imports
+from api.monitoring.drift_detector import drift_detector
+
+class RAGService:
+    # ...
+    def query(self, question: str, domain: str = None, use_hybrid=True):
+        # Record query for drift detection
+        drift_detector.record_query(question, domain or 'general')
+        
+        start_time = time.time()
+        # ...
+```
+
 ---
 
 ## Part 6.5: Integration & Deployment
