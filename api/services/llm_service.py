@@ -14,7 +14,7 @@ class LLMService:
         # Check if Bedrock Guardrails are enabled
         self.use_guardrails = hasattr(settings, "guardrail_id")
 
-    def generate_response(self, prompt: str, system_prompt: str = "") -> str:
+    def generate_response(self, prompt: str, system_prompt: str = "", model_id: str = None) -> str:
         """
         Generate a response using the configured LLM.
 
@@ -41,7 +41,8 @@ class LLMService:
 
         try:
             # Invoke model and extract generated text
-            response = bedrock_client.invoke(self.model_id, body, **request_kwargs)
+            target_model = model_id or self.model_id
+            response = bedrock_client.invoke(target_model, body, **request_kwargs)
             return response["output"]["message"]["content"][0]["text"]
         except Exception as e:
             return f"Error invoking model: {str(e)}"

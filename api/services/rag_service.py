@@ -3,8 +3,11 @@
 import time
 from api.services.vector_store import vector_store
 from api.services.llm_service import llm_service
+from api.services.embedding_service import embedding_service
+from api.services.routing_service import routing_service
+from api.services.cache_service import cache_service
 from api.prompts.templates import get_prompt
-from api.utils.metrics import track_cost, track_tokens, RAG_REQUEST_LATENCY
+from api.utils.metrics import track_cost, track_tokens, RAG_REQUEST_LATENCY, CACHE_SAVINGS
 
 
 class RAGService:
@@ -26,10 +29,48 @@ class RAGService:
         """
         start_time = time.time()
 
-        # 1. Retrieve with hybrid search
+        # 1. Check cache first
+        query_embedding = embedding_service.generate_embedding(question)
+        
+        cached_response = cache_service.find_similar_response(
+            question,
+            query_embedding,
+            domain or 'general'
+        )
+        
+        if cached_response:
+            response_text, similarity = cached_response
+            
+            # Estimate saved cost (avg query cost ~$0.01)
+            saved_cost = 0.01
+            CACHE_SAVINGS.inc(saved_cost)
+            
+            execution_time = time.time() - start_time
+            
+            return {
+                "question": question,
+                "answer": response_text,
+                "cached": True,
+                "cache_similarity": similarity,
+                "cost": 0.0,
+                "cost_saved": saved_cost,
+                "execution_time_ms": round(execution_time * 1000, 2),
+                # Return empty/default values for other fields
+                "sources": [],
+                "domain": domain,
+            }
+
+        # 2. Determine model tier via routing
+        model_tier = routing_service.analyze_complexity(question, domain or 'general')
+        # Map tier to actual model ID
+        # lite -> global.amazon.nova-2-lite-v1:0
+        # pro  -> global.amazon.nova-2-pro-v1:0
+        model_id = f"global.amazon.nova-2-{model_tier}-v1:0"
+
+        # 3. Retrieve with hybrid search
         retrieval_start = time.time()
         filters = {"domain": domain} if domain else None
-
+        
         if use_hybrid:
             results = vector_store.hybrid_search(
                 question, top_k=3, filter=filters, alpha=0.7  # 70% vector, 30% BM25
@@ -52,9 +93,17 @@ class RAGService:
             domain or "general", context_text, question
         )
 
-        # 3. Generate with guardrails
+        # 5. Generate with guardrails and selected model
         generation_start = time.time()
-        answer = llm_service.generate_response(user_prompt, system_prompt)
+        answer = llm_service.generate_response(user_prompt, system_prompt, model_id=model_id)
+        
+        # Cache the response
+        cache_service.set_response(
+            question,
+            query_embedding,
+            answer,
+            domain or 'general'
+        )
         
         # Track generation latency
         generation_duration = time.time() - generation_start
@@ -82,6 +131,8 @@ class RAGService:
             "answer": answer,
             "sources": results["metadatas"],
             "domain": domain,
+            "model_used": model_tier,
+            "cached": False,
             "execution_time_ms": round(execution_time * 1000, 2),
         }
 
