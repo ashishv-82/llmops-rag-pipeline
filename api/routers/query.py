@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from api.services.rag_service import rag_service
+from api.services.rag_service import RAGService
 from api.utils.metrics import RAG_REQUEST_LATENCY
 import time
 
 """ Router for handling RAG queries and domain-specific search """
 
 router = APIRouter()
+rag_service = RAGService()
 
 
 # Schema for RAG query requests

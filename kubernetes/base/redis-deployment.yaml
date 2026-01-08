@@ -1,0 +1,60 @@
+# Redis Deployment for Semantic Caching (60-80% cost reduction)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        ports:
+        - containerPort: 6379
+        command:
+          - redis-server
+          - --maxmemory
+          - 2gb  # LRU eviction when full
+          - --maxmemory-policy
+          - allkeys-lru
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: redis-pvc
+---
+# Redis Service (Access: redis-service.dev.svc.cluster.local:6379)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: dev
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+# Persistent storage for cache durability
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: dev
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

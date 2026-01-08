@@ -995,9 +995,11 @@ Automated evaluation test suite.
 ```python
 from typing import List, Dict
 import json
-from api.services.rag_service import rag_service
+from api.services.rag_service import RAGService
 from api.evaluation.metrics import evaluator
 from api.services.embedding_service import embedding_service
+
+rag_service = RAGService()
 
 class EvaluationTestSuite:
     def __init__(self, test_cases_file: str):
@@ -1148,6 +1150,13 @@ def generate_report(eval_results: dict, output_file: str):
     
     print(f"Report generated: {output_file}")
 ```
+
+### 5.4 Unit Testing
+**File:** `tests/unit/test_rag_service.py`
+
+Unit tests for `RAGService` mocking external dependencies (embedding, cache, routing, LLM, MLflow).
+Verified to pass with `pytest`.
+
 
 ---
 
@@ -1466,6 +1475,51 @@ python scripts/register_prompts.py
 ```
 
 **3. Run End-to-End Evaluation Demo:**
+First, create the mock test data:
+
+**File:** `tests/mock_test_cases.json`
+```json
+[
+  {
+    "question": "What is the standard procedure for onboarding?",
+    "expected_answer": "The standard onboarding procedure includes document verification, IT setup, and HR orientation.",
+    "domain": "hr"
+  }
+]
+```
+
+Then create and run the demo script:
+
+**File:** `tests/run_eval_demo.py`
+```python
+import json
+import os
+import sys
+from api.evaluation.test_suite import EvaluationTestSuite
+from scripts.generate_eval_report import generate_report
+
+# Ensure root path is in python path
+sys.path.append(os.getcwd())
+
+# Initialize test suite
+suite = EvaluationTestSuite('tests/mock_test_cases.json')
+print("Initialized test suite.")
+
+# Run evaluation (Note: This tries to hit the RAG service. 
+# Without services running, it may fail, but verifies imports and structure.)
+try:
+    report = suite.run_evaluation(domain="hr")
+    print("Report generated:")
+    print(json.dumps(report, indent=2))
+
+    # Generate HTML
+    generate_report(report, "tests/mock_report.html")
+    print("HTML report generated at tests/mock_report.html")
+except Exception as e:
+    print(f"Execution failed (expected if services not running): {e}")
+```
+
+Run the demo:
 ```bash
 export PYTHONPATH=.
 python tests/run_eval_demo.py

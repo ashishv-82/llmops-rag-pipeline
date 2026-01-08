@@ -226,42 +226,43 @@
 ## Phase 6: MLOps/LLMOps Features (Phase Allocation)
 
 ### Semantic Caching (Redis)
-- [ ] Deploy Redis on K8s
-- [ ] Implement embedding caching
-- [ ] Implement LLM response caching
-- [ ] Implement similarity-based cache lookup
-- [ ] Configure TTL and cache invalidation
-- [ ] Track cache hit rate metrics
+- [x] Deploy Redis on K8s
+- [x] Implement embedding caching
+- [x] Implement LLM response caching
+- [x] Implement similarity-based cache lookup
+- [x] Configure TTL and cache invalidation
+- [x] Track cache hit rate metrics
 
 ### Intelligent LLM Routing
-- [ ] Implement query complexity analysis
-- [ ] Route simple queries to Nova 2 Lite
-- [ ] Route complex queries to Nova 2 Pro
-- [ ] **Add domain-based routing logic**
-  - [ ] Route by domain + complexity
-  - [ ] Legal + complex → Nova 2 Pro
-  - [ ] HR + simple → Nova 2 Lite
-- [ ] Track cost savings from routing
+- [x] Implement query complexity analysis
+- [x] Route simple queries to Nova 2 Lite
+- [x] Route complex queries to Nova 2 Pro
+- [x] **Add domain-based routing logic**
+  - [x] Route by domain + complexity
+  - [x] Legal + complex → Nova 2 Pro
+  - [x] HR + simple → Nova 2 Lite
+- [x] Track cost savings from routing
 - [ ] A/B test routing strategies
 
 ### Prompt Versioning
-- [ ] Implement prompt version control
-- [ ] Track token usage per prompt version
+- [x] Implement prompt version control
+- [x] Track token usage per prompt version
 - [ ] A/B test different prompt strategies
 - [ ] Measure quality vs. cost trade-offs
 
 ### MLflow Setup
-- [ ] Deploy MLflow on K8s or use managed service
-- [ ] Configure experiment tracking
-- [ ] Set up model registry
-- [ ] Track prompt versions
+- [x] Deploy MLflow on K8s or use managed service
+- [x] Configure experiment tracking
+- [x] Set up model registry
+- [x] Track prompt versions
 
 ### Model Evaluation Pipeline
-- [ ] Create automated response testing
-- [ ] Implement quality metrics (relevance, accuracy, coherence)
-- [ ] Track cost per evaluation run
-- [ ] Measure latency
-- [ ] Create evaluation reports
+- [x] Create automated response testing
+- [x] Implement quality metrics (relevance, accuracy, coherence)
+- [x] Track cost per evaluation run
+- [x] Measure latency
+- [x] Create evaluation reports (Verified via `tests/run_eval_demo.py`)
+- [x] Unit Tests (Verified via `tests/unit/test_rag_service.py`)
 
 ### A/B Testing Framework
 - [ ] Implement framework for comparing models

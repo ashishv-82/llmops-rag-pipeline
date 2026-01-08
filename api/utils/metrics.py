@@ -20,6 +20,30 @@ RAG_REQUEST_LATENCY = Histogram(
     buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
 )
 
+# Cache Metrics (Phase 6)
+CACHE_HIT_RATE = Counter(
+    'rag_cache_hits_total',
+    'Cache hit/miss count',
+    ['type', 'hit']  # type: embedding/response, hit: true/false
+)
+
+CACHE_SAVINGS = Counter(
+    'rag_cache_savings_dollars',
+    'Cost savings from cache hits'
+)
+
+# Routing Metrics (Phase 6)
+ROUTING_DECISIONS = Counter(
+    'rag_routing_decisions_total',
+    'Model routing decisions',
+    ['domain', 'model_tier']
+)
+
+ROUTING_SAVINGS = Counter(
+    'rag_routing_savings_dollars',
+    'Cost savings from intelligent routing'
+)
+
 def track_cost(amount: float, model: str, env: str = "dev"):
     """Increment the cost counter."""
     RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
