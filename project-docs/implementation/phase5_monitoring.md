@@ -150,6 +150,24 @@ alertmanager:
 
 ### 1.2 Terraform Configuration
 
+**File:** `terraform/environments/dev/providers.tf`
+
+```hcl
+provider "aws" {
+  region = "ap-southeast-2"
+}
+
+provider "helm" {
+  kubernetes = {
+    config_path = "~/.kube/config"
+  }
+}
+
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+}
+```
+
 **File:** `terraform/environments/dev/main.tf`
 
 ```hcl
@@ -289,9 +307,18 @@ additionalPrometheusRulesMap:
 ### 4.1 Verification Checklist
 
 - [ ] **Terraform Apply**: `terraform apply` succeeds without errors.
-- [ ] **Pods Running**: `kubectl get pods -n monitoring` shows prometheus-operator, grafana, alertmanager.
-- [ ] **Grafana Access**: Can login to Grafana UI.
-- [ ] **Metrics Endpoint**: API returns metrics at `/metrics`.
+- [ ] **Pods Running**:
+  ```bash
+  kubectl get pods -n monitoring
+  # Expect: prometheus-server, grafana, alertmanager, operator (All Running)
+  ```
+- [ ] **Grafana Access**:
+  ```bash
+  kubectl port-forward svc/prometheus-grafana 3200:80 -n monitoring
+  ```
+  - Open [http://localhost:3200](http://localhost:3200)
+  - Login: `admin` / `admin`
+- [ ] **Metrics Endpoint**: API returns metrics at `/metrics` (After Part 2).
 - [ ] **Scraping Active**: Prometheus Targets page shows `rag-dev` target is UP.
 - [ ] **Dashboard Data**: Making a request to the API populates the Grafana graphs.
 
