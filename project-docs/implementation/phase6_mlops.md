@@ -751,7 +751,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlflow
-  namespace: mlops
+  namespace: dev
+  labels:
+    app: mlflow
 spec:
   replicas: 1
   selector:
@@ -764,24 +766,7 @@ spec:
     spec:
       containers:
       - name: mlflow
-        image: ghcr.io/mlflow/mlflow:v2.9.2
-        ports:
-        - containerPort: 5000
-        env:
-        - name: MLFLOW_BACKEND_STORE_URI
-          value: "postgresql://mlflow:password@postgres:5432/mlflow"
-        - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
-          value: "s3://llmops-rag-mlflow/artifacts"
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: access-key-id
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: aws-credentials
-              key: secret-access-key
+        image: ghcr.io/mlflow/mlflow:v2.10.0
         command:
           - mlflow
           - server
@@ -789,19 +774,43 @@ spec:
           - 0.0.0.0
           - --port
           - "5000"
+          - --backend-store-uri
+          - sqlite:////mlflow/mlflow.db
+          - --default-artifact-root
+          - /mlflow/artifacts
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: mlflow-data
+          mountPath: /mlflow
+      volumes:
+      - name: mlflow-data
+        persistentVolumeClaim:
+          claimName: mlflow-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow
-  namespace: mlops
+  name: mlflow-service
+  namespace: dev
 spec:
   selector:
     app: mlflow
   ports:
     - port: 5000
       targetPort: 5000
-  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-pvc
+  namespace: dev
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 ```
 
 ### 4.2 Experiment Tracking
