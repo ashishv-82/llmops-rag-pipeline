@@ -325,6 +325,28 @@ Since we modified the code, we must rebuild the image **inside** Minikube's Dock
     kubectl rollout restart deployment/rag-api -n dev
     ```
 
+### 2.6 Verify In-Cluster (Production Check)
+
+To be 100% sure the Pod is serving metrics inside the cluster network:
+
+1.  **Get Pod Name:**
+    ```bash
+    kubectl get pods -n dev
+    ```
+
+2.  **Curl from Inside:**
+    ```bash
+    kubectl exec -n dev [POD_NAME] -- curl -s http://localhost:8000/metrics | head -n 10
+    ```
+    *Expect to see output starting with:*
+    ```text
+    # HELP python_gc_objects_collected_total Objects collected during gc
+    # TYPE python_gc_objects_collected_total counter
+    python_gc_objects_collected_total{generation="0"} 234.0
+    ...
+    ```
+
+
 ---
 
 ## Part 3: Visualization & Alerting
