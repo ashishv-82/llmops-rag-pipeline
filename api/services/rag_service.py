@@ -143,9 +143,8 @@ class RAGService:
             # Note: We pass model_id to generate_response to avoid re-instantiating the service
             response_text = llm_service.generate_response(
                 system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                model_id=model_id,
-                temperature=0.3
+                prompt=user_prompt,
+                model_id=model_id
             )
             
             execution_time = time.time() - start_time
@@ -178,7 +177,7 @@ class RAGService:
                 "cached": False,
                 "model_tier": model_tier,
                 "prompt_version": version_id,
-                "complexity_metrics": routing_decision["metrics"],
+                "complexity_metrics": routing_decision.get("metrics", {}),
                 "cost": (estimated_input_tokens / 1000 * 0.00006) + (estimated_output_tokens / 1000 * 0.00024),
                 "execution_time_ms": round(execution_time * 1000, 2),
                 "sources": sources,

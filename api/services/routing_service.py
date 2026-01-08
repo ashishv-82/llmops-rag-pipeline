@@ -46,10 +46,10 @@ class RoutingService:
             }
         }
     
-    def analyze_complexity(self, query: str, domain: str = 'general') -> ModelTier:
+    def analyze_complexity(self, query: str, domain: str = 'general') -> dict:
         """
         Determine which model to use based on query complexity and domain.
-        Returns 'lite' or 'pro'.
+        Returns dict with model_tier and model_id.
         """
         # Get domain config
         config = self.domain_routing.get(domain, self.domain_routing['general'])
@@ -67,22 +67,30 @@ class RoutingService:
         has_multiple_questions = query.count('?') > 1
         has_conditional = bool(re.search(r'\b(if|when|unless|provided|assuming)\b', query.lower()))
         
+        tier = 'lite'
+        reason = "Default complexity"
+
         # Domain-specific logic
         if domain == 'legal':
             # Legal: default to pro unless very simple
             if word_count < config['simple_threshold'] and not has_conditional:
-                return 'lite'
-            return 'pro'
+                tier = 'lite'
+                reason = "Simple legal query"
+            else:
+                tier = 'pro'
+                reason = "Complex legal query"
         
         elif domain == 'hr':
             # HR: default to lite unless complex
             if word_count > config['complex_threshold'] or has_multiple_questions:
-                return 'pro'
-            return 'lite'
+                tier = 'pro'
+                reason = "Complex HR query"
+            else:
+                tier = 'lite'
+                reason = "Simple HR query"
         
         else:
             # General/Engineering: complexity-based scoring
-            # Score based on multiple factors, use pro if score >= 3
             complexity_score = (
                 (word_count > config['complex_threshold']) * 2 +
                 (sentence_count > self.sentence_count_threshold) * 1 +
@@ -91,8 +99,24 @@ class RoutingService:
                 has_conditional * 1
             )
             
-            # If complexity score >= 3, use pro
-            return 'pro' if complexity_score >= 3 else 'lite'
+            if complexity_score >= 3:
+                tier = 'pro'
+                reason = f"High complexity score: {complexity_score}"
+            else:
+                tier = 'lite'
+                reason = f"Low complexity score: {complexity_score}"
+        
+        # Map tier to Model ID
+        model_id = (
+            "anthropic.claude-3-sonnet-20240229-v1:0" if tier == "pro" 
+            else "global.amazon.nova-2-lite-v1:0"
+        )
+
+        return {
+            "model_tier": tier,
+            "model_id": model_id,
+            "reason": reason
+        }
     
     def _has_technical_terms(self, query: str) -> bool:
         """Check for technical terminology"""

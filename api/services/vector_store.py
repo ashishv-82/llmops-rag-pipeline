@@ -1,3 +1,4 @@
+import os
 import chromadb
 from chromadb.config import Settings
 from api.services.embedding_service import embedding_service
@@ -6,9 +7,9 @@ import numpy as np
 
 
 class VectorStore:
-    def __init__(self, host="vectordb-service", port=8000):
-        self.host = host
-        self.port = port
+    def __init__(self, host=None, port=None):
+        self.host = host or os.getenv('VECTOR_DB_HOST', "vectordb-service")
+        self.port = port or int(os.getenv('VECTOR_DB_PORT', 8000))
         self._client = None
         self._collection = None
         self.bm25 = None

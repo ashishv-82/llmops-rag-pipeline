@@ -56,6 +56,24 @@ Provide a concise answer with key citations only.""",
             )
         }
         
+        # HR domain versions
+        self.versions['hr'] = {
+            'v1': PromptVersion(
+                version_id='hr_v1',
+                name='Standard HR',
+                system_prompt="""You are an HR Policy Assistant. Answer compliance questions strictly based on the provided handbook sections. 
+Maintain a professional, empathetic tone.""",
+                user_template="""Policy Sections:
+{context}
+
+Employee Question: {question}
+
+Guidance:""",
+                created_at=datetime(2026, 1, 10),
+                weight=1.0
+            )
+        }
+        
         # General domain versions
         self.versions['general'] = {
             'v1': PromptVersion(
