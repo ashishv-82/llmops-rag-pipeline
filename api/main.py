@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
 from api.routers import health, documents, query
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # Create FastAPI app
 app = FastAPI(
@@ -11,6 +12,9 @@ app = FastAPI(
     version=settings.app_version,
     description="RAG-based Q&A system with MLOps best practices",
 )
+
+# Instrument Prometheus Metrics
+Instrumentator().instrument(app).expose(app)
 
 # Configure CORS
 app.add_middleware(

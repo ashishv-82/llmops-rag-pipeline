@@ -43,3 +43,9 @@ module "ecr" {
     ManagedBy   = "terraform"
   }
 }
+
+module "monitoring" {
+  source           = "../../modules/monitoring"
+  namespace        = "monitoring"
+  grafana_password = "admin" # Change for real environments!
+}
