@@ -1,0 +1,26 @@
+grafana:
+  service:
+    type: LoadBalancer # Easy access for Dev/Minikube
+  
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+
+prometheus:
+  prometheusSpec:
+    # How often to scrape metrics
+    scrapeInterval: "15s"
+    
+    # Resource limits to prevent OOM
+    resources:
+      requests:
+        memory: 400Mi
+      limits:
+        memory: 1Gi
+
+# AlertManager configuration (Slack/Email would go here in future)
+alertmanager:
+  enabled: true

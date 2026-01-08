@@ -368,7 +368,7 @@ We will create a "GenAI Cost" Dashboard JSON.
 
 1.  **Create JSON File:** `terraform/modules/monitoring/dashboards/rag_metrics.json`
     
-    Copy the following content into the file:
+    This file is the "Source of Truth" for our dashboard. Save the following content:
 
     ```json
     {
@@ -424,6 +424,10 @@ We will create a "GenAI Cost" Dashboard JSON.
       "weekStart": ""
     }
     ```
+
+2.  **Auto-Provisioning:**
+    Terraform reads the file above and creates a ConfigMap.
+    Run `terraform apply` to deploy it.
 
 ### 3.3 Alerting Rules
 
