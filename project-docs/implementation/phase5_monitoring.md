@@ -402,7 +402,161 @@ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 909
 # Look for "dev/rag-api/0" - status should be "UP"
 ```
 
+### 2.8 Integrate Metrics into RAG Code
+
+Now that the metrics infrastructure is ready, we need to **call** the tracking functions in our actual RAG pipeline.
+
+#### 2.8.1 Understanding the Integration Points
+
+The metrics need to be tracked at three key points:
+
+1. **Query Endpoint** (`api/routers/query.py`) - Track overall latency
+2. **RAG Service** (`api/services/rag_service.py`) - Track cost and tokens
+3. **LLM Calls** - Capture actual usage from API responses
+
+#### 2.8.2 Modify Query Router
+
+**File:** `api/routers/query.py`
+
+```python
+from fastapi import APIRouter
+from pydantic import BaseModel
+from api.services.rag_service import rag_service
+from api.utils.metrics import RAG_REQUEST_LATENCY
+import time
+
+router = APIRouter()
+
+class QueryRequest(BaseModel):
+    question: str
+    domain: str | None = None
+
+@router.post("/query")
+async def query_rag(request: QueryRequest):
+    # Start timing the entire request
+    start_time = time.time()
+    
+    try:
+        # Call RAG service
+        result = rag_service.query(request.question, request.domain)
+        
+        # Record total latency
+        duration = time.time() - start_time
+        RAG_REQUEST_LATENCY.labels(
+            stage="total", 
+            environment="dev"
+        ).observe(duration)
+        
+        return result
+    except Exception as e:
+        # Still record latency even on failure
+        duration = time.time() - start_time
+        RAG_REQUEST_LATENCY.labels(
+            stage="total_error", 
+            environment="dev"
+        ).observe(duration)
+        raise
+```
+
+#### 2.8.3 Modify RAG Service
+
+**File:** `api/services/rag_service.py`
+
+Add metrics tracking after LLM calls:
+
+```python
+from api.utils.metrics import track_cost, track_tokens, RAG_REQUEST_LATENCY
+import time
+
+class RAGService:
+    def query(self, question: str, domain: str = None):
+        # ... existing retrieval code ...
+        
+        # Track retrieval latency
+        retrieval_start = time.time()
+        context = self.retrieve_context(question, domain)
+        retrieval_duration = time.time() - retrieval_start
+        RAG_REQUEST_LATENCY.labels(
+            stage="retrieval", 
+            environment="dev"
+        ).observe(retrieval_duration)
+        
+        # Track generation latency
+        generation_start = time.time()
+        response = self.generate_response(question, context)
+        generation_duration = time.time() - generation_start
+        RAG_REQUEST_LATENCY.labels(
+            stage="generation", 
+            environment="dev"
+        ).observe(generation_duration)
+        
+        # Track cost and tokens (example values - replace with actual)
+        # You'll need to extract these from the LLM response
+        track_cost(0.0015, model="bedrock-nova", env="dev")
+        track_tokens(150, model="bedrock-nova", type="input", env="dev")
+        track_tokens(300, model="bedrock-nova", type="output", env="dev")
+        
+        return response
+```
+
+#### 2.8.4 Extract Real Token Counts
+
+To track **actual** token usage, you need to parse the LLM response metadata:
+
+```python
+# Example for Bedrock
+response = bedrock_client.invoke_model(...)
+response_body = json.loads(response['body'].read())
+
+# Extract token counts from response
+input_tokens = response_body.get('usage', {}).get('input_tokens', 0)
+output_tokens = response_body.get('usage', {}).get('output_tokens', 0)
+
+# Track actual usage
+track_tokens(input_tokens, model="bedrock-nova", type="input", env="dev")
+track_tokens(output_tokens, model="bedrock-nova", type="output", env="dev")
+
+# Calculate cost (example pricing)
+cost = (input_tokens * 0.000008) + (output_tokens * 0.000024)
+track_cost(cost, model="bedrock-nova", env="dev")
+```
+
+#### 2.8.5 Test the Integration
+
+1. **Rebuild and Deploy:**
+   ```bash
+   eval $(minikube docker-env)
+   docker build -t llmops-rag-api:latest -f api/Dockerfile .
+   kubectl rollout restart deployment/rag-api -n dev
+   ```
+
+2. **Make a Test Request:**
+   ```bash
+   curl -X POST http://localhost:8000/query \
+     -H "Content-Type: application/json" \
+     -d '{"question": "What is RAG?", "domain": null}'
+   ```
+
+3. **Check Metrics:**
+   ```bash
+   curl http://localhost:8000/metrics | grep rag_
+   ```
+   
+   *Expected output:*
+   ```text
+   rag_cost_dollars_total{environment="dev",model="bedrock-nova"} 0.0015
+   rag_token_usage_total{environment="dev",model="bedrock-nova",type="input"} 150.0
+   rag_token_usage_total{environment="dev",model="bedrock-nova",type="output"} 300.0
+   rag_request_duration_seconds_bucket{environment="dev",stage="total",le="0.1"} 0.0
+   ```
+
+4. **Verify in Grafana:**
+   - Open http://localhost:3200
+   - Navigate to "RAG API Metrics" dashboard
+   - You should now see data in the graphs! 📈
+
 ---
+
 
 ## Part 3: Visualization & Alerting
 

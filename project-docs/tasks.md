@@ -202,16 +202,20 @@
 ## Phase 5: Monitoring & Observability (Phase Allocation)
 
 ### Prometheus & Grafana (Terraform/Helm)
-- [ ] Create `monitoring` Terraform module
-- [ ] Deploy `kube-prometheus-stack` via Helm
-- [ ] Configure Grafana dashboards via Helm values
-- [ ] Verify Prometheus scraping
+- [x] Create `monitoring` Terraform module
+- [x] Deploy `kube-prometheus-stack` via Helm
+- [x] Configure Grafana dashboards via Helm values
+- [x] Verify Prometheus scraping
 
 ### Application Instrumentation
-- [ ] Add `prometheus-fastapi-instrumentator` library
-- [ ] Implement custom metrics (Cost, Tokens, Latency)
-- [ ] Expose `/metrics` endpoint
-- [ ] Verify ServiceMonitor scraping
+- [x] Add `prometheus-fastapi-instrumentator` library
+- [x] Define custom metrics (Cost, Tokens, Latency) in `api/utils/metrics.py`
+- [x] Expose `/metrics` endpoint
+- [x] Create ServiceMonitor for Prometheus scraping
+- [ ] Integrate cost tracking in RAG service
+- [ ] Integrate token tracking in RAG service
+- [ ] Integrate latency tracking in query endpoint
+- [ ] Test metrics with real API requests
 
 ### Cost Tracking Dashboard (Grafana)
 - [ ] Create cost per query visualization
