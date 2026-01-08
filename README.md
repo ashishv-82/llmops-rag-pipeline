@@ -117,11 +117,21 @@ Reference this list when debugging or connecting services.
 | `chromadb-service` | 8000 | `chromadb-*` | **The Memory**: Vector Database (Chroma). |
 
 ### Namespace: `monitoring` (Observability Layer)
-| Service Name | Port | Pod Name | Purpose |
+**Services (Stable Access Points)**
+| Service Name | Port | Target Pod | Purpose |
 | :--- | :--- | :--- | :--- |
-| `prometheus-grafana` | **80** | `prometheus-grafana-*` | **Dashboard**: The UI (Login: admin/admin). |
-| `prometheus-kube-prometheus-prometheus` | 9090 | `prometheus-prometheus-kube-prometheus-prometheus-0` | **Database**: Metric storage. |
-| `prometheus-kube-prometheus-alertmanager` | 9093 | `alertmanager-prometheus-kube-prometheus-alertmanager-0` | **Alerting**: Notification dispatcher. |
+| `prometheus-grafana` | **80** | `grafana` | **Dashboard**: The UI (Login: `admin`/`admin`). |
+| `prometheus-kube-prometheus-prometheus` | 9090 | `prometheus` | **Database**: Metric storage & Query Engine. |
+| `prometheus-kube-prometheus-alertmanager` | 9093 | `alertmanager` | **Alerting**: Notification dispatcher (Slack/Email). |
+| `prometheus-kube-prometheus-operator` | 443 | `operator` | **Controller**: Manages the stack config. |
+
+**Pods (Workloads)**
+- `grafana`: Visualization UI.
+- `prometheus-server`: Time-series database.
+- `alertmanager`: Warning system.
+- `prometheus-operator`: The "Manager" ensuring everything runs.
+- `node-exporter`: DaemonSet (one per node) reading Host CPU/RAM.
+- `kube-state-metrics`: Reads K8s API for deployment states.
 
 ---
 
