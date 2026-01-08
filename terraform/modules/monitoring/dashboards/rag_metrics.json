@@ -25,7 +25,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -102,7 +102,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rag_cost_dollars_total)",
@@ -117,7 +117,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -194,7 +194,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "prometheus"
                     },
                     "editorMode": "code",
                     "expr": "rate(rag_token_usage_total[5m])",
@@ -209,7 +209,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -286,7 +286,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "prometheus"
                     },
                     "editorMode": "code",
                     "expr": "histogram_quantile(0.95, sum(rate(rag_request_duration_seconds_bucket{stage=\"total\"}[5m])) by (le))",
