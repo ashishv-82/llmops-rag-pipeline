@@ -21,6 +21,24 @@ prometheus:
       limits:
         memory: 1Gi
 
-# AlertManager configuration (Slack/Email would go here in future)
 alertmanager:
   enabled: true
+
+# Custom alerting rules for cost monitoring
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs: []
+    
+additionalPrometheusRulesMap:
+  rag-cost-alerts:
+    groups:
+      - name: CostAlerts
+        rules:
+          - alert: HighCostSpike
+            expr: rate(rag_cost_dollars_total[10m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "RAG API spending > $1/min detected"
+              description: "Cost rate is {{ $value }} dollars per minute"

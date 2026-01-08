@@ -347,6 +347,61 @@ To be 100% sure the Pod is serving metrics inside the cluster network:
     ```
 
 
+### 2.7 Enable Prometheus Scraping (ServiceMonitor)
+
+**Architecture Note:** This step connects your API to Prometheus. The ServiceMonitor lives in `kubernetes/dev/` (not Terraform) because it's application-specific configuration, while the monitoring infrastructure (Prometheus/Grafana) is managed by Terraform.
+
+**File:** `kubernetes/dev/servicemonitor.yaml`
+
+```yaml
+# Creates a Service to expose metrics port
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-api-metrics
+  namespace: dev
+  labels:
+    app: rag-api
+spec:
+  selector:
+    app: rag-api
+  ports:
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+---
+# Tells Prometheus Operator to scrape this service
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rag-api
+  namespace: dev
+  labels:
+    app: rag-api
+spec:
+  selector:
+    matchLabels:
+      app: rag-api
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+```
+
+**Deploy:**
+```bash
+kubectl apply -f kubernetes/dev/servicemonitor.yaml
+```
+
+**Verify Prometheus is Scraping:**
+```bash
+# Port-forward to Prometheus
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+
+# Open http://localhost:9090/targets
+# Look for "dev/rag-api/0" - status should be "UP"
+```
+
 ---
 
 ## Part 3: Visualization & Alerting
