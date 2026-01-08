@@ -111,10 +111,16 @@ llmops-rag-pipeline/
 Reference this list when debugging or connecting services.
 
 ### Namespace: `dev` (Application Layer)
-| Service Name | Port | Pod Name | Purpose |
+
+**Services (Stable Access Points)**
+| Service Name | Port | Target Pod | Purpose |
 | :--- | :--- | :--- | :--- |
-| `rag-api-service` | 8000 | `rag-api-*` | **The Brain**: FastAPI application (Python). |
-| `chromadb-service` | 8000 | `chromadb-*` | **The Memory**: Vector Database (Chroma). |
+| `rag-api-service` | 8000 | `rag-api` | **The Brain**: FastAPI application (Python). |
+| `chromadb-service` | 8000 | `chromadb` | **The Memory**: Vector Database (Chroma). |
+
+**Pods (Workloads)**
+- `rag-api`: Validates queries and calls LLMs.
+- `chromadb`: Stores embeddings for retrieval.
 
 ### Namespace: `monitoring` (Observability Layer)
 **Services (Stable Access Points)**
