@@ -1306,6 +1306,36 @@ export PYTHONPATH=.
 python tests/test_drift_simulation.py
 ```
 
+**Expected Output:**
+```text
+🚀 Starting Data Drift Simulation...
+
+1️⃣  Generating Baseline Data (Short Queries)...
+   Stored 50 baseline queries.
+   Checking for drift (expecting None/False)...
+   Result: Drift=False, Reason=Insufficient data
+
+2️⃣  Generating Current Data (Long/Complex Queries)...
+   Added 50 complex queries to current window.
+
+3️⃣  Detecting Drift...
+
+Data Drift Detected for Domain: support
+----------------------------------------
+P-value: 0.0000 (Significant shift)
+Current Mean Query Length: 12.35 words
+Previous Mean Query Length: 2.00 words
+Sample Sizes: Current=57, Previous=42
+
+Recommendation:
+- Review recent query logs for changing user behavior.
+...
+
+✅ POSITIVE TEST: Drift successfully detected!
+   P-Value: 4.69e-20 (< 0.05)
+   Mean Length shifted from 2.0 to 12.4
+```
+
 ### 6.4 RAG Integration
 **File:** `api/services/rag_service.py`
 
