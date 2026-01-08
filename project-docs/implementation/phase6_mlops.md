@@ -148,7 +148,7 @@ import json
 import numpy as np
 from typing import Optional, Tuple
 from api.services.embedding_service import embedding_service
-from api.metrics import cache_hit_rate
+from api.utils.metrics import CACHE_HIT_RATE
 
 class CacheService:
     def __init__(self, host='redis-service', port=6379):
@@ -172,10 +172,10 @@ class CacheService:
         cached = self.redis.get(key)
         
         if cached:
-            cache_hit_rate.labels(type='embedding', hit='true').inc()
+            CACHE_HIT_RATE.labels(type='embedding', hit='true').inc()
             return json.loads(cached)
         
-        cache_hit_rate.labels(type='embedding', hit='false').inc()
+        CACHE_HIT_RATE.labels(type='embedding', hit='false').inc()
         return None
     
     def set_embedding(self, text: str, embedding: list):
@@ -229,10 +229,10 @@ class CacheService:
                 best_match = data.get('response')
         
         if best_match:
-            cache_hit_rate.labels(type='response', hit='true').inc()
+            CACHE_HIT_RATE.labels(type='response', hit='true').inc()
             return best_match, best_similarity
         
-        cache_hit_rate.labels(type='response', hit='false').inc()
+        CACHE_HIT_RATE.labels(type='response', hit='false').inc()
         return None
     
     def set_response(
@@ -278,21 +278,52 @@ cache_service = CacheService()
 Covered in the `find_similar_response` and `set_response` methods above.
 
 ### 1.4 Cache Metrics
-**File:** `api/metrics.py` (add to existing)
+**File:** `api/utils/metrics.py` (add to existing)
+
+Add the cache metrics to the existing metrics file that already contains Phase 5 metrics:
 
 ```python
-from prometheus_client import Counter
+from prometheus_client import Counter, Histogram
 
-cache_hit_rate = Counter(
+# Metric Definitions (Phase 5)
+RAG_COST_TOTAL = Counter(
+    "rag_cost_dollars_total",
+    "Total estimated cost of RAG pipeline in USD",
+    ["model", "environment"]
+)
+
+RAG_TOKEN_USAGE = Counter(
+    "rag_token_usage_total",
+    "Total token usage by model type",
+    ["model", "type", "environment"]
+)
+
+RAG_REQUEST_LATENCY = Histogram(
+    "rag_request_duration_seconds",
+    "Time spent processing RAG requests",
+    ["stage", "environment"],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
+)
+
+# Cache Metrics (Phase 6) - ADD THESE
+CACHE_HIT_RATE = Counter(
     'rag_cache_hits_total',
     'Cache hit/miss count',
     ['type', 'hit']  # type: embedding/response, hit: true/false
 )
 
-cache_savings = Counter(
+CACHE_SAVINGS = Counter(
     'rag_cache_savings_dollars',
     'Cost savings from cache hits'
 )
+
+def track_cost(amount: float, model: str, env: str = "dev"):
+    """Increment the cost counter."""
+    RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
+
+def track_tokens(count: int, model: str, type: str, env: str = "dev"):
+    """Increment token usage (input/output)."""
+    RAG_TOKEN_USAGE.labels(model=model, type=type, environment=env).inc(count)
 ```
 
 ---
@@ -412,7 +443,7 @@ Integrate routing into RAG service.
 ```python
 from api.services.routing_service import routing_service
 from api.services.cache_service import cache_service
-from api.metrics import cost_total, cache_savings
+from api.utils.metrics import RAG_COST_TOTAL, CACHE_SAVINGS
 
 class RAGService:
     def query(self, question: str, domain: str = None, use_hybrid=True):
@@ -434,7 +465,7 @@ class RAGService:
             
             # Estimate saved cost (avg query cost ~$0.01)
             saved_cost = 0.01
-            cache_savings.inc(saved_cost)
+            CACHE_SAVINGS.inc(saved_cost)
             
             return {
                 "question": question,
@@ -497,20 +528,66 @@ rag_service = RAGService()
 ```
 
 ### 2.3 Cost Tracking
-**File:** `api/metrics.py` (add to existing)
+**File:** `api/utils/metrics.py` (add to existing)
+
+Add the routing metrics to the existing metrics file (after cache metrics):
 
 ```python
-routing_decisions = Counter(
+from prometheus_client import Counter, Histogram
+
+# Metric Definitions (Phase 5)
+RAG_COST_TOTAL = Counter(
+    "rag_cost_dollars_total",
+    "Total estimated cost of RAG pipeline in USD",
+    ["model", "environment"]
+)
+
+RAG_TOKEN_USAGE = Counter(
+    "rag_token_usage_total",
+    "Total token usage by model type",
+    ["model", "type", "environment"]
+)
+
+RAG_REQUEST_LATENCY = Histogram(
+    "rag_request_duration_seconds",
+    "Time spent processing RAG requests",
+    ["stage", "environment"],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
+)
+
+# Cache Metrics (Phase 6)
+CACHE_HIT_RATE = Counter(
+    'rag_cache_hits_total',
+    'Cache hit/miss count',
+    ['type', 'hit']
+)
+
+CACHE_SAVINGS = Counter(
+    'rag_cache_savings_dollars',
+    'Cost savings from cache hits'
+)
+
+# Routing Metrics (Phase 6) - ADD THESE
+ROUTING_DECISIONS = Counter(
     'rag_routing_decisions_total',
     'Model routing decisions',
     ['domain', 'model_tier']
 )
 
-routing_savings = Counter(
+ROUTING_SAVINGS = Counter(
     'rag_routing_savings_dollars',
     'Cost savings from intelligent routing'
 )
+
+def track_cost(amount: float, model: str, env: str = "dev"):
+    """Increment the cost counter."""
+    RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
+
+def track_tokens(count: int, model: str, type: str, env: str = "dev"):
+    """Increment token usage (input/output)."""
+    RAG_TOKEN_USAGE.labels(model=model, type=type, environment=env).inc(count)
 ```
+
 
 ---
 
