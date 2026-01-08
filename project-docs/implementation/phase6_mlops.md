@@ -280,32 +280,12 @@ Covered in the `find_similar_response` and `set_response` methods above.
 ### 1.4 Cache Metrics
 **File:** `api/utils/metrics.py` (add to existing)
 
-Add the cache metrics to the existing metrics file that already contains Phase 5 metrics:
+Add the following cache metrics to the existing `api/utils/metrics.py` file:
 
 ```python
-from prometheus_client import Counter, Histogram
+# ... existing imports ...
 
-# Metric Definitions (Phase 5)
-RAG_COST_TOTAL = Counter(
-    "rag_cost_dollars_total",
-    "Total estimated cost of RAG pipeline in USD",
-    ["model", "environment"]
-)
-
-RAG_TOKEN_USAGE = Counter(
-    "rag_token_usage_total",
-    "Total token usage by model type",
-    ["model", "type", "environment"]
-)
-
-RAG_REQUEST_LATENCY = Histogram(
-    "rag_request_duration_seconds",
-    "Time spent processing RAG requests",
-    ["stage", "environment"],
-    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
-)
-
-# Cache Metrics (Phase 6) - ADD THESE
+# Cache Metrics (Phase 6)
 CACHE_HIT_RATE = Counter(
     'rag_cache_hits_total',
     'Cache hit/miss count',
@@ -317,13 +297,7 @@ CACHE_SAVINGS = Counter(
     'Cost savings from cache hits'
 )
 
-def track_cost(amount: float, model: str, env: str = "dev"):
-    """Increment the cost counter."""
-    RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
-
-def track_tokens(count: int, model: str, type: str, env: str = "dev"):
-    """Increment token usage (input/output)."""
-    RAG_TOKEN_USAGE.labels(model=model, type=type, environment=env).inc(count)
+# ... existing tracking functions ...
 ```
 
 ---
@@ -436,6 +410,32 @@ routing_service = RoutingService()
 ```
 
 ### 2.2 Routing Logic
+
+**File:** `api/services/llm_service.py` (update)
+
+Modify `generate_response` to accept an optional `model_id` for dynamic routing.
+
+```python
+    def generate_response(self, prompt: str, system_prompt: str = "", model_id: str = None) -> str:
+        """
+        Generate a response using the configured LLM.
+        Args:
+            prompt: User input prompt
+            system_prompt: Optional system context
+            model_id: Optional model ID override for routing (e.g. use lite model)
+        """
+        # ... existing setup ...
+
+        try:
+            # Invoke model and extract generated text
+            # Use provided model_id or fallback to default self.model_id
+            target_model = model_id or self.model_id
+            response = bedrock_client.invoke(target_model, body, **request_kwargs)
+            return response["output"]["message"]["content"][0]["text"]
+        except Exception as e:
+            return f"Error invoking model: {str(e)}"
+```
+
 **File:** `api/services/rag_service.py` (enhanced)
 
 Integrate routing into RAG service.
@@ -496,17 +496,18 @@ class RAGService:
             question
         )
         
-        # Generate with selected model
-        llm_service_instance = LLMService(model_id=model_id)
-        llm_response = llm_service_instance.generate_response(user_prompt, system_prompt)
-        
-        query_cost += llm_response['cost']
+        # Generate with selected model tier
+        answer = llm_service.generate_response(
+            user_prompt, 
+            system_prompt, 
+            model_id=model_id
+        )
         
         # Cache the response
         cache_service.set_response(
             question,
             query_embedding,
-            llm_response['text'],
+            answer,
             domain or 'general'
         )
         
@@ -530,44 +531,12 @@ rag_service = RAGService()
 ### 2.3 Cost Tracking
 **File:** `api/utils/metrics.py` (add to existing)
 
-Add the routing metrics to the existing metrics file (after cache metrics):
+Add the routing metrics to `api/utils/metrics.py` (after cache metrics):
 
 ```python
-from prometheus_client import Counter, Histogram
+# ... existing metrics ...
 
-# Metric Definitions (Phase 5)
-RAG_COST_TOTAL = Counter(
-    "rag_cost_dollars_total",
-    "Total estimated cost of RAG pipeline in USD",
-    ["model", "environment"]
-)
-
-RAG_TOKEN_USAGE = Counter(
-    "rag_token_usage_total",
-    "Total token usage by model type",
-    ["model", "type", "environment"]
-)
-
-RAG_REQUEST_LATENCY = Histogram(
-    "rag_request_duration_seconds",
-    "Time spent processing RAG requests",
-    ["stage", "environment"],
-    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
-)
-
-# Cache Metrics (Phase 6)
-CACHE_HIT_RATE = Counter(
-    'rag_cache_hits_total',
-    'Cache hit/miss count',
-    ['type', 'hit']
-)
-
-CACHE_SAVINGS = Counter(
-    'rag_cache_savings_dollars',
-    'Cost savings from cache hits'
-)
-
-# Routing Metrics (Phase 6) - ADD THESE
+# Routing Metrics (Phase 6)
 ROUTING_DECISIONS = Counter(
     'rag_routing_decisions_total',
     'Model routing decisions',
@@ -578,14 +547,6 @@ ROUTING_SAVINGS = Counter(
     'rag_routing_savings_dollars',
     'Cost savings from intelligent routing'
 )
-
-def track_cost(amount: float, model: str, env: str = "dev"):
-    """Increment the cost counter."""
-    RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
-
-def track_tokens(count: int, model: str, type: str, env: str = "dev"):
-    """Increment token usage (input/output)."""
-    RAG_TOKEN_USAGE.labels(model=model, type=type, environment=env).inc(count)
 ```
 
 
