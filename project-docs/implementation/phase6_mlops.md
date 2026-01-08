@@ -854,13 +854,20 @@ def log_query_experiment(
 ```
 
 ### 4.3 Model Registry
-**File:** `api/model_registry.py`
+**File:** `api/utils/mlflow_utils.py` (append to existing)
 
 Register prompt versions as "models" in MLflow.
 
 ```python
-import mlflow
-from mlflow.models import infer_signature
+from mlflow.pyfunc import PythonModel, PythonModelContext
+
+class PromptModel(PythonModel):
+    """Simple wrapper for prompt templates to allow registering as MLflow models"""
+    def load_context(self, context: PythonModelContext):
+        pass
+        
+    def predict(self, context: PythonModelContext, model_input):
+        return "This is a prompt template model"
 
 def register_prompt_version(
     version_id: str,
@@ -870,15 +877,18 @@ def register_prompt_version(
 ):
     """Register prompt version in MLflow model registry"""
     
-    with mlflow.start_run():
+    with mlflow.start_run(run_name=f"register_prompt_{version_id}"):
         # Log prompt as artifact
         mlflow.log_text(system_prompt, "system_prompt.txt")
         mlflow.log_text(user_template, "user_template.txt")
         
         # Log as model
+        # We wrap the prompt in a simple PythonModel to satisfy MLflow's requirement
+        model = PromptModel()
+        
         mlflow.pyfunc.log_model(
             artifact_path="prompt",
-            python_model=None,  # Prompts are text, not Python models
+            python_model=model,
             registered_model_name=f"prompt_{domain}_{version_id}"
         )
 ```
@@ -1435,7 +1445,34 @@ kubectl logs -l app=rag-api -n dev --tail=50
 # Should see: "Application startup complete."
 ```
 
-### 6.5.5 Verify Service Connectivity
+
+### 6.5.5 Local Development Verification
+> **Note**: For local development without Minikube, you can install the necessary dependencies and run verification scripts directly.
+
+**1. Install Local Dependencies:**
+```bash
+pip install redis mlflow nltk scikit-learn numpy
+# Or use the requirements file if updated
+pip install -r api/requirements.txt
+```
+
+**2. Verify Model Registry:**
+To register existing prompts into your local MLflow (file-based or server):
+```bash
+# Set PYTHONPATH to include the project root
+export PYTHONPATH=.
+# Run the registration script (recreate `scripts/register_prompts.py` if needed)
+python scripts/register_prompts.py
+```
+
+**3. Run End-to-End Evaluation Demo:**
+```bash
+export PYTHONPATH=.
+python tests/run_eval_demo.py
+# Check tests/mock_report.html for output
+```
+
+### 6.5.6 Verify Service Connectivity
 
 **1. Port forward the API service:**
 ```bash
