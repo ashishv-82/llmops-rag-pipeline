@@ -60,30 +60,40 @@ We will use the `helm_release` resource in Terraform to deploy the `kube-prometh
 **File:** `terraform/modules/monitoring/main.tf`
 
 ```hcl
+terraform {
+  required_providers {
+    helm = {
+      source  = "hashicorp/helm"
+    }
+  }
+}
+
 resource "helm_release" "kube_prometheus_stack" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = var.namespace
+  name             = "prometheus"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  namespace        = var.namespace
   create_namespace = true
-  version    = "56.0.0" # Pin version for stability
+  version          = "56.0.0"
 
-  set {
-    name  = "grafana.adminPassword"
-    value = var.grafana_password
-  }
+  values = [
+    file("${path.module}/values.yaml")
+  ]
 
-  set {
-    name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
-    value = "false"
-  }
-
-  set {
-    name  = "grafana.service.type"
-    value = "LoadBalancer" # Use ClusterIP for prod, LoadBalancer for dev/minikube
-  }
-
-  # Add custom values for persistence if needed
+  set = [
+    {
+      name  = "grafana.adminPassword"
+      value = var.grafana_password
+    },
+    {
+      name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
+      value = "false"
+    },
+    {
+      name  = "grafana.service.type"
+      value = "LoadBalancer"
+    }
+  ]
 }
 ```
 
@@ -101,6 +111,41 @@ variable "grafana_password" {
   type        = string
   sensitive   = true
 }
+```
+
+**File:** `terraform/modules/monitoring/outputs.tf`
+
+```hcl
+output "grafana_admin_password" {
+  description = "The admin password for Grafana (sensitive)"
+  value       = var.grafana_password
+  sensitive   = true
+}
+
+output "namespace" {
+  description = "The namespace where the monitoring stack is deployed"
+  value       = var.namespace
+}
+```
+
+**File:** `terraform/modules/monitoring/values.yaml`
+
+```yaml
+grafana:
+  service:
+    type: LoadBalancer
+
+prometheus:
+  prometheusSpec:
+    scrapeInterval: "15s"
+    resources:
+      requests:
+        memory: 400Mi
+      limits:
+        memory: 1Gi
+
+alertmanager:
+  enabled: true
 ```
 
 ### 1.2 Terraform Configuration
