@@ -212,6 +212,12 @@ We will use `prometheus-fastapi-instrumentator` to automatically expose metrics 
 **File:** `api/requirements.txt`
 ```text
 prometheus-fastapi-instrumentator==7.0.0
+prometheus-client==0.19.0
+```
+
+**Install:**
+```bash
+pip install -r api/requirements.txt
 ```
 
 **File:** `api/main.py`
@@ -246,30 +252,78 @@ We need custom metrics for business logic.
 ```python
 from prometheus_client import Counter, Histogram
 
-# Business Metrics
+# Metric Definitions
 RAG_COST_TOTAL = Counter(
     "rag_cost_dollars_total",
-    "Estimated cost of RAG operations in USD",
-    ["model", "operation"]
+    "Total estimated cost of RAG pipeline in USD",
+    ["model", "environment"]
 )
 
 RAG_TOKEN_USAGE = Counter(
     "rag_token_usage_total",
-    "Token usage for LLM calls",
-    ["model", "type"] # type: input/output
+    "Total token usage by model type",
+    ["model", "type", "environment"]
 )
 
-def track_cost(model: str, input_tokens: int, output_tokens: int):
-    # Pricing logic (simplified)
-    # Update logic based on Bedrock pricing page
-    input_price = 0.0001 # per 1k
-    output_price = 0.0002 # per 1k
-    
-    cost = (input_tokens / 1000 * input_price) + (output_tokens / 1000 * output_price)
-    
-    RAG_COST_TOTAL.labels(model=model, operation="generation").inc(cost)
-    RAG_TOKEN_USAGE.labels(model=model, type="input").inc(input_tokens)
-    RAG_TOKEN_USAGE.labels(model=model, type="output").inc(output_tokens)
+RAG_REQUEST_LATENCY = Histogram(
+    "rag_request_duration_seconds",
+    "Time spent processing RAG requests",
+    ["stage", "environment"],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
+)
+
+def track_cost(amount: float, model: str, env: str = "dev"):
+    """Increment the cost counter."""
+    RAG_COST_TOTAL.labels(model=model, environment=env).inc(amount)
+
+def track_tokens(count: int, model: str, type: str, env: str = "dev"):
+    """Increment token usage (input/output)."""
+    RAG_TOKEN_USAGE.labels(model=model, type=type, environment=env).inc(count)
+```
+
+### 2.4 Verify Locally
+
+Before deploying, verify the metrics endpoint is active:
+
+1.  **Run API Locally:**
+    ```bash
+    uvicorn api.main:app --port 8000
+    ```
+
+2.  **Check Metrics:**
+    ```bash
+    curl http://localhost:8000/metrics
+    ```
+    *Expect to see output starting with:*
+    ```text
+    # HELP python_gc_objects_collected_total Objects collected during gc
+    # TYPE python_gc_objects_collected_total counter
+    ...
+    # HELP rag_cost_dollars_total Total estimated cost of RAG pipeline in USD
+    # TYPE rag_cost_dollars_total counter
+    ```
+
+3.  **Cleanup:**
+    - Stop the local server by pressing `Ctrl+C`.
+
+### 2.5 Deploy New Version (Minikube)
+
+Since we modified the code, we must rebuild the image **inside** Minikube's Docker daemon and restart the pod.
+
+1.  **Configure Shell:**
+    ```bash
+    eval $(minikube docker-env)
+    ```
+
+2.  **Rebuild Image:**
+    ```bash
+    docker build -t llmops-rag-api:latest -f api/Dockerfile .
+    ```
+
+3.  **Restart Pod:**
+    ```bash
+    kubectl rollout restart deployment/rag-api -n dev
+    ```
 ```
 
 ---
