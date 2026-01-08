@@ -1259,6 +1259,53 @@ Action Required: Review query patterns and consider retraining or prompt adjustm
         )
 ```
 
+### 6.3 Drift Verification
+**File:** `tests/test_drift_simulation.py`
+
+Verification script to simulate data drift (shift from short to long queries) and verify detection.
+
+```python
+import sys
+import os
+import json
+from datetime import datetime, timedelta
+sys.path.append(os.getcwd())
+
+from api.monitoring.drift_detector import drift_detector
+from api.monitoring.drift_alerts import check_and_alert_drift
+
+def simulate_drift():
+    # 1. Generate Baseline (10 days ago)
+    domain = "support"
+    now = datetime.now()
+    history_start = now - timedelta(days=14)
+    
+    for i in range(50):
+        # Simulate short queries
+        ts = history_start + timedelta(hours=i*4)
+        drift_detector.query_data[domain].append((ts, 2))  # length 2
+        
+    # 2. Generate Drift (2 days ago)
+    current_start = now - timedelta(days=2)
+    for i in range(50):
+        # Simulate complex queries
+        ts = current_start + timedelta(hours=i)
+        drift_detector.query_data[domain].append((ts, 12)) # length 12
+        
+    # 3. Detect
+    result = check_and_alert_drift(domain, topic_arn=None)
+    print(json.dumps(result, indent=2, default=str))
+
+if __name__ == "__main__":
+    simulate_drift()
+```
+
+Run verification:
+```bash
+export PYTHONPATH=.
+python tests/test_drift_simulation.py
+```
+
 ---
 
 ## Part 6.5: Integration & Deployment

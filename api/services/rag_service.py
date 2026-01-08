@@ -9,6 +9,7 @@ from api.services.cache_service import cache_service
 from api.prompts.versions import prompt_manager
 from api.utils.metrics import track_cost, track_tokens, RAG_REQUEST_LATENCY, CACHE_SAVINGS
 from api.utils.mlflow_utils import setup_mlflow, log_query_experiment
+from api.monitoring.drift_detector import drift_detector
 
 
 class RAGService:
@@ -32,6 +33,9 @@ class RAGService:
         Returns:
             Dictionary with answer, sources, and metadata
         """
+        # Record query for drift detection
+        drift_detector.record_query(question, domain or 'general')
+        
         start_time = time.time()
 
         # 1. Check cache first
