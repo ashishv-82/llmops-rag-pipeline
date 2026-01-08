@@ -743,8 +743,9 @@ ab_test_service = ABTestService()
 ## Part 4: MLflow Setup
 
 ### 4.1 Deploy MLflow
-**File:** `kubernetes/mlops/mlflow-deployment.yaml`
+**File:** `kubernetes/base/mlflow-deployment.yaml`
 
+Deploy MLflow Tracking Server with persistent storage.
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
