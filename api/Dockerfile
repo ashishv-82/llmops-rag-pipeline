@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
 COPY api/requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    python -m nltk.downloader punkt
 
 # Copy application code
 COPY api/ api/
