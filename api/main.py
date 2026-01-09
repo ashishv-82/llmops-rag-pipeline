@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
 from api.routers import health, documents, query
 from prometheus_fastapi_instrumentator import Instrumentator
+from api.services.cache_service import cache_service
+from api.utils.mlflow_utils import setup_mlflow
+import os
 
 # Create FastAPI app
 app = FastAPI(
@@ -44,6 +47,16 @@ async def root():
 @app.on_event("startup")
 async def startup_event():
     """Execute startup tasks."""
+    # Test Redis connection
+    try:
+        cache_service.redis.ping()
+        print("✅ Redis connection successful")
+    except Exception as e:
+        print(f"❌ Redis connection failed: {e}")
+    
+    # Configure MLflow
+    setup_mlflow()
+    
     print("Application startup complete.")
 
 

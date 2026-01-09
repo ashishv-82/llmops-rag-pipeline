@@ -2,6 +2,7 @@
 
 Reduces costs by 60-80% through intelligent cache hits using similarity matching.
 """
+import os
 import redis
 import hashlib
 import json
@@ -13,7 +14,10 @@ from api.utils.metrics import CACHE_HIT_RATE
 class CacheService:
     """Manages Redis cache for embeddings and LLM responses with semantic similarity matching."""
     
-    def __init__(self, host='redis-service', port=6379):
+    def __init__(self, host=None, port=6379):
+        if host is None:
+            host = os.getenv('REDIS_HOST', 'redis-service')
+            
         self.redis = redis.Redis(
             host=host,
             port=port,

@@ -6,4 +6,5 @@ data:
   APP_ENV: "dev"
   AWS_REGION: "ap-southeast-2"
   DOCUMENTS_BUCKET: "llmops-rag-documents-dev"
-  # DB Hosts will go here later
+  REDIS_HOST: "redis-service"
+  MLFLOW_TRACKING_URI: "http://mlflow-service.mlops:5000"

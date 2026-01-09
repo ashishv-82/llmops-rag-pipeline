@@ -1397,14 +1397,12 @@ kubectl get pvc -n dev | grep redis
 kubectl create namespace mlops
 ```
 
-**2. Deploy PostgreSQL for MLflow backend:**
-```bash
-# Create PostgreSQL deployment
-kubectl apply -f kubernetes/mlops/postgres-deployment.yaml -n mlops
+**2. Deploy MLflow (SQLite Backend):**
+*Note: Using SQLite for local Minikube environment to save resources.*
 
-# Verify PostgreSQL is running
-kubectl get pods -n mlops | grep postgres
-# Should see: postgres-xxxxx   1/1   Running
+```bash
+# Apply MLflow deployment (SQLite + PVC)
+kubectl apply -f kubernetes/mlops/mlflow-deployment.yaml -n mlops
 ```
 
 **3. Deploy MLflow:**
