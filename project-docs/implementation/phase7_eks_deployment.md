@@ -126,40 +126,30 @@ provider "aws" {
 ```
 
 ### 1.2 VPC & Networking
-**File:** `terraform/main.tf`
+**File:** `terraform/environments/prod/main.tf` (Consolidated)
 
 ```hcl
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.1.2"
+  source = "../../modules/vpc"
 
-  name = "${var.project_name}-vpc-${var.environment}"
-  cidr = "10.0.0.0/16"
-
-  azs             = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-
-  enable_nat_gateway   = true
-  single_nat_gateway   = var.environment == "dev" # Cost savings for dev
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  # EKS-specific tags
-  public_subnet_tags = {
-    "kubernetes.io/role/elb"                    = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-  }
-
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb"           = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-  }
+  project_name = "llmops-rag-pipeline"
+  environment  = "prod"
+  cluster_name = "llmops-rag-cluster"
 }
 ```
 
 ### 1.3 EKS Cluster
-**File:** `terraform/eks.tf`
+**File:** `terraform/environments/prod/main.tf` (Consolidated)
+
+```hcl
+module "eks" {
+  source = "../../modules/eks"
+
+  cluster_name       = "llmops-rag-cluster"
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+}
+```
 
 ```hcl
 module "eks" {
@@ -320,12 +310,11 @@ resource "aws_iam_policy" "s3_access" {
 **Commands:**
 
 ```bash
-# Initialize Terraform
-cd terraform
-terraform init
+# Navigate to prod environment
+cd terraform/environments/prod
 
-# Create workspace for environment
-terraform workspace new prod
+# Initialize Terraform
+terraform init
 
 # Plan deployment
 terraform plan -out=tfplan
