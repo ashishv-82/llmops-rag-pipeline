@@ -15,7 +15,7 @@ case "$1" in
     
     # Step 1: Pre-destroy safety checks
     echo -e "${GREEN}Step 1/3: Running pre-destroy safety checks...${NC}"
-    # ./scripts/pre_destroy_checklist.sh # TODO: Implement checklist script
+    ./scripts/pre_destroy_checklist.sh
     
     # Step 1.5: Cleanup Load Balancers (Critical for VPC deletion)
     echo -e "${GREEN}Step 1.5: Removing Load Balancers to prevent zombie resources...${NC}"
@@ -29,13 +29,12 @@ case "$1" in
     # Step 2: Destroy infrastructure
     echo -e "${GREEN}Step 2/3: Destroying infrastructure (~15 minutes)...${NC}"
     cd terraform/environments/prod
-    # terraform destroy -auto-approve # Commented for safety during initial setup
-    echo "Terraform destroy would run here."
+    terraform destroy -auto-approve
     cd ../../..
     
     # Step 3: Verify data persistence
     echo -e "${GREEN}Step 3/3: Verifying data persistence...${NC}"
-    # ./scripts/verify_persistence.sh
+    ./scripts/verify_persistence.sh
     
     echo ""
     echo -e "${GREEN}✅ INFRASTRUCTURE PAUSED SUCCESSFULLY${NC}"
@@ -57,13 +56,12 @@ case "$1" in
     # Step 1: Apply Terraform
     echo -e "${GREEN}Step 1/3: Applying Terraform infrastructure (~20 minutes)...${NC}"
     cd terraform/environments/prod
-    # terraform apply -auto-approve
-    echo "Terraform apply would run here."
+    terraform apply -auto-approve
     cd ../../..
     
     # Step 2: Deploy application
     echo -e "${GREEN}Step 2/3: Deploying application to EKS (~5 minutes)...${NC}"
-    # aws eks update-kubeconfig --name llmops-rag-cluster --region ap-southeast-2
+    aws eks update-kubeconfig --name llmops-rag-cluster --region ap-southeast-2
     ./scripts/deploy_to_eks.sh prod
     
     # Step 3: Validate recovery
@@ -80,7 +78,7 @@ case "$1" in
     echo "All services operational!"
     echo ""
     echo "Access your API at:"
-    # kubectl get svc rag-api-service -n prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+    kubectl get svc rag-api-service -n prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
     echo ""
     ;;
     
