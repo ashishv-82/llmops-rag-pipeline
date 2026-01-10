@@ -64,5 +64,7 @@ jobs:
       
       # Verify documents were successfully indexed in ChromaDB
       - name: Verify Ingestion
+        env:
+          API_URL: ${{ secrets.API_URL || vars.API_URL }}
         run: |
-          python scripts/verify_sync.py --files changed_files.txt
+          python scripts/verify_sync.py --files changed_files.txt --api-url $API_URL
