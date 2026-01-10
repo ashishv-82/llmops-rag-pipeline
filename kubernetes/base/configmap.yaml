@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: rag-api-config
 data:
-  APP_ENV: "dev"
+  APP_ENV: "prod"
   AWS_REGION: "ap-southeast-2"
-  DOCUMENTS_BUCKET: "llmops-rag-documents-dev"
+  DOCUMENTS_BUCKET: "llmops-rag-documents-prod"
   REDIS_HOST: "redis-service"
   MLFLOW_TRACKING_URI: "http://mlflow-service.mlops:5000"
