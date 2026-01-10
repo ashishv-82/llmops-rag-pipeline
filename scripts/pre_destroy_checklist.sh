@@ -43,13 +43,20 @@ fi
 
 # 4. Verify EBS Volume (ChromaDB)
 echo -n "4. Checking EBS Volume (ChromaDB)... "
-# We need to find the specific volume ID for next steps
-VOL_ID="vol-04cfdee3709c4d6ff" # Hardcoded known ID or fetch dynamically
+# VOL_ID should be exported by parent script or .pause_state
+if [ -z "$VOL_ID" ]; then
+    if [ -f .pause_state ]; then source .pause_state; fi
+fi
+
+if [ -z "$VOL_ID" ]; then
+     echo -e "${RED}Fail (VOL_ID not set)${NC}"
+     exit 1
+fi
+
 if aws ec2 describe-volumes --volume-ids $VOL_ID >/dev/null 2>&1; then
     echo -e "${GREEN}Pass ($VOL_ID exists)${NC}"
 else
     echo -e "${RED}Fail (Volume $VOL_ID not found)${NC}"
-    # Ideally checking for ANY volume with tag Name=chromadb-persistent-storage
     exit 1
 fi
 

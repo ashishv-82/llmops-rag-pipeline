@@ -43,13 +43,22 @@ fi
 
 # 4. Verify EBS Volume
 echo -n "4. Checking EBS Volume exists... "
-VOL_ID="vol-04cfdee3709c4d6ff"
-STATE=$(aws ec2 describe-volumes --volume-ids $VOL_ID --query 'Volumes[0].State' --output text 2>/dev/null)
-if [ "$STATE" == "available" ] || [ "$STATE" == "in-use" ]; then
-    echo -e "${GREEN}Pass (Volume is $STATE)${NC}"
-else
-    echo -e "${RED}FAIL (Volume missing or error)${NC}"
+# Load state if not set
+if [ -z "$VOL_ID" ]; then
+    if [ -f .pause_state ]; then source .pause_state; fi
+fi
+
+if [ -z "$VOL_ID" ]; then
+    echo -e "${RED}FAIL (VOL_ID unknown)${NC}"
     ERROR=1
+else
+    STATE=$(aws ec2 describe-volumes --volume-ids $VOL_ID --query 'Volumes[0].State' --output text 2>/dev/null)
+    if [ "$STATE" == "available" ] || [ "$STATE" == "in-use" ]; then
+        echo -e "${GREEN}Pass (Volume $VOL_ID is $STATE)${NC}"
+    else
+        echo -e "${RED}FAIL (Volume missing or error)${NC}"
+        ERROR=1
+    fi
 fi
 
 if [ $ERROR -eq 1 ]; then

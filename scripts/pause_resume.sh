@@ -13,8 +13,25 @@ case "$1" in
     echo "This will destroy the EKS cluster but preserve all data..."
     echo ""
     
-    # Step 1: Pre-destroy safety checks
-    echo -e "${GREEN}Step 1/3: Running pre-destroy safety checks...${NC}"
+    # Step 1: Capture State & Pre-destroy safety checks
+    echo -e "${GREEN}Step 1: Capturing State & Running safety checks...${NC}"
+    
+    cd terraform/environments/prod
+    # Capture Dynamic IDs
+    VOL_ID=$(terraform output -raw chromadb_volume_id || echo "vol-04cfdee3709c4d6ff")
+    DOCS_BUCKET="llmops-rag-documents-prod" # Known convention
+    API_REPO="llmops-rag-api"
+    cd ../../..
+    
+    # Save to state file for verification scripts
+    cat <<EOF > .pause_state
+export VOL_ID="$VOL_ID"
+export DOCS_BUCKET="$DOCS_BUCKET"
+export API_REPO="$API_REPO"
+EOF
+    source .pause_state
+    
+    # Run Validations
     ./scripts/pre_destroy_checklist.sh
     
     # Step 1.5: Cleanup Load Balancers (Critical for VPC deletion)
@@ -29,14 +46,7 @@ case "$1" in
     # Step 1.8: Handle Persistent Volume (Prevent Terraform Destroy Error)
     echo -e "${GREEN}Step 1.8:  Preserving Persistent Volume...${NC}"
     cd terraform/environments/prod
-    # Capture Volume ID for re-import later
-    VOL_ID=$(terraform output -raw chromadb_volume_id || echo "")
-    if [ -z "$VOL_ID" ]; then
-        echo -e "${RED}Error: Could not capture Volume ID. Is Terraform applied?${NC}"
-        # Fallback to hardcoded known ID if output fails
-        VOL_ID="vol-04cfdee3709c4d6ff" 
-        echo -e "${YELLOW}Using fallback Volume ID: $VOL_ID${NC}"
-    fi
+    # VOL_ID captured in Step 1
     echo "Preserving Volume ID: $VOL_ID"
     # Step 1.9: Handle Protected Modules (S3, ECR)
     echo -e "${GREEN}Step 1.9:  Preserving S3 Buckets and ECR Repositories...${NC}"
@@ -85,8 +95,13 @@ case "$1" in
     # Check if we need to clean up any stuck locks (optional but good safety)
     
     # Define Volume ID - MUST match the one preserved!
-    # Ideally satisfy this from a saved file, but for now we rely on the known ID or variables
-    VOL_ID="vol-04cfdee3709c4d6ff"
+    # Load from state file if available
+    if [ -f .pause_state ]; then source .pause_state; fi
+    
+    if [ -z "$VOL_ID" ]; then
+         echo -e "${YELLOW}Warning: VOL_ID not found in state file, falling back to specific ID${NC}"
+         VOL_ID="vol-04cfdee3709c4d6ff"
+    fi
     
     # Import if not in state
     if ! terraform state list | grep -q "aws_ebs_volume.chromadb_data"; then
