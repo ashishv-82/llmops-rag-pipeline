@@ -41,32 +41,57 @@ def verify_ingestion(files_list: str, api_url: str = None):
         # Test query: search for the filename (should return the document)
         test_query = path.stem  # Filename without extension
         
-        try:
-            response = requests.post(
-                f"{api_url}/query",
-                json={
-                    "question": test_query,
-                    "domain": domain
-                },
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                # Check if the document appears in sources
-                sources = result.get('sources', [])
+        
+        # Retry logic for transient failures (pod restarts, etc.)
+        max_retries = 3
+        retry_delay = 5  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    f"{api_url}/query",
+                    json={
+                        "question": test_query,
+                        "domain": domain
+                    },
+                    timeout=10
+                )
                 
-                if any(path.name in str(source) for source in sources):
-                    print(f"✅ {path.name} is indexed and searchable")
+                if response.status_code == 200:
+                    result = response.json()
+                    # Check if the document appears in sources
+                    sources = result.get('sources', [])
+                    
+                    if any(path.name in str(source) for source in sources):
+                        print(f"✅ {path.name} is indexed and searchable")
+                    else:
+                        print(f"⚠️  {path.name} indexed but not in search results (may need time to propagate)")
+                    break  # Success, exit retry loop
+                    
+                elif response.status_code == 503 and attempt < max_retries - 1:
+                    # 503 Service Unavailable - retry with backoff
+                    wait_time = retry_delay * (2 ** attempt)
+                    print(f"⏳ {path.name} - API unavailable (503), retrying in {wait_time}s... (attempt {attempt + 1}/{max_retries})")
+                    import time
+                    time.sleep(wait_time)
+                    continue
+                    
                 else:
-                    print(f"⚠️  {path.name} indexed but not in search results (may need time to propagate)")
-            else:
-                print(f"❌ {path.name} verification failed: {response.status_code}")
-                failed.append(path.name)
-                
-        except requests.exceptions.RequestException as e:
-            print(f"❌ {path.name} verification error: {str(e)}")
-            failed.append(path.name)
+                    print(f"❌ {path.name} verification failed: {response.status_code}")
+                    failed.append(path.name)
+                    break
+                    
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)
+                    print(f"⏳ {path.name} - Connection error, retrying in {wait_time}s... (attempt {attempt + 1}/{max_retries})")
+                    import time
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"❌ {path.name} verification error after {max_retries} attempts: {str(e)}")
+                    failed.append(path.name)
+                    break
     
     # Summary
     print("\n" + "="*50)

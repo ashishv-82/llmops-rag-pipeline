@@ -67,4 +67,6 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL || vars.API_URL }}
         run: |
+          echo "Waiting 30s for embeddings to complete..."
+          sleep 30
           python scripts/verify_sync.py --files changed_files.txt --api-url $API_URL
