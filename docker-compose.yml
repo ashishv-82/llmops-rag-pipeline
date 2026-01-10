@@ -1,0 +1,64 @@
+
+
+services:
+  # RAG API Service
+  rag-api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: rag-api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - ENVIRONMENT=dev
+      - ENABLE_MLFLOW=false
+      - AWS_REGION=ap-southeast-2
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - VECTOR_DB_HOST=chromadb
+    depends_on:
+      - redis
+      - chromadb
+    networks:
+      - rag-network
+
+  # Streamlit Frontend
+  rag-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rag-frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend:/app
+    environment:
+      - API_URL=http://rag-api:8000
+    depends_on:
+      - rag-api
+    networks:
+      - rag-network
+
+  # Redis for Caching
+  redis:
+    image: redis:7.2-alpine
+    container_name: rag-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - rag-network
+
+  # ChromaDB Vector Store
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    container_name: rag-vectordb
+    ports:
+      - "8001:8000"  # Expose on 8001 to avoid conflict with API on 8000
+    networks:
+      - rag-network
+
+
+networks:
+  rag-network:
+    driver: bridge

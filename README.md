@@ -116,11 +116,14 @@ Reference this list when debugging or connecting services.
 | Service Name | Port | Target Pod | Purpose |
 | :--- | :--- | :--- | :--- |
 | `rag-api-service` | 8000 | `rag-api` | **The Brain**: FastAPI application (Python). |
+| `rag-frontend-service` | 8501 | `rag-frontend` | **The Face**: Streamlit UI. |
 | `chromadb-service` | 8000 | `chromadb` | **The Memory**: Vector Database (Chroma). |
 
 **Pods (Workloads)**
 - `rag-api`: Validates queries and calls LLMs.
+- `rag-frontend`: Frontend UI for user interaction.
 - `chromadb`: Stores embeddings for retrieval.
+- `redis`: High-speed semantic cache.
 
 ### Namespace: `monitoring` (Observability Layer)
 **Services (Stable Access Points)**
@@ -168,16 +171,27 @@ Reference this list when debugging or connecting services.
     export AWS_REGION=ap-southeast-2
     ```
 
-3.  **Run Locally (FastAPI)**:
+3.  **Run Locally (Full Stack with Docker Compose)**:
+    *Recommended for local development and verification.*
     ```bash
-    uvicorn api.main:app --reload --port 8000
+    docker-compose up --build
+    ```
+    *   **API**: `http://localhost:8000`
+    *   **Frontend**: `http://localhost:8501`
+
+4.  **Seed Data**:
+    Populate the local Vector DB with test documents:
+    ```bash
+    python scripts/seed_data.py "data/documents/history/The_Vietnam_War_v2.pdf" --domain history
     ```
 
-4.  **Run on Kubernetes (Minikube)**:
+5.  **Run on Kubernetes (Minikube)**:
+    *For production simulation.*
     ```bash
     minikube start
     eval $(minikube docker-env)
-    docker build -t llmops-rag-api:latest -f api/Dockerfile .
+    ./scripts/build_api.sh local
+    ./scripts/build_frontend.sh local
     kubectl apply -f kubernetes/base/
     ```
 

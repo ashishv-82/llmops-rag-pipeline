@@ -2,13 +2,14 @@ import streamlit as st
 import requests
 import os
 
+# Configure page metadata and layout
+st.set_page_config(page_title="RAG Document Q&A", layout="wide")
+
 """ Streamlit-based UI for interacting with the RAG API """
 
 # API endpoint configuration
 API_URL = os.getenv("API_URL", "http://rag-api-service:80")
 
-# Configure page metadata and layout
-st.set_page_config(page_title="RAG Document Q&A", layout="wide")
 
 st.title("🔍 RAG Document Q&A System")
 

@@ -28,19 +28,10 @@ def log_query_experiment(
     cached: bool,
     feedback_score: float = None
 ):
-    """
-    Log a RAG query execution as an MLflow run.
-    
-    Args:
-        prompt_version: Version ID of the prompt used
-        model_tier: 'lite' or 'pro'
-        domain: Query domain (legal, hr, etc.)
-        cost: Estimated cost in USD
-        tokens: Dict with 'input' and 'output' token counts
-        latency_ms: Total execution time in milliseconds
-        cached: Whether result was served from cache
-        feedback_score: Optional user feedback (0.0-1.0)
-    """
+
+    if os.getenv("ENABLE_MLFLOW", "true").lower() != "true":
+        return
+
     try:
         # Set the experiment name based on domain
         experiment_name = f"rag_pipeline_{domain}"

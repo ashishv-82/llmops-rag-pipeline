@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-frontend
+  namespace: prod
+  labels:
+    app: rag-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-frontend
+  template:
+    metadata:
+      labels:
+        app: rag-frontend
+    spec:
+      containers:
+      - name: rag-frontend
+        image: 152141418178.dkr.ecr.ap-southeast-2.amazonaws.com/llmops-rag-frontend:latest
+        ports:
+        - containerPort: 8501
+        env:
+        - name: API_URL
+          value: "http://rag-api-service:80"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-frontend-service
+  namespace: prod
+spec:
+  selector:
+    app: rag-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8501
+  type: ClusterIP

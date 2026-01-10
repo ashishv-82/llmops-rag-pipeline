@@ -43,6 +43,7 @@ ENV/
 terraform.tfvars
 *.tfvars
 *.tfplan
+tfplan
 crash.log
 override.tf
 override.tf.json

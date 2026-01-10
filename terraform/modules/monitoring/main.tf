@@ -21,20 +21,18 @@ resource "helm_release" "kube_prometheus_stack" {
     file("${path.module}/values.yaml")
   ]
 
-  set = [
-    {
-      name  = "grafana.adminPassword"
-      value = var.grafana_password
-    },
-    {
-      name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
-      value = "false"
-    },
-    {
-      name  = "grafana.service.type"
-      value = "LoadBalancer"
-    }
-  ]
+  set {
+    name  = "grafana.adminPassword"
+    value = var.grafana_password
+  }
+  set {
+    name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
+    value = "false"
+  }
+  set {
+    name  = "grafana.service.type"
+    value = "LoadBalancer"
+  }
 }
 
 resource "kubernetes_config_map" "rag_metrics_dashboard" {

@@ -1,4 +1,4 @@
-# Phase 7: EKS Deployment & Infrastructure Optimization - Implementation Plan
+# Phase 8: EKS Deployment & Infrastructure Optimization - Implementation Plan
 
 **Goal:** Deploy the complete RAG application to AWS EKS and validate the core value proposition: **pause/resume architecture for cost optimization**. Implement production-grade infrastructure with security, monitoring, and disaster recovery capabilities.
 
@@ -6,7 +6,7 @@
 
 ## 🏗️ Architectural Context
 
-Phase 7 is the **Production Deployment** phase where we:
+Phase 8 is the **Production Deployment** phase where we:
 1.  **Deploy to EKS**: Apply all Terraform configurations to create production infrastructure.
 2.  **Validate Pause/Resume**: Test the core cost-saving mechanism (`terraform destroy` → `terraform apply`).
 3.  **Implement Cost Optimization**: S3 lifecycle policies, auto-scaling, resource tagging.
@@ -94,7 +94,7 @@ terraform {
     key            = "prod/terraform.tfstate"
     region         = "ap-southeast-2"
     encrypt        = true
-    dynamodb_table = "terraform-state-lock"
+    dynamodb_table = "llmops-rag-terraform-state-lock"
   }
   
   required_version = ">= 1.6.0"
@@ -151,76 +151,7 @@ module "eks" {
 }
 ```
 
-```hcl
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
 
-  cluster_name    = var.cluster_name
-  cluster_version = "1.28"
-
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-
-  # Cluster endpoint configuration
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
-
-  # Enable IRSA (IAM Roles for Service Accounts)
-  enable_irsa = true
-
-  # Cluster addons
-  cluster_addons = {
-    coredns = {
-      most_recent = true
-    }
-    kube-proxy = {
-      most_recent = true
-    }
-    vpc-cni = {
-      most_recent = true
-    }
-    aws-ebs-csi-driver = {
-      most_recent = true
-    }
-  }
-
-  # Managed node groups
-  eks_managed_node_groups = {
-    general = {
-      name = "general-${var.environment}"
-      
-      instance_types = ["t3.medium"]
-      capacity_type  = "ON_DEMAND"
-      
-      min_size     = 2
-      max_size     = 5
-      desired_size = 2
-      
-      # Time-based scaling (handled by Karpenter or CronJob)
-      labels = {
-        role = "general"
-      }
-      
-      tags = {
-        "k8s.io/cluster-autoscaler/enabled"                = "true"
-        "k8s.io/cluster-autoscaler/${var.cluster_name}"    = "owned"
-      }
-    }
-  }
-
-  # Cluster security group rules
-  cluster_security_group_additional_rules = {
-    ingress_nodes_ephemeral_ports_tcp = {
-      description                = "Nodes on ephemeral ports"
-      protocol                   = "tcp"
-      from_port                  = 1025
-      to_port                    = 65535
-      type                       = "ingress"
-      source_node_security_group = true
-    }
-  }
-}
 
 # IRSA for External Secrets Operator
 module "external_secrets_irsa" {

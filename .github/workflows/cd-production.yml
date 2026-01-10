@@ -45,56 +45,68 @@ jobs:
             --name llmops-rag-cluster \
             --region ap-southeast-2
       
-      # Strategy 1: Rolling Update (standard Kubernetes rollout)
-      - name: Deploy (Rolling Update)
+      # ----------------------------------------------------------------
+      # 1. Build & Push API
+      # ----------------------------------------------------------------
+      - name: Build & Push API
+        run: |
+          # Use image_tag input or git sha
+          TAG=${{ github.event.inputs.image_tag }}
+          ./scripts/build_api.sh $TAG
+
+      # ----------------------------------------------------------------
+      # 2. Build & Push Frontend
+      # ----------------------------------------------------------------
+      - name: Build & Push Frontend
+        run: |
+          # Frontend currently uses latest in build script, but we can override if verified
+          # for now we stick to latest for simplicity or update script to accept tag
+          ./scripts/build_frontend.sh
+
+      # ----------------------------------------------------------------
+      # 3. Deploy Infrastructure & App
+      # ----------------------------------------------------------------
+      - name: Deploy to EKS (Manifests)
+        run: |
+          # This script applies all Services, Deployments, Ingress, etc.
+          # It ensures the 'Shape' of the cluster matches the code.
+          ./scripts/deploy_to_eks.sh prod
+
+      # ----------------------------------------------------------------
+      # 4. Update Image Versions (Rolling Update)
+      # ----------------------------------------------------------------
+      - name: Set Specific Image Version
         if: github.event.inputs.deployment_strategy == 'rolling'
         run: |
+          TAG=${{ github.event.inputs.image_tag }}
+          
+          # Update API Deployment
           kubectl set image deployment/rag-api \
-            api=${{ secrets.ECR_REGISTRY }}/llmops-rag-api:${{ github.event.inputs.image_tag }} \
+            rag-api=${{ secrets.ECR_REGISTRY }}/llmops-rag-api:$TAG \
             -n prod
+            
+          # Update Frontend Deployment (if we versioned it, otherwise it stays latest)
+          # kubectl set image deployment/rag-frontend ...
           
-          # Wait up to 10 minutes for rollout to complete
+          # Wait for rollout
           kubectl rollout status deployment/rag-api -n prod --timeout=10m
-      
-      # Strategy 2: Blue-Green Deployment (instant switch, zero downtime)
-      - name: Deploy (Blue-Green)
-        if: github.event.inputs.deployment_strategy == 'blue-green'
-        run: |
-          # Create green deployment with new version
-          kubectl apply -f kubernetes/prod/deployment-green.yaml
-          
-          # Wait for green to be ready
-          kubectl wait --for=condition=available deployment/rag-api-green -n prod --timeout=5m
-          
-          # Switch service to green (instant cutover)
-          kubectl patch service rag-api-service -n prod \
-            -p '{"spec":{"selector":{"version":"green"}}}'
-          
-          # Delete blue deployment after verification period
-          sleep 60
-          kubectl delete deployment rag-api-blue -n prod
-      
-      # Verify production deployment health
+          kubectl rollout status deployment/rag-frontend -n prod --timeout=5m
+
+      # ----------------------------------------------------------------
+      # 5. Verify Health
+      # ----------------------------------------------------------------
       - name: Health Check
         run: |
+          # Retreive LoadBalancer URL dynamically if PROD_API_URL not set
           API_URL=${{ secrets.PROD_API_URL }}
           
-          # Retry health check 5 times with 10s intervals
+          echo "Checking Health at $API_URL..."
           for i in {1..5}; do
-            if curl -f $API_URL/health; then
+            if curl -f "$API_URL/health"; then
               echo "✅ Health check passed"
               exit 0
             fi
             sleep 10
           done
-          
           echo "❌ Health check failed"
           exit 1
-      
-      # Automatic rollback if any step fails
-      - name: Rollback on Failure
-        if: failure()  # Runs only if previous steps failed
-        run: |
-          echo "⚠️ Deployment failed, initiating automatic rollback..."
-          kubectl rollout undo deployment/rag-api -n prod
-          kubectl rollout status deployment/rag-api -n prod

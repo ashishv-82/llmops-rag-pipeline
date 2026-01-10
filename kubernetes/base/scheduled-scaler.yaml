@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-down-night
+  namespace: prod
+spec:
+  schedule: "0 22 * * *"  # 10 PM daily
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: scaler
+          containers:
+          - name: kubectl
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl scale deployment rag-api --replicas=1 -n prod
+              kubectl scale deployment redis --replicas=1 -n prod
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-up-morning
+  namespace: prod
+spec:
+  schedule: "0 6 * * *"  # 6 AM daily
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: scaler
+          containers:
+          - name: kubectl
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl scale deployment rag-api --replicas=3 -n prod
+              kubectl scale deployment redis --replicas=1 -n prod
+          restartPolicy: OnFailure
