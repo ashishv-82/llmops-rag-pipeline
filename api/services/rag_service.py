@@ -36,6 +36,10 @@ class RAGService:
         # Record query for drift detection
         drift_detector.record_query(question, domain or 'general')
         
+        # Handle 'all' domain for global search (remove filter)
+        if domain == "all":
+            domain = None
+        
         start_time = time.time()
 
         # 1. Check cache first

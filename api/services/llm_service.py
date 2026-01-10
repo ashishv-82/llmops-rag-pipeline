@@ -28,7 +28,7 @@ class LLMService:
         # Format request body for Nova 2 model
         # System prompt must be a top-level parameter, not in messages
         body = {
-            "inferenceConfig": {"max_new_tokens": 1000},
+            "inferenceConfig": {"max_new_tokens": 800},
             "system": [{"text": system_prompt}],
             "messages": [{"role": "user", "content": [{"text": prompt}]}],
         }

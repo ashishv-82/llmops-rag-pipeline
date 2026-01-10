@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from api.services.rag_service import RAGService
+from api.services.routing_service import routing_service
 from api.utils.metrics import RAG_REQUEST_LATENCY
 import time
 
@@ -8,6 +9,12 @@ import time
 
 router = APIRouter()
 rag_service = RAGService()
+
+
+@router.get("/domains")
+async def get_domains():
+    """Return available domains for UI and Routing."""
+    return {"domains": routing_service.get_available_domains()}
 
 
 # Schema for RAG query requests

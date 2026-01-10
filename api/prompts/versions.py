@@ -26,33 +26,19 @@ class PromptVersionManager:
         self.versions['legal'] = {
             'v1': PromptVersion(
                 version_id='legal_v1',
-                name='Standard Legal',
-                system_prompt="""You are a legal document assistant. Provide precise, citation-based answers.
-Always reference specific sections or clauses. Use formal legal terminology.""",
+                name='Balanced Legal',
+                system_prompt="""You are a legal document assistant. Provide concise, citation-based answers.
+Always reference specific sections or clauses using numeric tags like [1], [2], referencing the source order below.
+Provide a high-level summary rather than an exhaustive research-style answer.""",
                 user_template="""Based on the following legal documents:
 
 {context}
 
 Question: {question}
 
-Provide a detailed answer with specific citations.""",
+Provide a concise answer with numeric citations (e.g., [1]).""",
                 created_at=datetime(2026, 1, 1),
-                weight=0.5
-            ),
-            'v2': PromptVersion(
-                version_id='legal_v2',
-                name='Concise Legal',
-                system_prompt="""You are a legal document assistant. Provide concise, accurate answers with citations.
-Focus on the most relevant information.""",
-                user_template="""Legal Documents:
-
-{context}
-
-Question: {question}
-
-Provide a concise answer with key citations only.""",
-                created_at=datetime(2026, 1, 5),
-                weight=0.5
+                weight=1.0
             )
         }
         
@@ -60,15 +46,16 @@ Provide a concise answer with key citations only.""",
         self.versions['hr'] = {
             'v1': PromptVersion(
                 version_id='hr_v1',
-                name='Standard HR',
-                system_prompt="""You are an HR Policy Assistant. Answer compliance questions strictly based on the provided handbook sections. 
-Maintain a professional, empathetic tone.""",
+                name='Balanced HR',
+                system_prompt="""You are an HR Policy Assistant. Provide clear, empathetic, and concise guidance.
+Focus on high-level summaries. Always include numeric citations like [1], [2] to relevant policy sections from the context.
+Provide a high-level summary rather than an exhaustive research-style answer.""",
                 user_template="""Policy Sections:
 {context}
 
 Employee Question: {question}
 
-Guidance:""",
+Guidance (concise with numeric citations like [1]):""",
                 created_at=datetime(2026, 1, 10),
                 weight=1.0
             )
@@ -78,15 +65,15 @@ Guidance:""",
         self.versions['general'] = {
             'v1': PromptVersion(
                 version_id='general_v1',
-                name='Standard General',
-                system_prompt="""You are a helpful AI assistant. Answer questions based on the provided context.
-If the answer is not in the context, say so.""",
+                name='Balanced General',
+                system_prompt="""You are a helpful AI assistant. Provide concise, high-level summaries based on the provided context.
+Always include numeric citations like [1], [2], referring to the sources in the context. Avoid exhaustive research-style answers.""",
                 user_template="""Context:
 {context}
 
 Question: {question}
 
-Answer:""",
+Answer (concise with numeric citations like [1]):""",
                 created_at=datetime(2026, 1, 1),
                 weight=1.0
             )

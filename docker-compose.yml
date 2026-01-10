@@ -17,6 +17,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - VECTOR_DB_HOST=chromadb
+    volumes:
+      - ~/.aws:/home/appuser/.aws:ro
     depends_on:
       - redis
       - chromadb

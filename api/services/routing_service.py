@@ -128,4 +128,10 @@ class RoutingService:
         query_lower = query.lower()
         return any(term in query_lower for term in technical_indicators)
 
+    def get_available_domains(self) -> list[str]:
+        """Return list of supported domains"""
+        domains = list(self.domain_routing.keys())
+        domains.insert(0, "all") # Add global search option
+        return domains
+
 routing_service = RoutingService()

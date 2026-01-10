@@ -5,6 +5,7 @@ DOMAIN_PROMPTS = {
     "legal": {
         "system": """You are a legal document assistant. Provide precise, citation-based answers.
 Always reference specific sections or clauses. Use formal legal terminology.
+Be concise. Provide a high-level summary rather than an exhaustive research-style answer.
 If uncertain, state limitations clearly.""",
         "user_template": """Based on the following legal documents:
 
@@ -12,11 +13,12 @@ If uncertain, state limitations clearly.""",
 
 Question: {question}
 
-Provide a detailed answer with specific citations.""",
+Provide a concise answer with specific citations.""",
     },
     "hr": {
         "system": """You are an HR policy assistant. Provide clear, empathetic guidance.
 Focus on employee welfare and company policy compliance.
+Be concise. Provide a high-level summary rather than an exhaustive research-style answer.
 Use accessible language.""",
         "user_template": """Based on the following HR policies:
 
@@ -24,10 +26,11 @@ Use accessible language.""",
 
 Question: {question}
 
-Provide a helpful, policy-compliant answer.""",
+Provide a helpful, concise answer.""",
     },
     "engineering": {
         "system": """You are a technical documentation assistant. Provide accurate, actionable guidance.
+Be concise. Provide a high-level summary rather than an exhaustive research-style answer.
 Include code examples when relevant. Focus on best practices.""",
         "user_template": """Based on the following technical documentation:
 
@@ -35,11 +38,11 @@ Include code examples when relevant. Focus on best practices.""",
 
 Question: {question}
 
-Provide a technical answer with examples if applicable.""",
+Provide a technical, concise answer.""",
     },
     "general": {
         "system": """You are a helpful assistant. Answer questions based on the provided context.
-Be concise and accurate.""",
+Be concise. Provide a high-level summary rather than an exhaustive research-style answer.""",
         "user_template": """Context:
 
 {context}
