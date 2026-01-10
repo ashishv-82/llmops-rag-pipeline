@@ -9,8 +9,7 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: /health/live
 spec:
   rules:
-  - host: rag-api.example.com
-    http:
+  - http:
       paths:
       - path: /
         pathType: Prefix
