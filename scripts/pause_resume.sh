@@ -26,6 +26,22 @@ case "$1" in
     echo "Waiting 30s for ALB deletion to propagate..."
     sleep 30
 
+    # Step 1.8: Handle Persistent Volume (Prevent Terraform Destroy Error)
+    echo -e "${GREEN}Step 1.8:  Preserving Persistent Volume...${NC}"
+    cd terraform/environments/prod
+    # Capture Volume ID for re-import later
+    VOL_ID=$(terraform output -raw chromadb_volume_id || echo "")
+    if [ -z "$VOL_ID" ]; then
+        echo -e "${RED}Error: Could not capture Volume ID. Is Terraform applied?${NC}"
+        # Fallback to hardcoded known ID if output fails
+        VOL_ID="vol-04cfdee3709c4d6ff" 
+        echo -e "${YELLOW}Using fallback Volume ID: $VOL_ID${NC}"
+    fi
+    echo "Preserving Volume ID: $VOL_ID"
+    # Remove from state so destroy doesn't fail (lifecycle prevent_destroy stops destroy otherwise)
+    terraform state rm aws_ebs_volume.chromadb_data || echo "Volume already removed from state or not found"
+    cd ../../..
+    
     # Step 2: Destroy infrastructure
     echo -e "${GREEN}Step 2/3: Destroying infrastructure (~15 minutes)...${NC}"
     cd terraform/environments/prod
@@ -52,6 +68,27 @@ case "$1" in
     echo ""
     
     START_TIME=$(date +%s)
+    
+    # Step 0.5: Re-import Persistent Volume
+    echo -e "${GREEN}Step 0.5: Re-importing Persistent Volume...${NC}"
+    cd terraform/environments/prod
+    # Initialize to ensure providers are ready
+    terraform init >/dev/null
+    
+    # Check if we need to clean up any stuck locks (optional but good safety)
+    
+    # Define Volume ID - MUST match the one preserved!
+    # Ideally satisfy this from a saved file, but for now we rely on the known ID or variables
+    VOL_ID="vol-04cfdee3709c4d6ff"
+    
+    # Import if not in state
+    if ! terraform state list | grep -q "aws_ebs_volume.chromadb_data"; then
+        echo "Importing volume $VOL_ID into Terraform state..."
+        terraform import aws_ebs_volume.chromadb_data $VOL_ID || echo "Import warning: check if already exists or managed"
+    else
+        echo "Volume already in state."
+    fi
+    cd ../../..
     
     # Step 1: Apply Terraform
     echo -e "${GREEN}Step 1/3: Applying Terraform infrastructure (~20 minutes)...${NC}"
