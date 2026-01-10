@@ -185,6 +185,27 @@ resource "aws_iam_policy" "bedrock_access" {
   })
 }
 
+# --- Persistent Storage for ChromaDB ---
+
+data "aws_region" "current" {}
+
+resource "aws_ebs_volume" "chromadb_data" {
+  availability_zone = "${data.aws_region.current.name}a"
+  size              = 10
+  type              = "gp3"
+
+  tags = {
+    Name        = "chromadb-persistent-storage"
+    Project     = "llmops-rag-pipeline"
+    Environment = "prod"
+  }
+}
+
+output "chromadb_volume_id" {
+  value       = aws_ebs_volume.chromadb_data.id
+  description = "The ID of the EBS volume for ChromaDB"
+}
+
 # --- Monitoring ---
 module "monitoring" {
   source = "../../modules/monitoring"
