@@ -38,8 +38,15 @@ case "$1" in
         echo -e "${YELLOW}Using fallback Volume ID: $VOL_ID${NC}"
     fi
     echo "Preserving Volume ID: $VOL_ID"
-    # Remove from state so destroy doesn't fail (lifecycle prevent_destroy stops destroy otherwise)
-    terraform state rm aws_ebs_volume.chromadb_data || echo "Volume already removed from state or not found"
+    # Step 1.9: Handle Protected Modules (S3, ECR)
+    echo -e "${GREEN}Step 1.9:  Preserving S3 Buckets and ECR Repositories...${NC}"
+    # Remove entire modules from state so their contents (buckets, repos, policies) are ignored during destroy
+    # This effectively "detaches" them from Terraform management temporarily
+    terraform state rm module.documents_bucket || echo "Documents bucket module not in state"
+    terraform state rm module.embeddings_bucket || echo "Embeddings bucket module not in state"
+    terraform state rm module.ecr || echo "API ECR module not in state"
+    terraform state rm module.ecr_frontend || echo "Frontend ECR module not in state"
+    
     cd ../../..
     
     # Step 2: Destroy infrastructure
@@ -88,6 +95,34 @@ case "$1" in
     else
         echo "Volume already in state."
     fi
+    
+    # Step 0.6: Re-import S3 and ECR
+    echo -e "${GREEN}Step 0.6: Re-importing S3 Buckets and ECR Repositories...${NC}"
+    
+    # Import Documents Bucket
+    if ! terraform state list | grep -q "module.documents_bucket.aws_s3_bucket.this"; then
+        echo "Importing Documents Bucket..."
+        terraform import module.documents_bucket.aws_s3_bucket.this llmops-rag-documents-prod || echo "Import warning"
+    fi
+    
+    # Import Embeddings Bucket
+    if ! terraform state list | grep -q "module.embeddings_bucket.aws_s3_bucket.this"; then
+        echo "Importing Embeddings Bucket..."
+        terraform import module.embeddings_bucket.aws_s3_bucket.this llmops-rag-embeddings-prod || echo "Import warning"
+    fi
+    
+    # Import API ECR
+    if ! terraform state list | grep -q "module.ecr.aws_ecr_repository.this"; then
+        echo "Importing API ECR..."
+        terraform import module.ecr.aws_ecr_repository.this llmops-rag-api || echo "Import warning"
+    fi
+    
+    # Import Frontend ECR
+    if ! terraform state list | grep -q "module.ecr_frontend.aws_ecr_repository.this"; then
+        echo "Importing Frontend ECR..."
+        terraform import module.ecr_frontend.aws_ecr_repository.this llmops-rag-frontend || echo "Import warning"
+    fi
+
     cd ../../..
     
     # Step 1: Apply Terraform
