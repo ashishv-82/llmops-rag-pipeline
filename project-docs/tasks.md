@@ -13,7 +13,7 @@
  Phase 5: Monitoring       ██████████ 100% (14/14)
  Phase 6: MLOps/LLMOps     ████████░░  81% (29/36)
  Phase 7: Basic UI         ██████████ 100% (8/8)
- Phase 8: EKS Deployment   ██░░░░░░░░  21% (9/42)
+ Phase 8: EKS Deployment   ████████░░  80% (34/42)
  Phase 9: Documentation    ░░░░░░░░░░  0% (0/46)
  Future Enhancements       ░░░░░░░░░░  0% (0/46)
  Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
@@ -311,12 +311,12 @@
 ## Phase 8: EKS Deployment & Infrastructure Optimization (Phase Allocation)
 
 ### EKS Deployment
-- [ ] Apply Terraform configuration for EKS
-- [ ] **MANUAL: Update `vectordb-deployment.yaml` with Volume ID from Terraform Output**
-- [ ] Deploy all Kubernetes resources to EKS
+- [x] Apply Terraform configuration for EKS
+- [x] **MANUAL: Update `vectordb-deployment.yaml` with Volume ID from Terraform Output**
+- [x] Deploy all Kubernetes resources to EKS
 - [x] Configure ingress and load balancers
-- [ ] Verify all services are running
-- [ ] Test end-to-end functionality
+- [x] Verify all services are running
+- [x] Test end-to-end functionality
 - [ ] **Revert CD Simulation Mode**: Uncomment `kubectl` commands in `cd-dev.yml`
 - [ ] **Enable Notifications**: Re-enable Slack webhook in `cd-dev.yml`
 
@@ -339,7 +339,7 @@
 - [ ] Verify tags in AWS console
 
 ### **Pause/Resume Validation (CRITICAL)**
-- [x] Create one-click pause/resume master script (`pause_resume.sh`)
+- [x] Create one-click pause/resume master script (Replaced by `pause_resume_checklist.md` for manual execution verification first)
 - [ ] Test `terraform destroy` (full teardown)
 - [ ] Verify data persistence (S3, ECR, Secrets Manager)
 - [ ] Test `terraform apply` (full restoration)
@@ -351,7 +351,7 @@
 ### Security & Authentication
 - [ ] **Infrastructure Secrets**
   - [x] Create `rag-api-secrets` in AWS Secrets Manager (Console)
-  - [ ] Install External Secrets Operator (ESO) on EKS
+  - [x] Install External Secrets Operator (ESO) on EKS
   - [x] Create `SecretStore` and `ExternalSecret` manifests
 - [ ] Add rate limiting
 - [ ] Implement authentication (API keys or OAuth)

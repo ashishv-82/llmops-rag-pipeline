@@ -377,6 +377,32 @@ spec:
             name: rag-api-service
             port:
               number: 80
+
+### 2.4 Configure Frontend Ingress (New)
+**File:** `kubernetes/base/frontend-ingress.yaml`
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rag-frontend-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /_stcore/health
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rag-frontend-service
+            port:
+              number: 8501
+```
 ```
 
 ---
