@@ -38,6 +38,49 @@ provider "aws" {
   }
 }
 
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    command     = "aws"
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+      command     = "aws"
+    }
+  }
+}
+
+# --- Cluster Access Fix ---
+resource "aws_eks_access_entry" "admin_access" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = "arn:aws:iam::152141418178:user/admin-user"
+  type          = "STANDARD"
+
+  depends_on = [module.eks]
+}
+
+resource "aws_eks_access_policy_association" "admin_policy" {
+  cluster_name  = module.eks.cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = aws_eks_access_entry.admin_access.principal_arn
+
+  access_scope {
+    type = "cluster"
+  }
+}
+
 # --- Networking ---
 module "vpc" {
   source = "../../modules/vpc"
@@ -216,4 +259,86 @@ module "monitoring" {
 
   namespace        = "monitoring"
   grafana_password = "admin" # Change for real environments!
+}
+
+resource "kubernetes_namespace" "envs" {
+  for_each = toset(["dev", "staging", "prod"])
+
+  metadata {
+    name = each.key
+    labels = {
+      environment = each.key
+      managed_by  = "terraform"
+    }
+  }
+
+  depends_on = [module.eks, aws_eks_access_entry.admin_access]
+}
+
+# --- External Secrets Operator ---
+resource "helm_release" "external_secrets" {
+  name       = "external-secrets"
+  repository = "https://charts.external-secrets.io"
+  chart      = "external-secrets"
+  version    = "0.9.19" # Fixed version for K8s 1.29 compatibility
+  namespace  = "kube-system"
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = module.external_secrets_irsa.iam_role_arn
+  }
+
+  depends_on = [module.eks]
+}
+
+# --- AWS Load Balancer Controller ---
+module "aws_load_balancer_controller_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 5.30"
+
+  role_name = "aws-load-balancer-controller-prod"
+
+  attach_load_balancer_controller_policy = true
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
+    }
+  }
+}
+
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  version    = "1.6.2"
+
+  set {
+    name  = "clusterName"
+    value = module.eks.cluster_name
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "true"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = module.aws_load_balancer_controller_irsa.iam_role_arn
+  }
+
+  depends_on = [module.eks]
 }

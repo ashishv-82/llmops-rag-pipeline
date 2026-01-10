@@ -32,7 +32,7 @@ fi
 # 3. Build Docker Image
 echo "📦 Building Docker image..."
 # Navigate to root to include potential shared contexts if needed, but here we build from frontend/
-docker build -t $REPO_NAME -f frontend/Dockerfile frontend/
+docker build --platform linux/amd64 -t $REPO_NAME -f frontend/Dockerfile frontend/
 
 # 4. Tag Image
 echo "🏷️  Tagging image..."

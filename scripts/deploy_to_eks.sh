@@ -52,6 +52,7 @@ kubectl apply -f kubernetes/base/deployment.yaml -n $NAMESPACE
 kubectl apply -f kubernetes/base/service.yaml -n $NAMESPACE
 
 # Deploy Ingress (if exists)
+if [ -f "kubernetes/base/ingress.yaml" ]; then
     kubectl apply -f kubernetes/base/ingress.yaml -n $NAMESPACE
 fi
 

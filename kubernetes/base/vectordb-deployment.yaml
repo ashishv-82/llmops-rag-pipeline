@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   csi:
     driver: ebs.csi.aws.com
-    volumeHandle: "vol-0a1b2c3d4e5f6g7h8" # REPLACE with actual output from Terraform
+    volumeHandle: "vol-04cfdee3709c4d6ff" # Updated from Terraform output
   nodeAffinity:
     required:
       nodeSelectorTerms:

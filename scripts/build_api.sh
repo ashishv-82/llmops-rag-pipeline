@@ -30,7 +30,7 @@ fi
 
 # 3. Build Docker Image
 echo "📦 Building Docker image..."
-docker build -t $REPO_NAME -f api/Dockerfile .
+docker build --platform linux/amd64 -t $REPO_NAME -f api/Dockerfile .
 
 # 4. Tag Image
 echo "🏷️  Tagging image..."
