@@ -78,6 +78,9 @@ Phase 8 is the **Production Deployment** phase where we:
 - **kubectl**: v1.28+ installed.
 - **AWS CLI**: v2+ configured with credentials.
 
+### Critical Manual Step
+Before deploying `vectordb-deployment.yaml` in Part 2, you **MUST** update the `volumeHandle` with your real EBS Volume ID from Terraform output.
+
 ---
 
 ## Part 1: Terraform Infrastructure Deployment
@@ -148,6 +151,32 @@ module "eks" {
   cluster_name       = "llmops-rag-cluster"
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
+}
+```
+
+### 1.4 Persistent Storage (Decoupled)
+**File:** `terraform/environments/prod/main.tf`
+
+We create a standalone EBS volume that survives cluster destruction.
+
+```hcl
+resource "aws_ebs_volume" "chromadb_data" {
+  availability_zone = "${data.aws_region.current.name}a"
+  size              = 10
+  type              = "gp3"
+
+  tags = {
+    Name        = "chromadb-persistent-storage"
+    Environment = "prod"
+  }
+
+  lifecycle {
+    prevent_destroy = true # CRITICAL: Prevents deletion during pause
+  }
+}
+
+output "chromadb_volume_id" {
+  value = aws_ebs_volume.chromadb_data.id
 }
 ```
 
@@ -305,7 +334,7 @@ kubectl apply -f kubernetes/base/secrets.yaml -n $NAMESPACE
 # Deploy Redis
 kubectl apply -f kubernetes/base/redis-deployment.yaml -n $NAMESPACE
 
-# Deploy Vector DB
+# Deploy Vector DB (Ensure Volume ID is updated in manifest!)
 kubectl apply -f kubernetes/base/vectordb-deployment.yaml -n $NAMESPACE
 
 # Deploy API
@@ -587,6 +616,13 @@ case "$1" in
     # Step 1: Pre-destroy safety checks
     echo -e "${GREEN}Step 1/3: Running pre-destroy safety checks...${NC}"
     ./scripts/pre_destroy_checklist.sh
+
+    # Step 1.5: Cleanup Load Balancers (Critical for VPC deletion)
+    echo -e "${GREEN}Step 1.5: Removing Load Balancers to prevent zombie resources...${NC}"
+    aws eks update-kubeconfig --name llmops-rag-cluster --region ap-southeast-2 >/dev/null 2>&1 || true
+    kubectl delete ingress --all --all-namespaces --timeout=60s || echo "Warning: Ingress deletion skipped"
+    echo "Waiting 30s for ALB deletion..."
+    sleep 30
     
     # Step 2: Destroy infrastructure
     echo -e "${GREEN}Step 2/3: Destroying infrastructure (~15 minutes)...${NC}"

@@ -17,6 +17,15 @@ case "$1" in
     echo -e "${GREEN}Step 1/3: Running pre-destroy safety checks...${NC}"
     # ./scripts/pre_destroy_checklist.sh # TODO: Implement checklist script
     
+    # Step 1.5: Cleanup Load Balancers (Critical for VPC deletion)
+    echo -e "${GREEN}Step 1.5: Removing Load Balancers to prevent zombie resources...${NC}"
+    # Ensure correct context
+    aws eks update-kubeconfig --name llmops-rag-cluster --region ap-southeast-2 >/dev/null 2>&1 || true
+    # Delete Ingress triggers ALB deletion (must happen while controller is still running)
+    kubectl delete ingress --all --all-namespaces --timeout=60s || echo "Warning: Ingress deletion skipped or failed"
+    echo "Waiting 30s for ALB deletion to propagate..."
+    sleep 30
+
     # Step 2: Destroy infrastructure
     echo -e "${GREEN}Step 2/3: Destroying infrastructure (~15 minutes)...${NC}"
     cd terraform/environments/prod

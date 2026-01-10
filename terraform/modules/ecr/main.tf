@@ -16,6 +16,10 @@ resource "aws_ecr_repository" "this" {
       Name = var.repository_name
     }
   )
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_ecr_lifecycle_policy" "this" {

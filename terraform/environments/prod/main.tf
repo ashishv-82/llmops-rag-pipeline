@@ -199,6 +199,10 @@ resource "aws_ebs_volume" "chromadb_data" {
     Project     = "llmops-rag-pipeline"
     Environment = "prod"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 output "chromadb_volume_id" {

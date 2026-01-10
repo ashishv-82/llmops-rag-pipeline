@@ -312,6 +312,7 @@
 
 ### EKS Deployment
 - [ ] Apply Terraform configuration for EKS
+- [ ] **MANUAL: Update `vectordb-deployment.yaml` with Volume ID from Terraform Output**
 - [ ] Deploy all Kubernetes resources to EKS
 - [x] Configure ingress and load balancers
 - [ ] Verify all services are running
