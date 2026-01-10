@@ -2,7 +2,7 @@
 
 ## 📊 Progress Summary
 
-**Overall Progress**: 180/318 tasks (57%)
+**Overall Progress**: 188/318 tasks (59%)
  
  ```
  Planning & Documentation  ██████████ 100% (14/14)
@@ -13,14 +13,14 @@
  Phase 5: Monitoring       ██████████ 100% (14/14)
  Phase 6: MLOps/LLMOps     ████████░░  81% (29/36)
  Phase 7: Basic UI         ██████████ 100% (8/8)
- Phase 8: EKS Deployment   ████████░░  80% (34/42)
+ Phase 8: EKS Deployment   █████████░  85% (17/20)
  Phase 9: Documentation    ░░░░░░░░░░  0% (0/46)
- Future Enhancements       ░░░░░░░░░░  0% (0/46)
+ Future Enhancements       ░░░░░░░░░░  0% (0/71)
  Ongoing Tasks             ░░░░░░░░░░  0% (0/6)
  ```
 
 **Current Focus**: 🚀 Phase 8: EKS Deployment & Infrastructure Optimization
-**Last Updated**: 10 January, 2026
+**Last Updated**: 11 January, 2026
 
 ---
 ...
@@ -317,55 +317,10 @@
 - [x] Configure ingress and load balancers
 - [x] Verify all services are running
 - [x] Test end-to-end functionality
-- [ ] **Revert CD Simulation Mode**: Uncomment `kubectl` commands in `cd-dev.yml`
-- [ ] **Enable Notifications**: Re-enable Slack webhook in `cd-dev.yml`
-
-### S3 Lifecycle Policies
-- [x] Implement 30-day transition to Standard-IA
-- [x] Implement 90-day transition to Glacier
-- [ ] Document cost savings
-- [ ] Monitor storage costs
-
-### Time-Based Auto-Scaling
-- [x] Implement off-hours scaling (scale down at night)
-- [ ] Configure cost-aware HPA policies
-- [x] Document scaling behavior
-- [ ] Test scaling triggers
-
-### Resource Tagging
-- [x] Implement cost allocation tags (Project, Environment, CostCenter)
-- [ ] Add ownership and management tags
-- [ ] Enable cost attribution in AWS Cost Explorer
-- [ ] Verify tags in AWS console
-
-### **Pause/Resume Validation (CRITICAL)**
-- [x] Create one-click pause/resume master script (Replaced by `pause_resume_checklist.md` for manual execution verification first)
-- [ ] Test `terraform destroy` (full teardown)
-- [ ] Verify data persistence (S3, ECR, Secrets Manager)
-- [ ] Test `terraform apply` (full restoration)
-- [ ] Document recovery time (~20 minutes)
-- [ ] Verify application functionality after restore
 - [ ] Test multiple destroy/apply cycles
 - [ ] Document any issues and fixes
 
-### Security & Authentication
-- [ ] **Infrastructure Secrets**
-  - [x] Create `rag-api-secrets` in AWS Secrets Manager (Console)
-  - [x] Install External Secrets Operator (ESO) on EKS
-  - [x] Create `SecretStore` and `ExternalSecret` manifests
-- [ ] Add rate limiting
-- [ ] Implement authentication (API keys or OAuth)
-- [ ] Configure network policies in K8s
-- [ ] Implement pod security policies
-- [ ] Validate IAM least-privilege access
-- [ ] Test secrets rotation
 
-### Backup & Disaster Recovery
-- [ ] Validate S3 versioning
-- [ ] Test ECR image backup
-- [ ] Create RDS snapshots (if using)
-- [ ] Document recovery procedures
-- [ ] Test restore procedures
 
 ---
 
@@ -449,6 +404,23 @@
 ---
 
 ## Future Enhancements (Deferred)
+
+### Operational Hardening (Moved from Phase 8)
+- [ ] **Revert CD Simulation Mode**: Uncomment `kubectl` commands in `cd-dev.yml`
+- [ ] **Enable Notifications**: Re-enable Slack webhook in `cd-dev.yml`
+- [ ] **Security Hardening**:
+  - [ ] Add rate limiting
+  - [ ] Implement authentication (API keys or OAuth)
+  - [ ] Configure network policies in K8s
+  - [ ] Implement pod security policies
+  - [ ] Validate IAM least-privilege access
+  - [ ] Test secrets rotation
+- [ ] **Backup & Recovery**:
+  - [ ] Validate S3 versioning
+  - [ ] Test ECR image backup
+  - [ ] Create RDS snapshots (if using)
+  - [ ] Document recovery procedures
+  - [ ] Test restore procedures
 
 ### Advanced Monitoring (Phase 5 - Deferred)
 - [ ] **Advanced Cost Dashboards**

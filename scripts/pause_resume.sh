@@ -18,7 +18,11 @@ case "$1" in
     
     cd terraform/environments/prod
     # Capture Dynamic IDs
-    VOL_ID=$(terraform output -raw chromadb_volume_id || echo "vol-04cfdee3709c4d6ff")
+    VOL_ID=$(terraform output -raw chromadb_volume_id 2>/dev/null || echo "")
+    if [[ -z "$VOL_ID" ]] || [[ "$VOL_ID" == *"Warning"* ]]; then
+        echo -e "${YELLOW}Volume ID not found in output (likely already removed from state). Using known ID.${NC}"
+        VOL_ID="vol-04cfdee3709c4d6ff"
+    fi
     DOCS_BUCKET="llmops-rag-documents-prod" # Known convention
     API_REPO="llmops-rag-api"
     cd ../../..
@@ -48,6 +52,9 @@ EOF
     cd terraform/environments/prod
     # VOL_ID captured in Step 1
     echo "Preserving Volume ID: $VOL_ID"
+    # Remove from state so destroy doesn't fail (lifecycle prevent_destroy stops destroy otherwise)
+    terraform state rm aws_ebs_volume.chromadb_data || echo "Volume already removed from state or not found"
+
     # Step 1.9: Handle Protected Modules (S3, ECR)
     echo -e "${GREEN}Step 1.9:  Preserving S3 Buckets and ECR Repositories...${NC}"
     # Remove entire modules from state so their contents (buckets, repos, policies) are ignored during destroy
@@ -62,7 +69,76 @@ EOF
     # Step 2: Destroy infrastructure
     echo -e "${GREEN}Step 2/3: Destroying infrastructure (~15 minutes)...${NC}"
     cd terraform/environments/prod
-    terraform destroy -auto-approve
+    
+    if ! terraform destroy -auto-approve; then
+        echo -e "${YELLOW}Terraform destroy failed. Attempting force cleanup of zombie resources...${NC}"
+        
+        # 1. Terminate stuck EC2 Instances (Nodes)
+        VPC_ID=$(aws ec2 describe-vpcs --filters Name=tag:Project,Values=llmops-rag-pipeline --query 'Vpcs[0].VpcId' --output text)
+        if [ ! -z "$VPC_ID" ] && [ "$VPC_ID" != "None" ]; then
+             echo "Terminating stuck instances in $VPC_ID..."
+             aws ec2 describe-instances --filters Name=vpc-id,Values=$VPC_ID --query 'Reservations[*].Instances[*].InstanceId' --output text | xargs -I {} aws ec2 terminate-instances --instance-ids {} >/dev/null 2>&1 || true
+             echo "Waiting 60s for instances to terminate..."
+             sleep 60
+        fi
+        
+        # 2. Delete stuck Network Interfaces (ENIs) - forceful
+        echo "Cleaning up lingering ENIs..."
+        
+        # 2a. Check for Classic ELBs (Common source of stuck ENIs)
+        CLBS=$(aws elb describe-load-balancers --region ap-southeast-2 --query 'LoadBalancerDescriptions[*].LoadBalancerName' --output text)
+        for CLB in $CLBS; do
+            echo "Deleting stuck Classic ELB: $CLB"
+            aws elb delete-load-balancer --load-balancer-name $CLB --region ap-southeast-2
+        done
+        
+        # Detach and delete all ENIs in the VPC (careful operation)
+        ENIS=$(aws ec2 describe-network-interfaces --filters Name=vpc-id,Values=$VPC_ID --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text)
+        for ENI in $ENIS; do
+            aws ec2 delete-network-interface --network-interface-id $ENI >/dev/null 2>&1 || true
+        done
+        
+        # 3. Retry Destroy
+        echo -e "${GREEN}Retrying Terraform destroy...${NC}"
+        if ! terraform destroy -auto-approve; then
+            echo -e "${RED}Terraform destroy failed again. Initiating FINAL FORCE VPC CLEANUP.${NC}"
+            
+            # 4. Force Cleanup of remaining VPC resources (Subnets, IGW, SGs, VPC)
+            echo "Deleting Subnets..."
+            SUBNETS=$(aws ec2 describe-subnets --filters Name=vpc-id,Values=$VPC_ID --query 'Subnets[*].SubnetId' --output text)
+            for SUBNET in $SUBNETS; do aws ec2 delete-subnet --subnet-id $SUBNET >/dev/null 2>&1 || true; done
+            
+            echo "Deleting Internet Gateways..."
+            IGWS=$(aws ec2 describe-internet-gateways --filters Name=attachment.vpc-id,Values=$VPC_ID --query 'InternetGateways[*].InternetGatewayId' --output text)
+            for IGW in $IGWS; do
+                aws ec2 detach-internet-gateway --internet-gateway-id $IGW --vpc-id $VPC_ID >/dev/null 2>&1 || true
+                aws ec2 delete-internet-gateway --internet-gateway-id $IGW >/dev/null 2>&1 || true
+            done
+            
+            echo "Deleting Security Groups (excluding default)..."
+            SGS=$(aws ec2 describe-security-groups --filters Name=vpc-id,Values=$VPC_ID --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text)
+            for SG in $SGS; do aws ec2 delete-security-group --group-id $SG >/dev/null 2>&1 || true; done
+            
+            echo "Deleting VPC..."
+            aws ec2 delete-vpc --vpc-id $VPC_ID >/dev/null 2>&1 || echo "Warning: Failed to delete VPC $VPC_ID (may still comprise dependencies)"
+            
+            # 5. Cleanup Orphaned EBS Volumes (Dynamic provisioning leaks)
+            echo "Cleaning up orphaned EBS volumes..."
+            # Filter for volumes owned by this specific cluster (kubernetes.io/cluster/<name>=owned)
+            # This is safe because our persistent volume (VOL_ID) does NOT have this tag (it is managed by Terraform/User)
+            ORPHANED_VOLS=$(aws ec2 describe-volumes --filters Name=tag:kubernetes.io/cluster/llmops-rag-cluster,Values=owned --query 'Volumes[*].VolumeId' --output text)
+            for VOL in $ORPHANED_VOLS; do
+                # Double-check: Never delete the preserved volume, even if it has the tag
+                if [ "$VOL" == "$VOL_ID" ]; then
+                    echo "⚠️  SKIPPING preserved volume: $VOL (Safety Check Passed)"
+                    continue
+                fi
+                echo "Deleting orphaned volume: $VOL"
+                aws ec2 delete-volume --volume-id $VOL >/dev/null 2>&1 || true
+            done
+        fi
+    fi
+    
     cd ../../..
     
     # Step 3: Verify data persistence

@@ -110,3 +110,6 @@ cost-reports/
 
 # Kubernetes
 kubernetes/base/secrets.yaml
+
+# Local Pause/Resume State
+.pause_state
