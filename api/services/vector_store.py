@@ -43,7 +43,7 @@ class VectorStore:
         # Generate embeddings in batch
         embeddings = [embedding_service.generate_embedding(doc) for doc in documents]
 
-        self.collection.add(
+        self.collection.upsert(
             documents=documents, embeddings=embeddings, metadatas=metadatas, ids=ids
         )
 

@@ -40,6 +40,10 @@ class RoutingService:
                 'default': 'lite',
                 'complex_threshold': 75
             },
+            'history': {
+                'default': 'lite',
+                'complex_threshold': 50
+            },
             'general': {
                 'default': 'lite',
                 'complex_threshold': 50
