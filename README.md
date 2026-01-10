@@ -118,6 +118,7 @@ Reference this list when debugging or connecting services.
 | `rag-api-service` | 8000 | `rag-api` | **The Brain**: FastAPI application (Python). |
 | `rag-frontend-service` | 8501 | `rag-frontend` | **The Face**: Streamlit UI. |
 | `chromadb-service` | 8000 | `chromadb` | **The Memory**: Vector Database (Chroma). |
+| `redis-service` | 6379 | `redis` | **The Cache**: Semantic caching layer. |
 
 **Pods (Workloads)**
 - `rag-api`: Validates queries and calls LLMs.
