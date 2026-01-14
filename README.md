@@ -10,11 +10,11 @@ This project demonstrates a rigorous, first-principles approach to building, dep
 A glimpse into the RAG User Interface and the Real-time Metrics Dashboard.
 
 <p align="center">
-  <img src="images/RAG-UI.png" alt="RAG UI" width="80%">
+  <img src="images/RAG-UI.png" alt="RAG UI" width="100%">
 </p>
 
 <p align="center">
-  <img src="images/RAG-Metrics-Dashboard.png" alt="RAG Metrics Dashboard" width="80%">
+  <img src="images/RAG-Metrics-Dashboard.png" alt="RAG Metrics Dashboard" width="100%">
 </p>
 
 ---
